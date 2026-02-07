@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertBusinessSchema, insertReviewSchema, businesses, reviews, users, auditLogs } from './schema';
+import { insertUserSchema, insertBusinessSchema, insertReviewSchema, businesses, reviews, users } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -13,9 +13,6 @@ export const errorSchemas = {
     message: z.string(),
   }),
   unauthorized: z.object({
-    message: z.string(),
-  }),
-  forbidden: z.object({
     message: z.string(),
   }),
 };
@@ -34,7 +31,7 @@ export const api = {
     login: {
       method: 'POST' as const,
       path: '/api/login' as const,
-      input: insertUserSchema.pick({ username: true, password: true }),
+      input: insertUserSchema,
       responses: {
         200: z.custom<typeof users.$inferSelect>(),
         401: errorSchemas.unauthorized,
@@ -101,7 +98,7 @@ export const api = {
         401: errorSchemas.unauthorized,
       },
     },
-    getStats: {
+    getStats: { // For insights
       method: 'GET' as const,
       path: '/api/businesses/:id/stats' as const,
       responses: {
@@ -137,78 +134,7 @@ export const api = {
       responses: {
         200: z.object({ review: z.string() }),
         400: errorSchemas.validation,
-        429: z.object({ message: z.string() }),
-      },
-    },
-  },
-  admin: {
-    stats: {
-      method: 'GET' as const,
-      path: '/api/admin/stats' as const,
-      responses: {
-        200: z.object({
-          totalUsers: z.number(),
-          totalBusinesses: z.number(),
-          totalReviews: z.number(),
-          totalConcerns: z.number(),
-        }),
-        401: errorSchemas.unauthorized,
-        403: errorSchemas.forbidden,
-      },
-    },
-    businesses: {
-      list: {
-        method: 'GET' as const,
-        path: '/api/admin/businesses' as const,
-        responses: {
-          200: z.array(z.custom<typeof businesses.$inferSelect>()),
-          401: errorSchemas.unauthorized,
-          403: errorSchemas.forbidden,
-        },
-      },
-      toggle: {
-        method: 'POST' as const,
-        path: '/api/admin/businesses/:id/toggle' as const,
-        input: z.object({ isActive: z.boolean() }),
-        responses: {
-          200: z.custom<typeof businesses.$inferSelect>(),
-          401: errorSchemas.unauthorized,
-          403: errorSchemas.forbidden,
-          404: errorSchemas.notFound,
-        },
-      },
-    },
-    users: {
-      list: {
-        method: 'GET' as const,
-        path: '/api/admin/users' as const,
-        responses: {
-          200: z.array(z.custom<typeof users.$inferSelect>()),
-          401: errorSchemas.unauthorized,
-          403: errorSchemas.forbidden,
-        },
-      },
-      toggle: {
-        method: 'POST' as const,
-        path: '/api/admin/users/:id/toggle' as const,
-        input: z.object({ isActive: z.boolean() }),
-        responses: {
-          200: z.custom<typeof users.$inferSelect>(),
-          401: errorSchemas.unauthorized,
-          403: errorSchemas.forbidden,
-          404: errorSchemas.notFound,
-        },
-      },
-    },
-    auditLogs: {
-      list: {
-        method: 'GET' as const,
-        path: '/api/admin/audit-logs' as const,
-        responses: {
-          200: z.array(z.custom<typeof auditLogs.$inferSelect>()),
-          401: errorSchemas.unauthorized,
-          403: errorSchemas.forbidden,
-        },
+        429: z.object({ message: z.string() }), // Rate limit for regeneration
       },
     },
   },

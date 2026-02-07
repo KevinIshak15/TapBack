@@ -11,81 +11,19 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
-// Middleware to check if user is admin
-function isAdmin(req: any, res: any, next: any) {
-  if (req.isAuthenticated() && req.user.role === 'admin') {
-    return next();
-  }
-  res.status(403).json({ message: "Forbidden: Admin access only" });
-}
-
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Setup Auth (Passport)
   setupAuth(app);
 
-  // === Admin Stats ===
-  app.get(api.admin.stats.path, isAdmin, async (req, res) => {
-    const stats = await storage.getGlobalStats();
-    res.json(stats);
-  });
-
-  // === Admin Business Management ===
-  app.get(api.admin.businesses.list.path, isAdmin, async (req, res) => {
-    const businesses = await storage.listAllBusinesses();
-    res.json(businesses);
-  });
-
-  app.post(api.admin.businesses.toggle.path, isAdmin, async (req, res) => {
-    const id = Number(req.params.id);
-    const { isActive } = api.admin.businesses.toggle.input.parse(req.body);
-    const business = await storage.getBusiness(id);
-    if (!business) return res.status(404).json({ message: "Business not found" });
-
-    const updated = await storage.updateBusiness(id, { isActive });
-    await storage.createAuditLog({
-      adminId: req.user!.id,
-      action: isActive ? 'enable_business' : 'disable_business',
-      targetType: 'business',
-      targetId: id,
-      details: `Business ${business.name} ${isActive ? 'enabled' : 'disabled'}`
-    });
-    res.json(updated);
-  });
-
-  // === Admin User Management ===
-  app.get(api.admin.users.list.path, isAdmin, async (req, res) => {
-    const users = await storage.listUsers();
-    res.json(users);
-  });
-
-  app.post(api.admin.users.toggle.path, isAdmin, async (req, res) => {
-    const id = Number(req.params.id);
-    const { isActive } = api.admin.users.toggle.input.parse(req.body);
-    const user = await storage.getUser(id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const updated = await storage.updateUser(id, { isActive });
-    await storage.createAuditLog({
-      adminId: req.user!.id,
-      action: isActive ? 'enable_user' : 'disable_user',
-      targetType: 'user',
-      targetId: id,
-      details: `User ${user.username} ${isActive ? 'enabled' : 'disabled'}`
-    });
-    res.json(updated);
-  });
-
-  app.get(api.admin.auditLogs.list.path, isAdmin, async (req, res) => {
-    const logs = await storage.listAuditLogs();
-    res.json(logs);
-  });
+  // === Auth Routes ===
+  // (Handled in setupAuth: /api/login, /api/register, /api/logout, /api/user)
 
   // === Business Routes ===
   app.post(api.businesses.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    if (!req.user!.isActive) return res.status(403).json({ message: "Account disabled" });
     try {
       const input = api.businesses.create.input.parse(req.body);
       const business = await storage.createBusiness({ ...input, ownerId: req.user!.id });
@@ -113,7 +51,6 @@ export async function registerRoutes(
   app.get(api.businesses.getBySlug.path, async (req, res) => {
     const business = await storage.getBusinessBySlug(req.params.slug);
     if (!business) return res.status(404).json({ message: "Business not found" });
-    if (!business.isActive) return res.status(403).json({ message: "Business disabled" });
     res.json(business);
   });
 
@@ -147,12 +84,14 @@ export async function registerRoutes(
     }
   });
 
+  // === AI Generation Route ===
   app.post(api.reviews.generateAI.path, async (req, res) => {
     try {
       const { businessId, tags, experienceType, customText } = req.body;
       const business = await storage.getBusiness(businessId);
       if (!business) return res.status(404).json({ message: "Business not found" });
-      if (!business.isActive) return res.status(403).json({ message: "Business disabled" });
+
+      // Rate limiting could go here (check storage for recent generations from IP)
 
       const prompt = `
         Write a short Google review (2-5 sentences) for a business named "${business.name}" (${business.category}).
@@ -169,6 +108,10 @@ export async function registerRoutes(
       });
 
       const reviewText = response.choices[0].message.content?.trim() || "Great experience!";
+      
+      // Log the generation (optional, creates a draft review entry)
+      // await storage.createReview({ ... });
+
       res.json({ review: reviewText });
     } catch (err) {
       console.error("AI Generation Error:", err);
