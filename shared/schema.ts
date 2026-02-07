@@ -1,12 +1,15 @@
 import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").$type<"admin" | "business">().default("business").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const businesses = pgTable("businesses", {
@@ -15,20 +18,31 @@ export const businesses = pgTable("businesses", {
   name: text("name").notNull(),
   googleReviewUrl: text("google_review_url").notNull(),
   category: text("category").notNull(),
-  slug: text("slug").notNull().unique(), // For QR codes: /r/:slug
+  slug: text("slug").notNull().unique(),
   focusAreas: jsonb("focus_areas").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   businessId: integer("business_id").notNull(),
-  experienceType: text("experience_type").notNull(), // 'great' | 'concern'
+  experienceType: text("experience_type").notNull(),
   selectedTags: jsonb("selected_tags").$type<string[]>().default([]),
   content: text("content"),
   isGenerated: boolean("is_generated").default(false),
   regenerationCount: integer("regeneration_count").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull(),
+  action: text("action").notNull(),
+  targetType: text("target_type").notNull(), // 'user', 'business'
+  targetId: integer("target_id").notNull(),
+  details: text("details"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -53,12 +67,14 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  role: true,
 });
 
 export const insertBusinessSchema = createInsertSchema(businesses).omit({
   id: true,
   createdAt: true,
-  slug: true, // Generated on backend
+  slug: true,
+  isActive: true,
 }).extend({
   googleReviewUrl: z.string().url().regex(/google\.com|g\.page/, "Must be a valid Google Review URL"),
 });
@@ -75,6 +91,7 @@ export type Business = typeof businesses.$inferSelect;
 export type InsertBusiness = z.infer<typeof insertBusinessSchema>;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;
 
 export type CreateBusinessRequest = InsertBusiness;
-export type UpdateBusinessRequest = Partial<InsertBusiness> & { focusAreas?: string[] };
+export type UpdateBusinessRequest = Partial<InsertBusiness> & { focusAreas?: string[]; isActive?: boolean };
