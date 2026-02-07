@@ -1,0 +1,559 @@
+Product Requirements Document (PRD)
+Product Name
+
+Working Name: Revues
+(Rename later; name not critical for MVP)
+
+Product Type
+
+SaaS Web Application
+B2B (Business Owners) + Public Customer Review Flow
+
+1. Product Vision
+
+Revues helps businesses collect more authentic, high-quality Google reviews by removing friction for customers through a guided, AI-assisted experience:
+
+Scan → Click → Review
+
+The product assists real customers in expressing real experiences faster.
+It does not fabricate, auto-post, or manipulate Google reviews.
+
+2. Problem Statement
+The Real Problem
+
+Customers don’t leave reviews because it’s inconvenient.
+
+When they do, reviews are short, vague, or abandoned.
+
+Businesses want better review quality without risking Google policy violations.
+
+What Revues Solves
+
+Reduces review friction to under 60 seconds
+
+Helps customers articulate feedback clearly
+
+Increases review completion rates
+
+Improves review richness (useful context for Google Business Profiles)
+
+Explicit Non-Goals
+
+No fake reviews
+
+No automated posting
+
+No incentives
+
+No keyword stuffing
+
+No Google API manipulation in V1
+
+3. Target Users
+Business Users (Primary)
+
+Local businesses (restaurants, dental clinics, gyms, salons, contractors)
+
+Owners or managers (non-technical)
+
+End Customers (Secondary)
+
+Real customers scanning a QR code
+
+4. Core Value Proposition
+
+“Make it effortless for real customers to leave thoughtful Google reviews.”
+
+Key benefits:
+
+Faster reviews
+
+Higher completion rate
+
+Better-written, more descriptive feedback
+
+Safe, compliant workflow
+
+5. High-Level User Flows
+Business Owner Flow
+
+Sign up / log in
+
+Add business details
+
+Insights & Data Preview (NEW)
+
+Select review focus areas
+
+Generate QR code
+
+Share QR with customers
+
+Customer Flow
+
+Scan QR
+
+Choose experience type
+
+Select what stood out / describe concern
+
+AI-assisted draft is generated
+
+Customer edits, confirms, copies
+
+Redirect to Google review page
+
+6. Compliance & Safety Requirements (MANDATORY)
+
+AI output must always be:
+
+Editable
+
+User-confirmed
+
+No auto-posting to Google
+
+Clear disclaimer on every AI review:
+
+“This is a suggested draft based on your input. Please edit to reflect your experience.”
+
+Customers choosing “Concern” must still be allowed to leave a Google review
+
+No forced language, keywords, or sentiment
+
+7. Feature Requirements
+7.1 Marketing Website (Public)
+
+Purpose: Convert business owners
+
+Pages
+
+/ – Landing page
+
+/pricing – Pricing (static placeholder allowed)
+
+/about – About
+
+/articles – Educational content (static for V1)
+
+Landing Page Sections
+
+Hero
+
+Headline: Scan. Click. Review.
+
+Subheadline: Turn real customer experiences into real Google reviews — fast.
+
+How It Works
+
+Sign up
+
+Generate QR
+
+Customers leave reviews
+
+Benefits
+
+More reviews
+
+Better review quality
+
+Zero pressure on customers
+
+Social proof (placeholder allowed)
+
+CTA buttons
+
+“Try It”
+
+“Generate Your QR”
+
+7.2 Authentication
+
+Routes:
+
+/signup
+
+/login
+
+Requirements:
+
+Email + password
+
+Session-based auth
+
+No OAuth in V1
+
+7.3 Business Setup
+
+Route:
+
+/business/new
+
+Fields:
+
+Business Name
+
+Google Review URL (required)
+
+Business Category
+
+Validation:
+
+Google Maps review link format check
+
+8. Insights & Data Preview (NEW SECTION)
+Purpose
+
+Educate business owners during onboarding on the long-term value of using Revues, without promising Google API integrations in V1.
+
+Placement
+
+Appears after business setup, before QR generation.
+
+Route:
+
+/business/:id/insights
+
+Section Title
+
+“Get insights from your Google reviews — all in one place.”
+
+Subheading:
+
+Understand customer sentiment, review trends, and improvement opportunities over time.
+
+Displayed Capabilities (Based on Screenshot)
+1. Compare All Your Businesses
+
+Compare review performance across locations
+
+V1: Informational only
+
+Label: “Multi-location support coming soon”
+
+2. Real-Time Review Analytics
+
+Track trends in customer feedback and engagement
+
+V1 Metrics:
+
+QR scans
+
+Review drafts generated
+
+Google redirect clicks
+
+Concern selections
+
+3. AI-Generated Review Responses
+
+Draft replies to customer reviews
+
+V1: “Coming soon” (no implementation)
+
+4. Performance Alerts & Recommendations
+
+Alerts for negative sentiment patterns
+
+AI-driven improvement suggestions
+
+V1: Internal signals only (e.g. spike in concern flow)
+
+Data Guardrails
+
+You must not claim:
+
+Google review ingestion
+
+Google Business Profile syncing
+
+You may claim:
+
+Insights based on customer interactions within Revues
+
+9. Review Focus Areas
+
+Route:
+
+/business/:id/setup
+
+UI Label:
+“What would you like feedback on?”
+
+Examples:
+
+Service quality
+
+Staff friendliness
+
+Cleanliness
+
+Speed
+
+Overall experience
+
+Rules:
+
+Max 4 selections
+
+Optional
+
+Never referred to as SEO keywords
+
+10. QR Code Generation
+
+Route:
+
+/business/:id/qr
+
+Requirements:
+
+Unique QR per business
+
+QR links to:
+
+/r/:businessSlug
+
+
+Downloadable PNG
+
+11. Customer Review Flow (Public)
+Step 1: Experience Selection
+
+Route:
+
+/r/:businessSlug/experience
+
+Options:
+
+Great experience
+
+I have a concern
+
+Step 2A: Great Experience
+
+Route:
+
+/r/:businessSlug/feedback
+
+Select up to 4 chips
+
+Optional free-text (120 chars)
+
+Step 2B: Concern Flow (CRITICAL)
+
+Still allows Google review.
+
+Display two options:
+
+Tell the business privately
+
+Leave a Google review
+
+AI tone must be:
+
+Calm
+
+Factual
+
+Non-defamatory
+
+Step 3: AI Review Generation
+
+Route:
+
+/r/:businessSlug/review
+
+AI Requirements:
+
+2–5 sentences
+
+Natural, human tone
+
+No emojis
+
+No exaggeration
+
+Contextual details only if user-provided
+
+Regeneration Limits (MANDATORY)
+
+Max 3 regenerations
+
+Counter tracked server-side
+
+Optional cooldown between regenerations
+
+After limit:
+
+Regenerate disabled
+
+Manual editing allowed
+
+Step 4: Confirmation
+
+Route:
+
+/r/:businessSlug/confirm
+
+Required checkbox:
+
+“I confirm this reflects my experience.”
+
+Buttons:
+
+Copy Review & Continue
+
+Regenerate (if available)
+
+Step 5: Redirect
+
+Opens Google review link in new tab
+
+Clear instruction to paste and submit
+
+12. AI System Requirements
+
+Inputs:
+
+Business name
+
+Category
+
+Review focus areas
+
+Customer selections
+
+Optional text
+
+Experience type
+
+Outputs:
+
+Must reflect only provided input
+
+Must encourage authenticity
+
+Must never promise ranking improvements
+
+13. Routing & URL Structure (MANDATORY)
+Routing Rules
+
+Proper client-side routing required
+
+URLs must update on navigation
+
+No core flows hidden solely in modals
+
+Pages must be reload-safe and bookmarkable
+
+Required Routes (Summary)
+
+Public
+
+/
+
+/pricing
+
+/about
+
+/articles
+
+/login
+
+/signup
+
+Business (Authenticated)
+
+/dashboard
+
+/business/new
+
+/business/:id/insights
+
+/business/:id/setup
+
+/business/:id/qr
+
+Customer Review Flow
+
+/r/:businessSlug
+
+/r/:businessSlug/experience
+
+/r/:businessSlug/feedback
+
+/r/:businessSlug/review
+
+/r/:businessSlug/confirm
+
+Unauthorized access → redirect to /login.
+
+14. Tech Stack (Replit-Friendly)
+
+Frontend:
+
+React
+
+TailwindCSS
+
+React Router
+
+Backend:
+
+Node.js + Express
+
+REST API
+
+Database:
+
+SQLite or Postgres
+
+AI:
+
+OpenAI API (server-side only)
+
+QR:
+
+qrcode npm package
+
+15. Analytics (V1 – Minimal)
+
+Track only:
+
+QR scans
+
+Review drafts generated
+
+Regeneration count
+
+Google redirect clicks
+
+Concern selections
+
+No dashboards required in MVP.
+
+16. Explicit Non-Goals (DO NOT BUILD)
+
+Payments
+
+Review ingestion from Google
+
+Google API integrations
+
+Multi-location management
+
+Advanced analytics dashboards
+
+17. MVP Success Criteria
+
+The MVP is successful if:
+
+Customers complete reviews in under 60 seconds
+
+Reviews sound indistinguishable from real human writing
+
+Businesses feel safe using the platform
+
+No Google policy violations occur
