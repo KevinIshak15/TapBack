@@ -6,7 +6,9 @@ export function useUser() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: [api.auth.me.path],
     queryFn: async () => {
-      const res = await fetch(api.auth.me.path);
+      const res = await fetch(api.auth.me.path, {
+        credentials: "include", // Include cookies for session
+      });
       if (res.status === 401) return null;
       if (!res.ok) throw new Error("Failed to fetch user");
       return api.auth.me.responses[200].parse(await res.json());
@@ -25,6 +27,7 @@ export function useLogin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
+        credentials: "include", // Include cookies for session
       });
       
       if (!res.ok) {
@@ -49,6 +52,7 @@ export function useRegister() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
+        credentials: "include", // Include cookies for session
       });
       
       if (!res.ok) {

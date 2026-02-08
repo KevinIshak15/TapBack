@@ -1,3 +1,6 @@
+// Load environment variables from .env file FIRST, before any other imports
+import "dotenv/config";
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -60,20 +63,23 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Verify Firebase is initialized before starting routes
+  try {
+    const { db } = await import("./db");
+    // Test Firestore connection
+    await db.collection("_health").limit(1).get().catch(() => {
+      // Ignore errors for health check collection
+    });
+    console.log("✅ Firestore database ready");
+  } catch (error: any) {
+    console.error("❌ Firestore initialization failed:", error.message);
+    console.error("Please ensure firebase-service-account.json exists and is valid");
+    process.exit(1);
+  }
+
   await registerRoutes(httpServer, app);
 
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    console.error("Internal Server Error:", err);
-
-    if (res.headersSent) {
-      return next(err);
-    }
-
-    return res.status(status).json({ message });
-  });
+  // Error handling is now in routes.ts via errorHandler middleware
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
@@ -81,8 +87,10 @@ app.use((req, res, next) => {
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
+    console.log("Initializing Vite for development...");
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
+    console.log("Vite initialization complete!");
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT

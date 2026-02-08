@@ -1,80 +1,165 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+// ============================================================================
+// Type Definitions & Enums
+// ============================================================================
+
+export const ExperienceType = z.enum(["great", "concern"]);
+export type ExperienceType = z.infer<typeof ExperienceType>;
+
+// ============================================================================
+// User Schema
+// ============================================================================
+
+export const UserRole = z.enum(["user", "admin"]);
+export type UserRole = z.infer<typeof UserRole>;
+
+export const insertUserSchema = z.object({
+  username: z.string().min(3).max(50),
+  password: z.string().min(6),
+  email: z.string().email().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  role: UserRole.default("user").optional(), // Default to "user", can be "admin"
+  adminCode: z.string().optional(), // Secret code for admin signup (not stored in DB)
 });
 
-export const businesses = pgTable("businesses", {
-  id: serial("id").primaryKey(),
-  ownerId: integer("owner_id").notNull(),
-  name: text("name").notNull(),
-  googleReviewUrl: text("google_review_url").notNull(),
-  category: text("category").notNull(),
-  slug: text("slug").notNull().unique(), // For QR codes: /r/:slug
-  focusAreas: jsonb("focus_areas").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
+// Internal schema (for database/storage) - uses Date objects
+const userSchemaInternal = insertUserSchema.extend({
+  id: z.number(),
+  role: UserRole.default("user"), // Ensure role is always present
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
 });
 
-export const reviews = pgTable("reviews", {
-  id: serial("id").primaryKey(),
-  businessId: integer("business_id").notNull(),
-  experienceType: text("experience_type").notNull(), // 'great' | 'concern'
-  selectedTags: jsonb("selected_tags").$type<string[]>().default([]),
-  content: text("content"),
-  isGenerated: boolean("is_generated").default(false),
-  regenerationCount: integer("regeneration_count").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
+// API response schema (for JSON) - dates are always strings in JSON
+export const userSchema = insertUserSchema.extend({
+  id: z.number(),
+  role: UserRole.default("user"), // Ensure role is always present
+  createdAt: z.string(), // JSON always serializes dates as strings
+  updatedAt: z.string().optional(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
-  businesses: many(businesses),
-}));
-
-export const businessesRelations = relations(businesses, ({ one, many }) => ({
-  owner: one(users, {
-    fields: [businesses.ownerId],
-    references: [users.id],
-  }),
-  reviews: many(reviews),
-}));
-
-export const reviewsRelations = relations(reviews, ({ one }) => ({
-  business: one(businesses, {
-    fields: [reviews.businessId],
-    references: [businesses.id],
-  }),
-}));
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export const insertBusinessSchema = createInsertSchema(businesses).omit({
-  id: true,
-  createdAt: true,
-  slug: true, // Generated on backend
-}).extend({
-  googleReviewUrl: z.string().url().regex(/google\.com|g\.page/, "Must be a valid Google Review URL"),
-});
-
-export const insertReviewSchema = createInsertSchema(reviews).omit({
-  id: true,
-  createdAt: true,
-  regenerationCount: true,
-});
-
-export type User = typeof users.$inferSelect;
+export type User = z.infer<typeof userSchemaInternal>; // Use internal schema for types
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Business = typeof businesses.$inferSelect;
+
+// ============================================================================
+// Business Schema
+// ============================================================================
+
+export const insertBusinessSchema = z.object({
+  name: z.string().min(1).max(200),
+  category: z.string().min(1).max(100),
+  googleReviewUrl: z.string().url().regex(/google\.com|g\.page/, "Must be a valid Google Review URL"),
+  focusAreas: z.array(z.string()).default([]),
+  // Additional optional fields
+  description: z.string().max(1000).optional(),
+  address: z.string().max(500).optional(),
+  phone: z.string().max(20).optional(),
+  website: z.string().url().optional(),
+});
+
+// Internal schema (for database/storage) - uses Date objects
+const businessSchemaInternal = insertBusinessSchema.extend({
+  id: z.number(),
+  ownerId: z.number(),
+  slug: z.string(), // Generated: name-slugified + random
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
+  // Analytics fields (computed/cached)
+  totalScans: z.number().default(0).optional(),
+  totalReviews: z.number().default(0).optional(),
+  averageRating: z.number().min(0).max(5).optional(),
+});
+
+// API response schema (for JSON) - dates are always strings in JSON
+export const businessSchema = insertBusinessSchema.extend({
+  id: z.number(),
+  ownerId: z.number(),
+  slug: z.string(), // Generated: name-slugified + random
+  createdAt: z.string(), // JSON always serializes dates as strings
+  updatedAt: z.string().optional(),
+  // Analytics fields (computed/cached)
+  totalScans: z.number().default(0).optional(),
+  totalReviews: z.number().default(0).optional(),
+  averageRating: z.number().min(0).max(5).optional(),
+});
+
+export type Business = z.infer<typeof businessSchemaInternal>; // Use internal schema for types
 export type InsertBusiness = z.infer<typeof insertBusinessSchema>;
-export type Review = typeof reviews.$inferSelect;
+
+// ============================================================================
+// Review Schema
+// ============================================================================
+
+export const insertReviewSchema = z.object({
+  businessId: z.number(),
+  experienceType: ExperienceType,
+  selectedTags: z.array(z.string()).default([]),
+  content: z.string().optional(),
+  isGenerated: z.boolean().default(false),
+  // Additional metadata
+  rating: z.number().min(1).max(5).optional(), // If user provides rating
+  customerEmail: z.string().email().optional(), // For follow-up
+});
+
+// Internal schema (for database/storage) - uses Date objects
+const reviewSchemaInternal = insertReviewSchema.extend({
+  id: z.number(),
+  regenerationCount: z.number().default(0),
+  createdAt: z.date(),
+  // Analytics metadata
+  ipAddress: z.string().optional(), // For rate limiting (hashed)
+  userAgent: z.string().optional(), // Device info
+});
+
+// API response schema (for JSON) - dates are always strings in JSON
+export const reviewSchema = insertReviewSchema.extend({
+  id: z.number(),
+  regenerationCount: z.number().default(0),
+  createdAt: z.string(), // JSON always serializes dates as strings
+  // Analytics metadata
+  ipAddress: z.string().optional(), // For rate limiting (hashed)
+  userAgent: z.string().optional(), // Device info
+});
+
+export type Review = z.infer<typeof reviewSchemaInternal>; // Use internal schema for types
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 
+// ============================================================================
+// Request Types
+// ============================================================================
+
 export type CreateBusinessRequest = InsertBusiness;
-export type UpdateBusinessRequest = Partial<InsertBusiness> & { focusAreas?: string[] };
+export type UpdateBusinessRequest = Partial<InsertBusiness> & { 
+  focusAreas?: string[];
+  description?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+};
+
+// ============================================================================
+// Firestore Collection Helpers
+// ============================================================================
+
+/**
+ * Firestore collection names
+ */
+export const COLLECTIONS = {
+  users: "users",
+  businesses: "businesses",
+  reviews: "reviews",
+} as const;
+
+/**
+ * Firestore index recommendations (create these in Firebase Console)
+ * 
+ * Composite Indexes needed:
+ * 1. businesses: ownerId (ascending) + createdAt (descending)
+ * 2. businesses: slug (ascending) - for unique lookups
+ * 3. reviews: businessId (ascending) + createdAt (descending)
+ * 4. reviews: businessId (ascending) + experienceType (ascending)
+ * 5. users: username (ascending) - for unique lookups
+ */

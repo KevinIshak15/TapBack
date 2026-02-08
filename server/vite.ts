@@ -4,19 +4,25 @@ import { type Server } from "http";
 import viteConfig from "../vite.config";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { nanoid } from "nanoid";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const viteLogger = createLogger();
 
 export async function setupVite(server: Server, app: Express) {
+  console.log("Setting up Vite...");
   const serverOptions = {
     middlewareMode: true,
     hmr: { server, path: "/vite-hmr" },
     allowedHosts: true as const,
   };
 
+  console.log("Creating Vite server...");
+  const resolvedConfig = typeof viteConfig === "function" ? await viteConfig() : viteConfig;
   const vite = await createViteServer({
-    ...viteConfig,
+    ...resolvedConfig,
     configFile: false,
     customLogger: {
       ...viteLogger,
@@ -29,14 +35,16 @@ export async function setupVite(server: Server, app: Express) {
     appType: "custom",
   });
 
+  console.log("Vite server created, setting up middlewares...");
   app.use(vite.middlewares);
+  console.log("Vite setup complete!");
 
   app.use("/{*path}", async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        __dirname,
         "..",
         "client",
         "index.html",

@@ -5,10 +5,14 @@ export function useBusinesses() {
   return useQuery({
     queryKey: [api.businesses.list.path],
     queryFn: async () => {
-      const res = await fetch(api.businesses.list.path);
+      const res = await fetch(api.businesses.list.path, {
+        credentials: "include", // Include cookies for session
+      });
       if (!res.ok) throw new Error("Failed to fetch businesses");
       return api.businesses.list.responses[200].parse(await res.json());
     },
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnMount: true, // Refetch when component mounts
   });
 }
 
@@ -60,13 +64,26 @@ export function useCreateBusiness() {
       const res = await fetch(api.businesses.create.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Include cookies for session
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to create business");
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Failed to create business" }));
+        throw new Error(error.message || "Failed to create business");
+      }
       return api.businesses.create.responses[201].parse(await res.json());
     },
-    onSuccess: () => {
+    onSuccess: (newBusiness) => {
+      // Invalidate and refetch the businesses list
       queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
+      // Also optimistically add the new business to the cache
+      queryClient.setQueryData<typeof newBusiness[]>(
+        [api.businesses.list.path],
+        (old) => {
+          if (!old) return [newBusiness];
+          return [...old, newBusiness];
+        }
+      );
     },
   });
 }

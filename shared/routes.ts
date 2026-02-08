@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { insertUserSchema, insertBusinessSchema, insertReviewSchema, businesses, reviews, users } from './schema';
+import { 
+  insertUserSchema, 
+  insertBusinessSchema, 
+  insertReviewSchema,
+  userSchema,
+  businessSchema,
+  reviewSchema,
+  ExperienceType,
+} from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -24,7 +32,7 @@ export const api = {
       path: '/api/register' as const,
       input: insertUserSchema,
       responses: {
-        201: z.custom<typeof users.$inferSelect>(),
+        201: userSchema,
         400: errorSchemas.validation,
       },
     },
@@ -33,7 +41,7 @@ export const api = {
       path: '/api/login' as const,
       input: insertUserSchema,
       responses: {
-        200: z.custom<typeof users.$inferSelect>(),
+        200: userSchema,
         401: errorSchemas.unauthorized,
       },
     },
@@ -48,7 +56,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/user' as const,
       responses: {
-        200: z.custom<typeof users.$inferSelect>(),
+        200: userSchema,
         401: errorSchemas.unauthorized,
       },
     },
@@ -59,7 +67,7 @@ export const api = {
       path: '/api/businesses' as const,
       input: insertBusinessSchema,
       responses: {
-        201: z.custom<typeof businesses.$inferSelect>(),
+        201: businessSchema,
         400: errorSchemas.validation,
         401: errorSchemas.unauthorized,
       },
@@ -68,7 +76,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/businesses' as const,
       responses: {
-        200: z.array(z.custom<typeof businesses.$inferSelect>()),
+        200: z.array(businessSchema),
         401: errorSchemas.unauthorized,
       },
     },
@@ -76,7 +84,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/businesses/:id' as const,
       responses: {
-        200: z.custom<typeof businesses.$inferSelect>(),
+        200: businessSchema,
         404: errorSchemas.notFound,
       },
     },
@@ -84,7 +92,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/businesses/slug/:slug' as const,
       responses: {
-        200: z.custom<typeof businesses.$inferSelect>(),
+        200: businessSchema,
         404: errorSchemas.notFound,
       },
     },
@@ -93,7 +101,7 @@ export const api = {
       path: '/api/businesses/:id' as const,
       input: insertBusinessSchema.partial().extend({ focusAreas: z.array(z.string()).optional() }),
       responses: {
-        200: z.custom<typeof businesses.$inferSelect>(),
+        200: businessSchema,
         404: errorSchemas.notFound,
         401: errorSchemas.unauthorized,
       },
@@ -118,7 +126,7 @@ export const api = {
       path: '/api/reviews' as const,
       input: insertReviewSchema,
       responses: {
-        201: z.custom<typeof reviews.$inferSelect>(),
+        201: reviewSchema,
         400: errorSchemas.validation,
       },
     },
