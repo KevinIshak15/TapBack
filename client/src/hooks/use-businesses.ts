@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type InsertBusiness } from "@shared/routes";
+import { useUser } from "./use-auth";
 
 export function useBusinesses() {
+  const { user } = useUser();
+  
   return useQuery({
     queryKey: [api.businesses.list.path],
     queryFn: async () => {
@@ -11,6 +14,7 @@ export function useBusinesses() {
       if (!res.ok) throw new Error("Failed to fetch businesses");
       return api.businesses.list.responses[200].parse(await res.json());
     },
+    enabled: !!user, // Only fetch when user is authenticated
     refetchOnWindowFocus: true, // Refetch when window regains focus
     refetchOnMount: true, // Refetch when component mounts
   });

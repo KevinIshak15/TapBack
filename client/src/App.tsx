@@ -14,6 +14,7 @@ import ManageUsers from "@/pages/admin/ManageUsers";
 import ManageBusinesses from "@/pages/admin/ManageBusinesses";
 import CreateBusiness from "@/pages/CreateBusiness";
 import BusinessQR from "@/pages/BusinessQR";
+import BusinessDetails from "@/pages/BusinessDetails";
 
 // Review Flow Pages
 import ReviewLanding from "@/pages/review/ReviewLanding";
@@ -55,6 +56,7 @@ function Router() {
       </Route>
       <Route path="/business/new" component={CreateBusiness} />
       <Route path="/business/:slug/qr" component={BusinessQR} />
+      <Route path="/business/:slug" component={BusinessDetails} />
       
       {/* Customer Review Flow */}
       <Route path="/r/:slug" component={ReviewLanding} />

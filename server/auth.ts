@@ -35,6 +35,12 @@ export function setupAuth(app: Express) {
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
   };
 
   if (app.get("env") === "production") {
@@ -128,9 +134,20 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).send("Username already exists");
+      // Check if username already exists
+      if (req.body.username) {
+        const existingUser = await storage.getUserByUsername(req.body.username);
+        if (existingUser) {
+          return res.status(400).json({ message: "Username already exists" });
+        }
+      }
+
+      // Check if email already exists
+      if (req.body.email) {
+        const existingUserByEmail = await storage.getUserByEmail(req.body.email);
+        if (existingUserByEmail) {
+          return res.status(400).json({ message: "Email already exists" });
+        }
       }
 
       // Check admin code if provided
@@ -152,8 +169,12 @@ export function setupAuth(app: Express) {
         role: userRole,
       });
 
+      // Log the user in and establish session
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Login error after registration:", err);
+          return next(err);
+        }
         // Convert dates to ISO strings for JSON response
         const serialized = { ...user, createdAt: user.createdAt.toISOString() };
         if (user.updatedAt) {
@@ -208,7 +229,79 @@ export function setupAuth(app: Express) {
     res.json(serialized);
   });
 
-  // Google OAuth routes
+  // Google Identity Services - Verify ID token endpoint
+  if (process.env.GOOGLE_CLIENT_ID) {
+    console.log("✅ Google Identity Services configured");
+    
+    app.post("/api/auth/google/verify", async (req, res, next) => {
+      try {
+        const { OAuth2Client } = await import("google-auth-library");
+        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+        const { credential } = req.body;
+        if (!credential) {
+          return res.status(400).json({ message: "No credential provided" });
+        }
+
+        // Verify the ID token
+        const ticket = await client.verifyIdToken({
+          idToken: credential,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+          return res.status(400).json({ message: "Invalid token or no email provided" });
+        }
+
+        const email = payload.email;
+        const firstName = payload.given_name;
+        const lastName = payload.family_name;
+
+        // Check if user exists by email
+        let user = await storage.getUserByEmail(email);
+
+        if (!user) {
+          // Create new user from Google profile
+          const username = email.split("@")[0] || `user_${Date.now()}`;
+          // Check if username is taken, if so append a number
+          let finalUsername = username;
+          let counter = 1;
+          while (await storage.getUserByUsername(finalUsername)) {
+            finalUsername = `${username}_${counter}`;
+            counter++;
+          }
+
+          user = await storage.createUser({
+            username: finalUsername,
+            email: email,
+            password: randomBytes(32).toString("hex"), // Random password for OAuth users
+            firstName: firstName,
+            lastName: lastName,
+            role: "user",
+          });
+        }
+
+        // Log the user in
+        req.login(user, (err) => {
+          if (err) return next(err);
+          // Convert dates to ISO strings for JSON response
+          const serialized = { ...user, createdAt: user.createdAt.toISOString() };
+          if (user.updatedAt) {
+            serialized.updatedAt = user.updatedAt.toISOString();
+          }
+          res.status(200).json(serialized);
+        });
+      } catch (err: any) {
+        console.error("Google token verification error:", err);
+        res.status(401).json({ message: err.message || "Failed to verify Google token" });
+      }
+    });
+  } else {
+    console.log("⚠️  Google Identity Services not configured - GOOGLE_CLIENT_ID required");
+  }
+
+  // Google OAuth routes (legacy redirect-based - kept for backward compatibility)
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     console.log("✅ Google OAuth configured");
     app.get(

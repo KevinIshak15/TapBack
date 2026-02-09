@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useUser, useLogout } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, LayoutDashboard, Plus, Shield } from "lucide-react";
+import { LogOut, LayoutDashboard, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
-          <Link href={user ? "/dashboard" : "/"}>
+          <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer group">
               <img 
                 src="/tapback-logo.png" 
@@ -80,16 +80,6 @@ export default function Header() {
                       </Button>
                     </Link>
                   )}
-                  <Link href="/business/new">
-                    <Button
-                      variant={location === "/business/new" ? "secondary" : "ghost"}
-                      size="sm"
-                      className="gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      New Business
-                    </Button>
-                  </Link>
                 </div>
 
                 {/* User Menu */}

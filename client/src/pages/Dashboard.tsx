@@ -1,16 +1,24 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useUser } from "@/hooks/use-auth";
 import { useBusinesses } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Plus, Store, QrCode, BarChart, ArrowRight } from "lucide-react";
+import { Plus, Store } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { user, isLoading: userLoading } = useUser();
   const { data: businesses, isLoading: businessesLoading } = useBusinesses();
+
+  // Redirect to login if not authenticated (use useEffect to avoid setState during render)
+  useEffect(() => {
+    if (!userLoading && !user) {
+      setLocation("/login");
+    }
+  }, [user, userLoading, setLocation]);
 
   if (userLoading || businessesLoading) {
     return (
@@ -27,7 +35,6 @@ export default function Dashboard() {
   }
 
   if (!user) {
-    setLocation("/login");
     return null;
   }
 
@@ -73,54 +80,25 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="modern-card-hover h-full flex flex-col">
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <CardTitle className="text-xl font-display font-bold mb-1">
-                          {business.name}
-                        </CardTitle>
-                        <CardDescription className="text-sm">
-                          {business.category}
-                        </CardDescription>
+                <Link href={`/business/${business.slug}`}>
+                  <Card className="modern-card-hover h-full flex flex-col cursor-pointer">
+                    <CardHeader className="pb-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <CardTitle className="text-xl font-display font-bold mb-1">
+                            {business.name}
+                          </CardTitle>
+                          <CardDescription className="text-sm">
+                            {business.category}
+                          </CardDescription>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
+                          <Store className="w-6 h-6 text-white" />
+                        </div>
                       </div>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
-                        <Store className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col">
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                      <Link href={`/business/${business.slug}/qr`}>
-                        <Button
-                          variant="outline"
-                          className="w-full h-auto py-4 flex-col gap-2 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 rounded-xl transition-all"
-                        >
-                          <QrCode className="w-5 h-5" />
-                          <span className="text-xs font-semibold">QR Code</span>
-                        </Button>
-                      </Link>
-                      <Link href={`/business/${business.slug}/insights`}>
-                        <Button
-                          variant="outline"
-                          className="w-full h-auto py-4 flex-col gap-2 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 rounded-xl transition-all"
-                        >
-                          <BarChart className="w-5 h-5" />
-                          <span className="text-xs font-semibold">Insights</span>
-                        </Button>
-                      </Link>
-                    </div>
-                    <Link href={`/business/${business.slug}/setup`}>
-                      <Button
-                        className="w-full group rounded-xl font-semibold"
-                        variant="secondary"
-                      >
-                        Manage Settings
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                  </Card>
+                </Link>
               </motion.div>
             ))}
           </motion.div>

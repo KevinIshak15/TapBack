@@ -40,6 +40,8 @@ export function useLogin() {
     },
     onSuccess: (user) => {
       queryClient.setQueryData([api.auth.me.path], user);
+      // Invalidate businesses query to refetch after login
+      queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
     },
   });
 }
@@ -59,10 +61,25 @@ export function useRegister() {
         const error = await res.json();
         throw new Error(error.message || "Registration failed");
       }
-      return api.auth.register.responses[201].parse(await res.json());
+      const user = api.auth.register.responses[201].parse(await res.json());
+      
+      // Verify the session by fetching the user endpoint
+      const userRes = await fetch(api.auth.me.path, {
+        credentials: "include",
+      });
+      if (userRes.ok) {
+        const verifiedUser = api.auth.me.responses[200].parse(await userRes.json());
+        return verifiedUser;
+      }
+      
+      return user;
     },
     onSuccess: (user) => {
+      // Set the user data and invalidate to ensure fresh data
       queryClient.setQueryData([api.auth.me.path], user);
+      queryClient.invalidateQueries({ queryKey: [api.auth.me.path] });
+      // Invalidate businesses query to refetch after registration
+      queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
     },
   });
 }
@@ -71,11 +88,24 @@ export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const res = await fetch(api.auth.logout.path, { method: "POST" });
+      const res = await fetch(api.auth.logout.path, { 
+        method: "POST",
+        credentials: "include", // Include cookies for session
+      });
       if (!res.ok) throw new Error("Logout failed");
     },
     onSuccess: () => {
+      // Clear user data
       queryClient.setQueryData([api.auth.me.path], null);
+      // Clear all business-related queries to prevent showing another user's data
+      queryClient.removeQueries({ queryKey: [api.businesses.list.path] });
+      // Clear all queries that start with business API paths
+      queryClient.removeQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0]?.toString() || "";
+          return key.startsWith("/api/businesses");
+        }
+      });
     },
   });
 }
