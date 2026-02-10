@@ -9,4 +9,3 @@ firebase-service-account.json
 .env
 .env.local
 .local
-.poster-cache
