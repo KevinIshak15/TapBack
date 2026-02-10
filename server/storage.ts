@@ -1,4 +1,4 @@
-import type { User, InsertUser, Business, InsertBusiness, Review, InsertReview } from "@shared/schema";
+import type { User, InsertUser, Business, InsertBusiness, Review, InsertReview, GoogleIntegration, GoogleLocationLink } from "@shared/schema";
 import { db, collections } from "./db";
 import { randomBytes } from "crypto";
 import session from "express-session";
@@ -73,7 +73,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
-  createBusiness(business: InsertBusiness & { ownerId: number }): Promise<Business>;
+  createBusiness(business: InsertBusiness & { ownerId: number; locationResourceName?: string }): Promise<Business>;
   getBusinessesByOwner(ownerId: number): Promise<Business[]>;
   getBusiness(id: number): Promise<Business | undefined>;
   getBusinessBySlug(slug: string): Promise<Business | undefined>;
@@ -82,6 +82,17 @@ export interface IStorage {
   createReview(review: InsertReview): Promise<Review>;
   getReviewsByBusiness(businessId: number): Promise<Review[]>;
   getStats(businessId: number): Promise<{ scans: number; reviewsGenerated: number; redirects: number; concerns: number }>;
+
+  getGoogleIntegration(userId: number): Promise<GoogleIntegration | undefined>;
+  upsertGoogleIntegration(data: Partial<GoogleIntegration> & { userId: number }): Promise<GoogleIntegration>;
+  setGoogleIntegrationNeedsReauth(userId: number): Promise<void>;
+  disconnectGoogle(userId: number): Promise<void>;
+
+  getLocationLinksByUser(userId: number): Promise<GoogleLocationLink[]>;
+  getLocationLinkByResourceName(userId: number, locationResourceName: string): Promise<GoogleLocationLink | undefined>;
+  saveSelectedLocationLinks(userId: number, locations: { locationResourceName: string; accountName?: string; locationName?: string; storeAddress?: string }[]): Promise<GoogleLocationLink[]>;
+  setLocationLinkBusinessId(linkId: number, businessId: number): Promise<void>;
+  getPendingLocationLinks(userId: number): Promise<GoogleLocationLink[]>;
 
   sessionStore: session.Store;
 }
@@ -139,7 +150,7 @@ export class FirebaseStorage implements IStorage {
     return userData;
   }
 
-  async createBusiness(business: InsertBusiness & { ownerId: number }): Promise<Business> {
+  async createBusiness(business: InsertBusiness & { ownerId: number; locationResourceName?: string }): Promise<Business> {
     // Generate unique slug from name + random string
     const baseSlug = business.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const randomSuffix = randomBytes(3).toString("hex");
@@ -152,6 +163,7 @@ export class FirebaseStorage implements IStorage {
       ...business,
       slug,
       id: newId,
+      locationResourceName: business.locationResourceName,
       createdAt: now,
       updatedAt: now,
       totalScans: 0,
@@ -258,6 +270,118 @@ export class FirebaseStorage implements IStorage {
       redirects: allReviews.filter((r) => r.experienceType === "great").length,
       concerns: allReviews.filter((r) => r.experienceType === "concern").length,
     };
+  }
+
+  async getGoogleIntegration(userId: number): Promise<GoogleIntegration | undefined> {
+    const doc = await db.collection(collections.googleIntegrations).doc(userId.toString()).get();
+    if (!doc.exists) return undefined;
+    const data = doc.data()!;
+    const result: any = { userId: parseInt(doc.id), ...data };
+    const toDate = (v: any) => (v?.toDate ? v.toDate() : v ? new Date(v) : undefined);
+    result.expiresAt = toDate(data.expiresAt);
+    result.createdAt = toDate(data.createdAt);
+    result.updatedAt = toDate(data.updatedAt);
+    return result as GoogleIntegration;
+  }
+
+  async upsertGoogleIntegration(data: Partial<GoogleIntegration> & { userId: number }): Promise<GoogleIntegration> {
+    const now = new Date();
+    const docRef = db.collection(collections.googleIntegrations).doc(data.userId.toString());
+    const existing = await docRef.get();
+    const toSet = {
+      ...dataToDoc(data),
+      updatedAt: Timestamp.fromDate(now),
+    };
+    if (!existing.exists) {
+      (toSet as any).createdAt = Timestamp.fromDate(now);
+    } else {
+      const cur = existing.data();
+      if (cur?.createdAt) (toSet as any).createdAt = cur.createdAt;
+      else (toSet as any).createdAt = Timestamp.fromDate(now);
+    }
+    await docRef.set(toSet, { merge: true });
+    const updated = await docRef.get();
+    const d = updated.data()!;
+    return {
+      userId: data.userId,
+      status: (d.status as GoogleIntegration["status"]) || "active",
+      connectedEmail: d.connectedEmail,
+      accessToken: d.accessToken,
+      expiresAt: d.expiresAt?.toDate?.() ?? (d.expiresAt ? new Date(d.expiresAt) : undefined),
+      encryptedRefreshToken: d.encryptedRefreshToken,
+      createdAt: d.createdAt?.toDate?.() ?? new Date(d.createdAt),
+      updatedAt: d.updatedAt?.toDate?.() ?? new Date(d.updatedAt),
+    } as GoogleIntegration;
+  }
+
+  async setGoogleIntegrationNeedsReauth(userId: number): Promise<void> {
+    await db.collection(collections.googleIntegrations).doc(userId.toString()).update({
+      status: "needs_reauth",
+      updatedAt: Timestamp.fromDate(new Date()),
+    });
+  }
+
+  async disconnectGoogle(userId: number): Promise<void> {
+    await db.collection(collections.googleIntegrations).doc(userId.toString()).delete();
+  }
+
+  async getLocationLinksByUser(userId: number): Promise<GoogleLocationLink[]> {
+    const snapshot = await db.collection(collections.googleLocationLinks).where("userId", "==", userId).get();
+    return snapshot.docs.map((doc) => docToData<GoogleLocationLink>(doc)!).filter(Boolean);
+  }
+
+  async getLocationLinkByResourceName(userId: number, locationResourceName: string): Promise<GoogleLocationLink | undefined> {
+    const snapshot = await db
+      .collection(collections.googleLocationLinks)
+      .where("userId", "==", userId)
+      .where("locationResourceName", "==", locationResourceName)
+      .limit(1)
+      .get();
+    if (snapshot.empty) return undefined;
+    return docToData<GoogleLocationLink>(snapshot.docs[0]);
+  }
+
+  async saveSelectedLocationLinks(
+    userId: number,
+    locations: { locationResourceName: string; accountName?: string; locationName?: string; storeAddress?: string }[]
+  ): Promise<GoogleLocationLink[]> {
+    const now = new Date();
+    const result: GoogleLocationLink[] = [];
+    for (const loc of locations) {
+      const existing = await this.getLocationLinkByResourceName(userId, loc.locationResourceName);
+      if (existing?.businessId != null) continue;
+      if (existing) {
+        result.push(existing);
+        continue;
+      }
+      const newId = await getNextId(collections.googleLocationLinks);
+      const link: GoogleLocationLink = {
+        id: newId,
+        userId,
+        locationResourceName: loc.locationResourceName,
+        businessId: null,
+        accountName: loc.accountName,
+        locationName: loc.locationName,
+        storeAddress: loc.storeAddress,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await db.collection(collections.googleLocationLinks).doc(newId.toString()).set(dataToDoc(link));
+      result.push(link);
+    }
+    return result;
+  }
+
+  async setLocationLinkBusinessId(linkId: number, businessId: number): Promise<void> {
+    await db.collection(collections.googleLocationLinks).doc(linkId.toString()).update({
+      businessId,
+      updatedAt: Timestamp.fromDate(new Date()),
+    });
+  }
+
+  async getPendingLocationLinks(userId: number): Promise<GoogleLocationLink[]> {
+    const all = await this.getLocationLinksByUser(userId);
+    return all.filter((l) => l.businessId == null);
   }
 }
 

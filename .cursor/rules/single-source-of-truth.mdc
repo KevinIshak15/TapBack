@@ -1,0 +1,14 @@
+---
+description: TapBack — single source of truth; all code edits go here only
+alwaysApply: true
+---
+
+# TapBack: Edit Here Only
+
+This project at **Desktop TapBack** (`C:\Users\ahmad\Desktop\TapBack`) is the **single source of truth** for the user and their teammate.
+
+- **All code changes** for TapBack must be made in this project only.
+- **Do not** write or duplicate code in the Cursor worktree (`hxr` or any other worktree).
+- The user and their friend run and pull from this repo; editing only here avoids double work and keeps one place to maintain.
+
+When asked to add features, fix bugs, or change TapBack code, edit files under `C:\Users\ahmad\Desktop\TapBack` only.
