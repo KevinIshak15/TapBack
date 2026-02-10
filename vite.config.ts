@@ -2,19 +2,17 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(async () => {
-  const plugins: any[] = [
-    react(),
-    runtimeErrorOverlay(),
-  ];
+  const plugins: any[] = [react()];
 
-  // Load Replit plugins conditionally (only in Replit environment)
+  // Replit-only plugins: only load when running on Replit (so local desktop runs without them)
   if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
     try {
+      const runtimeErrorOverlay = (await import("@replit/vite-plugin-runtime-error-modal")).default;
+      plugins.push(runtimeErrorOverlay());
       const cartographer = await import("@replit/vite-plugin-cartographer").then((m) =>
         m.cartographer(),
       );
@@ -23,8 +21,7 @@ export default defineConfig(async () => {
       );
       plugins.push(cartographer, devBanner);
     } catch (e) {
-      // Ignore if Replit plugins aren't available
-      console.warn("Replit plugins not available:", e);
+      console.warn("Replit plugins not available (ok when running locally):", e);
     }
   }
 
