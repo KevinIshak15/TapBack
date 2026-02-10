@@ -5,6 +5,10 @@ import { metadata as elegantBoutiqueMeta, render as renderElegantBoutique } from
 import { metadata as structuredStepsMeta, render as renderStructuredSteps } from "./templates/structured-steps";
 import { metadata as darkPremiumMeta, render as renderDarkPremium } from "./templates/dark-premium";
 import { metadata as friendlyCasualMeta, render as renderFriendlyCasual } from "./templates/friendly-casual";
+import { metadata as googleCornersMeta, render as renderGoogleCorners } from "./templates/google-corners";
+import { metadata as elegantPastelMeta, render as renderElegantPastel } from "./templates/elegant-pastel";
+import { metadata as friendlyBlobsMeta, render as renderFriendlyBlobs } from "./templates/friendly-blobs";
+import { metadata as tealStepsMeta, render as renderTealSteps } from "./templates/teal-steps";
 
 export interface TemplateEntry {
   metadata: TemplateMetadata;
@@ -13,11 +17,15 @@ export interface TemplateEntry {
 
 const templates: Record<string, TemplateEntry> = {
   "minimal-professional": { metadata: minimalMeta, render: renderMinimal },
+  "google-corners": { metadata: googleCornersMeta, render: renderGoogleCorners },
   "modern-cafe": { metadata: modernCafeMeta, render: renderModernCafe },
   "elegant-boutique": { metadata: elegantBoutiqueMeta, render: renderElegantBoutique },
+  "elegant-pastel": { metadata: elegantPastelMeta, render: renderElegantPastel },
   "structured-steps": { metadata: structuredStepsMeta, render: renderStructuredSteps },
+  "teal-steps": { metadata: tealStepsMeta, render: renderTealSteps },
   "dark-premium": { metadata: darkPremiumMeta, render: renderDarkPremium },
   "friendly-casual": { metadata: friendlyCasualMeta, render: renderFriendlyCasual },
+  "friendly-blobs": { metadata: friendlyBlobsMeta, render: renderFriendlyBlobs },
 };
 
 export function getTemplateIds(): string[] {

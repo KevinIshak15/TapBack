@@ -12,7 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Download, Eye, FileImage, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Eye, FileText, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type PaperSize = "LETTER" | "A4";
@@ -36,6 +36,16 @@ function previewUrl(base: string, templateId: string, size: PaperSize, variant: 
     variant,
   });
   return `${base}/preview?${params.toString()}`;
+}
+
+function htmlPreviewUrl(base: string, templateId: string, size: PaperSize, variant: Variant): string {
+  const params = new URLSearchParams({
+    templateId,
+    size,
+    variant,
+    embed: "1",
+  });
+  return `${base}/html?${params.toString()}`;
 }
 
 function downloadPdfUrl(base: string, templateId: string, size: PaperSize, variant: Variant): string {
@@ -266,19 +276,12 @@ export default function BusinessPosters() {
                 key={t.id}
                 className="border border-slate-200 bg-white overflow-hidden flex flex-col"
               >
-                <div className="aspect-[8.5/11] bg-slate-100 relative">
-                  {t.previewThumbnailUrl ? (
-                    <img
-                      src={t.previewThumbnailUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-slate-400">
-                      <FileImage className="w-12 h-12 mb-2 opacity-50" />
-                      <span className="text-xs font-medium">{t.name}</span>
-                    </div>
-                  )}
+                <div className="aspect-[8.5/11] bg-white relative overflow-hidden rounded-t-lg flex items-center justify-center min-h-[200px]">
+                  <iframe
+                    title={`Preview: ${t.name}`}
+                    src={htmlPreviewUrl(apiBase, t.id, size, variant)}
+                    className="absolute inset-0 w-full h-full border-0 pointer-events-none"
+                  />
                 </div>
                 <CardHeader className="flex-1">
                   <CardTitle className="text-lg">{t.name}</CardTitle>

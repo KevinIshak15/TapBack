@@ -16,11 +16,15 @@ import type { PosterData } from "../posters/types";
 
 const TEMPLATE_IDS = [
   "minimal-professional",
+  "google-corners",
   "modern-cafe",
   "elegant-boutique",
+  "elegant-pastel",
   "structured-steps",
+  "teal-steps",
   "dark-premium",
   "friendly-casual",
+  "friendly-blobs",
 ];
 
 function getBusinessId(req: { params: { businessId?: string } }): number {
@@ -80,6 +84,45 @@ export function registerPosterRoutes(app: Express) {
     })
   );
 
+  // GET /api/businesses/:businessId/posters/html?templateId=...&size=...&variant=...&embed=1
+  app.get(
+    "/api/businesses/:businessId/posters/html",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const businessId = getBusinessId(req);
+      const business = await ensureBusinessAndOwnership(businessId, req.user!.id);
+      const templateId = (req.query.templateId as string) || "minimal-professional";
+      if (!TEMPLATE_IDS.includes(templateId)) {
+        return res.status(400).json({ message: "Invalid templateId" });
+      }
+      const size = getPaperSize(req.query as Record<string, unknown>);
+      const variant = getVariant(req.query as Record<string, unknown>);
+      const embed = (req.query.embed as string) === "1";
+
+      const origin = req.protocol + "://" + req.get("host") || "http://localhost:5000";
+      const data = buildPosterData(business, origin);
+      data.qrDataUrl = await generateQrDataUrl(data.qrUrl);
+
+      let html = renderTemplate(templateId, data, { size, variant });
+
+      if (embed) {
+        const isA4 = size === "A4";
+        const w = isA4 ? 794 : 816;
+        const h = isA4 ? 1123 : 1056;
+        const scale = Math.min(170 / w, 220 / h);
+        const boxW = Math.round(w * scale);
+        const boxH = Math.round(h * scale);
+        const embedStyle = `.embed-wrap{margin:0;padding:0;overflow:hidden;width:${boxW}px;height:${boxH}px;background:#fff}.embed-scaler{transform:scale(${scale});transform-origin:0 0;width:${w}px;height:${h}px}`;
+        html = html.replace(/<head>/i, `<head><style>${embedStyle}</style>`);
+        html = html.replace(/<body([^>]*)>/i, `<body$1 class="embed-wrap"><div class="embed-scaler">`);
+        html = html.replace("</body>", "</div></body>");
+      }
+
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.send(html);
+    })
+  );
+
   app.get(
     "/api/businesses/:businessId/posters/preview",
     requireAuth,
@@ -122,7 +165,8 @@ export function registerPosterRoutes(app: Express) {
         const origin = req.protocol + "://" + req.get("host") || "http://localhost:5000";
         const data = buildPosterData(business, origin);
         data.qrDataUrl = await generateQrDataUrl(data.qrUrl);
-        buffer = await renderToPdf(renderTemplate(templateId, data, { size, variant }), size);
+        const html = renderTemplate(templateId, data, { size, variant });
+        buffer = await renderToPdf(html, size);
         await writeCached(cachePath, buffer);
       }
       res.setHeader("Content-Type", "application/pdf");
@@ -151,7 +195,8 @@ export function registerPosterRoutes(app: Express) {
         const origin = req.protocol + "://" + req.get("host") || "http://localhost:5000";
         const data = buildPosterData(business, origin);
         data.qrDataUrl = await generateQrDataUrl(data.qrUrl);
-        buffer = await renderToPng(renderTemplate(templateId, data, { size, variant }), size);
+        const html = renderTemplate(templateId, data, { size, variant });
+        buffer = await renderToPng(html, size);
         await writeCached(cachePath, buffer);
       }
       res.setHeader("Content-Type", "image/png");
