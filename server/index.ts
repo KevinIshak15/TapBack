@@ -1,5 +1,20 @@
 // Load environment variables from .env file FIRST, before any other imports
-import "dotenv/config";
+// Load from app root (folder containing server/ and package.json) so .env is found regardless of terminal cwd
+import path from "path";
+import { fileURLToPath } from "url";
+import { config } from "dotenv";
+const __dirname = path.dirname(typeof __filename !== "undefined" ? __filename : fileURLToPath(import.meta.url));
+const appRoot = path.resolve(__dirname, "..");
+config({ path: path.join(appRoot, ".env") });
+
+if (!process.env.GOOGLE_GBP_CLIENT_ID && !process.env.GOOGLE_BUSINESS_PROFILE_CLIENT_ID) {
+  console.warn("⚠️  Google Business Profile (GBP): GOOGLE_GBP_CLIENT_ID not set in .env — \"Connect Google Business Profile\" will fail. Add GOOGLE_GBP_CLIENT_ID and GOOGLE_GBP_CLIENT_SECRET to:", path.join(appRoot, ".env"));
+}
+const hasGbp = !!(process.env.GOOGLE_GBP_CLIENT_ID || process.env.GOOGLE_BUSINESS_PROFILE_CLIENT_ID);
+const encKey = process.env.INTEGRATION_ENCRYPTION_KEY;
+if (hasGbp && (!encKey || encKey.length < 32)) {
+  console.warn("⚠️  Google Business Profile (GBP): INTEGRATION_ENCRYPTION_KEY missing or too short in .env — Connect will fail after Google redirect. Add INTEGRATION_ENCRYPTION_KEY (32+ chars or 64 hex). Generate one: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+}
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
