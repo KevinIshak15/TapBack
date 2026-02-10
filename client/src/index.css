@@ -8,33 +8,39 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* Modern, professional color palette */
-  --background: 0 0% 100%;
+  /* Main app palette – grey + Google-like blue */
+  --background: 210 20% 98%;
   --foreground: 222 47% 11%;
-  
-  --primary: 221 83% 53%;
+  --primary: 217 89% 61%;
   --primary-foreground: 0 0% 100%;
-  
   --secondary: 210 40% 96%;
   --secondary-foreground: 222 47% 11%;
-  
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;
-  
-  --accent: 262 83% 58%;
+  --accent: 217 89% 61%;
   --accent-foreground: 0 0% 100%;
-  
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 221 83% 53%;
-  
+  --ring: 217 89% 61%;
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
+  --card-border: 214 32% 91%;
+  --radius: 0.75rem;
 
-  --radius: 1rem;
+  /* Dark sidebar (nav) – Admin/CRM style */
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 88%;
+  --sidebar-border: 215 28% 17%;
+  --sidebar-ring: 217 89% 61%;
+  --sidebar-primary: 217 89% 61%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 215 25% 18%;
+  --sidebar-accent-foreground: 210 40% 98%;
+
+  /* App surface – main content background */
+  --app-surface: 210 20% 98%;
 }
 
 .dark {
@@ -50,8 +56,8 @@
   --muted: 217 19% 27%;
   --muted-foreground: 215 20% 65%;
   
-  --accent: 262 83% 58%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 221 83% 53%;
+  --accent-foreground: 0 0% 100%;
   
   --destructive: 0 62% 30%;
   --destructive-foreground: 210 40% 98%;
@@ -70,7 +76,8 @@
   }
   
   body {
-    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50/30 text-foreground antialiased;
+    @apply text-foreground antialiased;
+    background-color: hsl(var(--app-surface));
     font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
@@ -82,25 +89,18 @@
   }
 }
 
-/* Modern Glassmorphism */
+/* App surfaces: flat, professional */
 .glass {
-  @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-2xl;
+  @apply bg-white border border-slate-200 shadow-sm;
 }
 
 .glass-strong {
-  @apply bg-white/90 backdrop-blur-2xl border border-white/30 shadow-2xl;
+  @apply bg-white border border-slate-200 shadow-sm;
 }
 
-/* Gradient Text */
+/* Primary accent text (single blue, no animation) */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600;
-  background-size: 200% auto;
-  animation: gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 100% center; }
+  @apply text-primary;
 }
 
 /* Smooth Animations */
@@ -134,11 +134,21 @@
   @apply -translate-y-1 shadow-xl;
 }
 
-/* Modern Card Styles */
-.modern-card {
-  @apply bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300;
+/* Dashboard / app cards – white, rounded, soft shadow (reference style) */
+.app-card {
+  background: hsl(var(--card));
+  border-radius: 14px;
+  border: 1px solid hsl(214 32% 91%);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.modern-card-hover {
-  @apply modern-card hover:-translate-y-1 hover:border-slate-300/60;
+.app-card:hover {
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  border-color: hsl(214 32% 85%);
+}
+
+/* Main content area background */
+.app-surface {
+  background-color: hsl(var(--app-surface));
 }

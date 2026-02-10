@@ -1,5 +1,4 @@
 import { Link, useLocation } from "wouter";
-import { motion } from "framer-motion";
 import { useUser, useLogout } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -31,22 +30,18 @@ export default function Header() {
   const roleLabel = userRole === "admin" ? "Admin" : "User";
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-50 glass border-b border-slate-200/50 backdrop-blur-xl"
-    >
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14">
           {/* Logo/Brand */}
-          <Link href="/">
+          <Link href={user ? "/dashboard" : "/"}>
             <div className="flex items-center gap-3 cursor-pointer group">
               <img 
                 src="/tapback-logo.png" 
                 alt="TapBack Logo" 
-                className="h-12 w-auto object-contain group-hover:scale-105 transition-transform"
+                className="h-9 w-auto object-contain"
               />
-              <span className="font-display font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="font-display font-bold text-lg text-slate-900">
                 TapBack
               </span>
             </div>
@@ -85,9 +80,9 @@ export default function Header() {
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-2 h-auto py-2 px-3 hover:bg-slate-100/50 rounded-full">
+                    <Button variant="ghost" className="gap-2 h-auto py-2 px-3 hover:bg-slate-100 rounded-lg">
                       <Avatar className="w-8 h-8">
-                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white text-sm font-semibold">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
                           {userInitials}
                         </AvatarFallback>
                       </Avatar>
@@ -121,7 +116,7 @@ export default function Header() {
                     </Button>
                   </Link>
                   <Link href="/signup">
-                    <Button size="sm" className="shadow-lg shadow-blue-500/20">
+                    <Button size="sm">
                       Sign up
                     </Button>
                   </Link>
@@ -131,6 +126,6 @@ export default function Header() {
           </nav>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

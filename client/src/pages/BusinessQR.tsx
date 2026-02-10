@@ -1,10 +1,10 @@
 import { QRCodeSVG } from "qrcode.react";
-import { motion } from "framer-motion";
 import { useRoute, Link } from "wouter";
 import { useBusinessBySlug } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Download, ArrowLeft, ExternalLink, Printer, QrCode, CheckCircle2 } from "lucide-react";
+import { Download, ExternalLink, Printer, QrCode, CheckCircle2, FileImage } from "lucide-react";
+import { AppShell } from "@/components/app/AppShell";
 
 export default function BusinessQR() {
   const [, params] = useRoute("/business/:slug/qr");
@@ -36,7 +36,6 @@ export default function BusinessQR() {
   };
 
   const printPDF = () => {
-    // Create a print window with only the QR code
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
@@ -54,46 +53,13 @@ export default function BusinessQR() {
           <title>${business.name} - QR Code</title>
           <style>
             @media print {
-              @page {
-                margin: 0;
-                size: A4;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-                background: white;
-              }
+              @page { margin: 0; size: A4; }
+              body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
             }
-            body {
-              margin: 0;
-              padding: 20px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              background: white;
-              font-family: system-ui, -apple-system, sans-serif;
-            }
-            .qr-container {
-              text-align: center;
-            }
-            .qr-code {
-              display: inline-block;
-              padding: 20px;
-              background: white;
-              border: 2px solid #e2e8f0;
-              border-radius: 12px;
-            }
-            .business-name {
-              margin-top: 20px;
-              font-size: 18px;
-              font-weight: 600;
-              color: #1e293b;
-            }
+            body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; font-family: system-ui, -apple-system, sans-serif; }
+            .qr-container { text-align: center; }
+            .qr-code { display: inline-block; padding: 20px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; }
+            .business-name { margin-top: 20px; font-size: 18px; font-weight: 600; color: #1e293b; }
           </style>
         </head>
         <body>
@@ -104,12 +70,7 @@ export default function BusinessQR() {
             <div class="business-name">${business.name}</div>
           </div>
           <script>
-            window.onload = function() {
-              window.print();
-              window.onafterprint = function() {
-                window.close();
-              };
-            };
+            window.onload = function() { window.print(); window.onafterprint = function() { window.close(); }; };
           </script>
         </body>
       </html>
@@ -117,143 +78,96 @@ export default function BusinessQR() {
     printWindow.document.close();
   };
 
+  const steps = [
+    { title: "Print & display", desc: "Place this QR code at checkout, on receipts, or table tents." },
+    { title: "Customer scans", desc: "Scanned devices open a mobile-optimized page to rate their experience." },
+    { title: "Smart routing", desc: "Positive feedback goes to Google Reviews; concerns are captured privately." },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Link href="/dashboard">
-            <Button variant="ghost" className="mb-8 rounded-xl">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </motion.div>
+    <AppShell>
+      <div className="max-w-4xl space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
+            <CardHeader className="text-center pb-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <QrCode className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle className="text-lg font-semibold text-slate-900">Review QR code</CardTitle>
+              <CardDescription>Customers scan this to leave a review</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <div className="p-6 bg-white rounded-xl border border-slate-200 mb-6">
+                <QRCodeSVG id="qr-code-svg" value={reviewUrl} size={240} level="H" includeMargin />
+              </div>
+              <div className="flex gap-3 w-full">
+                <Button onClick={downloadQR} variant="outline" className="flex-1">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PNG
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={printPDF}>
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* QR Card */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="glass-strong border-slate-200/60 shadow-2xl">
-              <CardHeader className="text-center pb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <QrCode className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl font-display">Review QR Code</CardTitle>
-                <CardDescription className="text-base">
-                  Customers scan this to leave a review
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <div className="p-8 bg-white rounded-3xl shadow-inner border-2 border-slate-200 mb-8">
-                  <QRCodeSVG
-                    id="qr-code-svg"
-                    value={reviewUrl}
-                    size={280}
-                    level="H"
-                    includeMargin
-                  />
-                </div>
-
-                <div className="flex gap-4 w-full">
-                  <Button
-                    onClick={downloadQR}
-                    className="flex-1 rounded-xl font-semibold"
-                    variant="outline"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download PNG
-                  </Button>
-                  <Button
-                    className="flex-1 rounded-xl font-semibold"
-                    variant="outline"
-                    onClick={printPDF}
-                  >
-                    <Printer className="w-4 h-4 mr-2" />
-                    Print PDF
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Info Card */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="glass-strong border-slate-200/60 shadow-2xl h-full">
-              <CardHeader>
-                <CardTitle className="text-2xl font-display">How it works</CardTitle>
-                <CardDescription className="text-base">
-                  Getting the most out of your QR code
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {[
-                  {
-                    step: "1",
-                    title: "Print & Display",
-                    desc: "Place this QR code at your checkout counter, on receipts, or on table tents.",
-                  },
-                  {
-                    step: "2",
-                    title: "Customer Scans",
-                    desc: "When scanned, customers are taken to a mobile-optimized page to rate their experience.",
-                  },
-                  {
-                    step: "3",
-                    title: "Smart Routing",
-                    desc: "Positive feedback gets guided to Google Reviews. Negative feedback is captured privately.",
-                  },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="flex gap-4"
-                  >
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0">
-                      {item.step}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-1">{item.title}</h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-
-                <div className="pt-6 border-t border-slate-200 mt-6">
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      <p className="text-sm font-semibold text-slate-900">Live URL</p>
-                    </div>
-                    <a
-                      href={reviewUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all"
-                    >
-                      <span className="text-sm font-medium text-slate-700 break-all flex-1 group-hover:text-blue-600 transition-colors">
-                        {reviewUrl}
-                      </span>
-                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600 flex-shrink-0 transition-colors" />
-                    </a>
+          <Card className="bg-white border border-slate-200 shadow-sm rounded-xl h-full">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900">How it works</CardTitle>
+              <CardDescription>Getting the most out of your QR code</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {steps.map((item, i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-slate-900">{item.title}</h3>
+                    <p className="text-sm text-slate-600 mt-0.5">{item.desc}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              ))}
+              <div className="pt-4 border-t border-slate-200">
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <p className="text-sm font-medium text-slate-900">Live URL</p>
+                  </div>
+                  <a
+                    href={reviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 p-2.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-sm text-slate-700 break-all"
+                  >
+                    <span className="flex-1">{reviewUrl}</span>
+                    <ExternalLink className="h-4 w-4 shrink-0 text-slate-400" />
+                  </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">QR Marketing Materials</h3>
+                <p className="text-sm text-slate-600 mt-1">Professionally designed, print-ready posters with your business name and QR code.</p>
+              </div>
+              <Link href={`/business/${business.slug}/posters`}>
+                <Button variant="outline" className="rounded-xl">
+                  <FileImage className="w-4 h-4 mr-2" />
+                  View templates &amp; download
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AppShell>
   );
 }
