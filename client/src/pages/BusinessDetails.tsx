@@ -1,5 +1,4 @@
 import { Link, useRoute, useLocation } from "wouter";
-import { motion } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useForm } from "react-hook-form";
@@ -14,20 +13,37 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QrCode, BarChart, ArrowRight, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, GripVertical, X, Plus, Palette, ZoomIn, ZoomOut, Eye } from "lucide-react";
+import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, GripVertical, X, Plus, ZoomIn, ZoomOut, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { AppShell } from "@/components/app/AppShell";
 
-type TabType = "settings" | "qr" | "insights" | "reviews" | "complaints" | "theme";
+type TabType = "settings" | "qr" | "insights" | "reviews" | "complaints";
+
+function getTabFromUrl(): TabType {
+  if (typeof window === "undefined") return "settings";
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  const valid: TabType[] = ["settings", "insights", "reviews", "complaints"];
+  return valid.includes(tab as TabType) ? (tab as TabType) : "settings";
+}
 
 export default function BusinessDetails() {
   const [, params] = useRoute("/business/:slug");
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, isLoading: userLoading } = useUser();
   const slug = params?.slug || "";
   const { data: business, isLoading: businessLoading } = useBusinessBySlug(slug);
-  const [activeTab, setActiveTab] = useState<TabType>("settings");
+  const activeTab = getTabFromUrl();
+
+  const setTab = (tab: TabType) => {
+    if (tab === "qr") {
+      setLocation(`/business/${slug}/qr`);
+      return;
+    }
+    const url = tab === "settings" ? `/business/${slug}` : `/business/${slug}?tab=${tab}`;
+    setLocation(url, { replace: true });
+  };
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -45,15 +61,13 @@ export default function BusinessDetails() {
 
   if (userLoading || businessLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <Skeleton className="h-12 w-64" />
-          <div className="flex gap-6">
-            <Skeleton className="h-96 w-64 rounded-2xl" />
-            <Skeleton className="h-96 flex-1 rounded-2xl" />
-          </div>
+      <AppShell>
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-11 w-full max-w-2xl rounded-xl" />
+          <Skeleton className="h-80 w-full rounded-xl" />
         </div>
-      </div>
+      </AppShell>
     );
   }
 
@@ -61,120 +75,65 @@ export default function BusinessDetails() {
     return null;
   }
 
-  const tabs = [
-    { id: "settings" as TabType, label: "Business Settings", icon: Settings },
-    { id: "qr" as TabType, label: "QR Code", icon: QrCode },
-    { id: "theme" as TabType, label: "Theme Customization", icon: Palette },
-    { id: "insights" as TabType, label: "Insights", icon: BarChart },
-    { id: "reviews" as TabType, label: "Reviews", icon: MessageSquare },
-    { id: "complaints" as TabType, label: "Complaints", icon: AlertTriangle },
+  const tabItems: { id: TabType; label: string; icon: typeof Settings }[] = [
+    { id: "settings", label: "Settings", icon: Settings },
+    { id: "qr", label: "QR Code", icon: QrCode },
+    { id: "insights", label: "Insights", icon: BarChart },
+    { id: "reviews", label: "Reviews", icon: MessageSquare },
+    { id: "complaints", label: "Complaints", icon: AlertTriangle },
   ];
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "settings":
-        return <BusinessSettingsView business={business} />;
-      case "qr":
-        return <QRView business={business} />;
-      case "theme":
-        return <ThemeCustomizationView business={business} />;
-      case "insights":
-        return <InsightsView business={business} />;
-      case "reviews":
-        return <ReviewsView business={business} />;
-      case "complaints":
-        return <ComplaintsView business={business} />;
-      default:
-        return <BusinessSettingsView business={business} />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
-        <Link href="/dashboard">
-          <Button
-            variant="ghost"
-            className="mb-6 gap-2 hover:bg-slate-100"
-          >
-            <ArrowRight className="w-4 h-4 rotate-180" />
-            Back to Dashboard
-          </Button>
-        </Link>
-
-        {/* Business Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
-              <Store className="w-8 h-8 text-white" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-2">
-                {business.name}
-              </h1>
-              <p className="text-lg text-slate-600">
-                {business.category}
-              </p>
-            </div>
+    <AppShell>
+      <div className="space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Store className="h-6 w-6 text-primary" />
           </div>
-        </motion.div>
-
-        {/* Main Layout */}
-        <div className="flex gap-6">
-          {/* Side Panel */}
-          <motion.aside
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="w-64 flex-shrink-0"
-          >
-            <Card className="glass-strong border-slate-200/60">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Navigation</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <nav className="space-y-1 p-2">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
-                          isActive
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                            : "text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        <Icon className={`w-5 h-5 ${isActive ? "text-white" : "text-slate-500"}`} />
-                        <span className="font-medium">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
-              </CardContent>
-            </Card>
-          </motion.aside>
-
-          {/* Main Content */}
-          <motion.main
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex-1 min-w-0"
-          >
-            {renderContent()}
-          </motion.main>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-semibold text-slate-900 truncate">
+              {business.name}
+            </h1>
+            <p className="text-sm text-slate-600 mt-0.5">
+              {business.category}
+            </p>
+          </div>
         </div>
+
+        <Tabs value={activeTab} onValueChange={(v) => setTab(v as TabType)} className="w-full">
+          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl h-11 shadow-card flex flex-wrap gap-1">
+            {tabItems.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="rounded-lg px-3 gap-1.5 data-[state=active]:bg-[hsl(var(--app-surface))] data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          <TabsContent value="settings" className="mt-6">
+            <BusinessSettingsView business={business} />
+          </TabsContent>
+          <TabsContent value="qr" className="mt-6">
+            <QRView business={business} />
+          </TabsContent>
+          <TabsContent value="insights" className="mt-6">
+            <InsightsView business={business} />
+          </TabsContent>
+          <TabsContent value="reviews" className="mt-6">
+            <ReviewsView business={business} />
+          </TabsContent>
+          <TabsContent value="complaints" className="mt-6">
+            <ComplaintsView business={business} />
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </AppShell>
   );
 }
 
@@ -335,7 +294,7 @@ function BusinessSettingsView({ business }: { business: any }) {
 
 
   return (
-    <Card className="glass-strong border-slate-200/60">
+    <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-display font-bold">Business Settings</CardTitle>
       </CardHeader>
@@ -1007,7 +966,7 @@ function ThemeCustomizationView({ business }: { business: any }) {
 
   return (
     <div className="space-y-6">
-      <Card className="glass-strong border-slate-200/60">
+      <Card className="bg-white border border-slate-200 shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-display font-bold">QR Marketing Templates</CardTitle>
         </CardHeader>
@@ -1154,7 +1113,7 @@ function ThemeCustomizationView({ business }: { business: any }) {
       </Card>
 
       {/* Preview Section */}
-      <Card className="glass-strong border-slate-200/60">
+      <Card className="bg-white border border-slate-200 shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl font-display font-bold">Preview</CardTitle>
         </CardHeader>
@@ -1181,7 +1140,7 @@ function ThemeCustomizationView({ business }: { business: any }) {
 // Insights View Component
 function InsightsView({ business }: { business: any }) {
   return (
-    <Card className="glass-strong border-slate-200/60">
+    <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
       </CardHeader>
@@ -1203,7 +1162,7 @@ function InsightsView({ business }: { business: any }) {
 // Reviews View Component
 function ReviewsView({ business }: { business: any }) {
   return (
-    <Card className="glass-strong border-slate-200/60">
+    <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-display font-bold">Reviews</CardTitle>
       </CardHeader>
@@ -1223,7 +1182,7 @@ function ReviewsView({ business }: { business: any }) {
 // Complaints View Component
 function ComplaintsView({ business }: { business: any }) {
   return (
-    <Card className="glass-strong border-slate-200/60">
+    <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-display font-bold">Complaints</CardTitle>
       </CardHeader>
@@ -1346,7 +1305,7 @@ function QRView({ business }: { business: any }) {
   };
 
   return (
-    <Card className="glass-strong border-slate-200/60">
+    <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-display font-bold">QR Code</CardTitle>
         <CardDescription>
@@ -1387,7 +1346,7 @@ function QRView({ business }: { business: any }) {
 
         <Separator />
 
-        <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200/50">
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle2 className="w-4 h-4 text-green-600" />
             <p className="text-sm font-semibold text-slate-900">Live URL</p>

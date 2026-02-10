@@ -89,6 +89,8 @@ export const collections = {
   users: "users",
   businesses: "businesses",
   reviews: "reviews",
+  googleIntegrations: "googleIntegrations",
+  googleLocationLinks: "googleLocationLinks",
 } as const;
 
 /**

@@ -61,31 +61,33 @@ export function useBusinessStats(id: number) {
   });
 }
 
+/** Create business from Google locations. Pass locationResourceNames or leave empty to use stored selection. */
 export function useCreateBusiness() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: InsertBusiness) => {
+    mutationFn: async (data: InsertBusiness | { locationResourceNames?: string[] }) => {
       const res = await fetch(api.businesses.create.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // Include cookies for session
+        credentials: "include",
         body: JSON.stringify(data),
       });
       if (!res.ok) {
         const error = await res.json().catch(() => ({ message: "Failed to create business" }));
-        throw new Error(error.message || "Failed to create business");
+        const err = new Error(error.message || "Failed to create business") as Error & { alreadyAdded?: string[] };
+        err.alreadyAdded = error.alreadyAdded;
+        throw err;
       }
-      return api.businesses.create.responses[201].parse(await res.json());
+      const json = await res.json();
+      return Array.isArray(json) ? json : [json];
     },
-    onSuccess: (newBusiness) => {
-      // Invalidate and refetch the businesses list
+    onSuccess: (newBusinesses) => {
       queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
-      // Also optimistically add the new business to the cache
-      queryClient.setQueryData<typeof newBusiness[]>(
+      queryClient.setQueryData(
         [api.businesses.list.path],
-        (old) => {
-          if (!old) return [newBusiness];
-          return [...old, newBusiness];
+        (old: any) => {
+          if (!old) return newBusinesses;
+          return [...(Array.isArray(old) ? old : [old]), ...newBusinesses];
         }
       );
     },

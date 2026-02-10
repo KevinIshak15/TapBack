@@ -66,6 +66,7 @@ const businessSchemaInternal = insertBusinessSchema.extend({
   id: z.number(),
   ownerId: z.number(),
   slug: z.string(), // Generated: name-slugified + random
+  locationResourceName: z.string().optional(), // Set when created from Google Business Profile
   createdAt: z.date(),
   updatedAt: z.date().optional(),
   // Analytics fields (computed/cached)
@@ -79,6 +80,7 @@ export const businessSchema = insertBusinessSchema.extend({
   id: z.number(),
   ownerId: z.number(),
   slug: z.string(), // Generated: name-slugified + random
+  locationResourceName: z.string().optional(),
   createdAt: z.string(), // JSON always serializes dates as strings
   updatedAt: z.string().optional(),
   // Analytics fields (computed/cached)
@@ -152,7 +154,43 @@ export const COLLECTIONS = {
   users: "users",
   businesses: "businesses",
   reviews: "reviews",
+  googleIntegrations: "googleIntegrations",
+  googleLocationLinks: "googleLocationLinks",
 } as const;
+
+// ============================================================================
+// Google Business Profile Integration
+// ============================================================================
+
+export const GoogleIntegrationStatus = z.enum(["active", "needs_reauth", "disconnected"]);
+export type GoogleIntegrationStatus = z.infer<typeof GoogleIntegrationStatus>;
+
+/** One row per user: OAuth tokens and status for Google Business Profile. */
+export const googleIntegrationSchema = z.object({
+  userId: z.number(),
+  status: GoogleIntegrationStatus,
+  connectedEmail: z.string().optional(),
+  accessToken: z.string().optional(),
+  expiresAt: z.date().optional(),
+  encryptedRefreshToken: z.string().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+export type GoogleIntegration = z.infer<typeof googleIntegrationSchema>;
+
+/** Links a user's selected GBP location to an optional business. One Business per location. */
+export const googleLocationLinkSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  locationResourceName: z.string(), // e.g. accounts/123/locations/456
+  businessId: z.number().nullable(),
+  accountName: z.string().optional(),
+  locationName: z.string().optional(),
+  storeAddress: z.string().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date().optional(),
+});
+export type GoogleLocationLink = z.infer<typeof googleLocationLinkSchema>;
 
 /**
  * Firestore index recommendations (create these in Firebase Console)
@@ -163,4 +201,6 @@ export const COLLECTIONS = {
  * 3. reviews: businessId (ascending) + createdAt (descending)
  * 4. reviews: businessId (ascending) + experienceType (ascending)
  * 5. users: username (ascending) - for unique lookups
+ * 6. googleIntegrations: userId (ascending)
+ * 7. googleLocationLinks: userId (ascending) + locationResourceName (ascending) - unique
  */
