@@ -38,17 +38,25 @@ export async function generateReview(params: {
 }): Promise<string> {
   const { businessName, category, experienceType, tags, customText } = params;
 
-  const prompt = `
-    Write a short Google review (2-5 sentences) for a business named "${businessName}" (${category}).
-    Experience: ${experienceType} (User chose: ${tags.join(", ")}).
-    User notes: "${customText || "None"}".
-    Tone: Authentic, human, natural. No emojis. Do not sound robotic or overly enthusiastic.
-    If experience is "concern", be constructive but clear.
-  `;
+  const prompt = `Write a short Google review (2-5 sentences) for a business named "${businessName}" (${category}).
+
+Experience type: ${experienceType}
+User selected tags: ${tags.length > 0 ? tags.join(", ") : "None"}
+User additional notes: ${customText || "None"}
+
+Requirements:
+- Length: 2-5 sentences
+- Tone: Authentic, human, natural. No emojis.
+- Do not sound robotic or overly enthusiastic.
+${experienceType === "concern" ? "- If experience is a concern, be constructive but clear." : ""}`;
+
+  const messages: Array<{ role: "system" | "user"; content: string }> = [
+    { role: "user", content: prompt }
+  ];
 
   const response = await openai.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
+    messages,
     max_tokens: 200,
     temperature: 0.7,
   });

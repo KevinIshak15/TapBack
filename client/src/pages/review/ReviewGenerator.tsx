@@ -18,11 +18,41 @@ export default function ReviewGenerator() {
   const [customText, setCustomText] = useState("");
   const [generatedReview, setGeneratedReview] = useState("");
   const [step, setStep] = useState<"tags" | "generate" | "copy">("tags");
+  const [regenerationCount, setRegenerationCount] = useState(0);
+  const MAX_REGENERATIONS = 3;
 
   if (!business) return null;
 
-  const defaultFocusAreas = ["Service", "Quality", "Speed", "Price", "Atmosphere"];
-  const tags = business.focusAreas?.length ? business.focusAreas : defaultFocusAreas;
+  // Category-specific default tags
+  const categoryDefaultTags: Record<string, string[]> = {
+    "Restaurant": ["Great food", "Friendly staff", "Fast service", "Clean place", "Good value"],
+    "Cafe": ["Great coffee", "Cozy atmosphere", "Friendly staff", "Consistent quality", "Relaxing spot"],
+    "Retail": ["Helpful staff", "Good selection", "Easy checkout", "Clean store", "Smooth experience"],
+    "Service": ["Professional service", "On time", "Clear communication", "Quality work", "Easy to work with"],
+    "Healthcare": ["Caring staff", "Professional experience", "Clean facility", "Clear explanations", "Well organized"],
+    "Beauty & Wellness": ["Relaxing experience", "Friendly staff", "Great results", "Clean space", "Professional service"],
+    "Automotive": ["Honest service", "Quick turnaround", "Fair pricing", "Knowledgeable staff", "Quality work"],
+    "Home Services": ["On time", "Professional team", "Clean work", "Clear pricing", "Job done right"],
+    "Education": ["Supportive staff", "Clear instruction", "Positive environment", "Well organized", "Helpful experience"],
+    "Entertainment": ["Great experience", "Fun atmosphere", "Friendly staff", "Well organized", "Would come again"],
+    "Fitness & Sports": ["Clean facility", "Motivating trainers", "Friendly staff", "Great workouts", "Welcoming environment"],
+    "Real Estate": ["Professional agent", "Responsive", "Knowledgeable", "Smooth process", "Helpful guidance"],
+    "Legal": ["Professional service", "Clear communication", "Responsive", "Knowledgeable", "Helpful guidance"],
+    "Financial": ["Clear advice", "Professional staff", "Easy process", "Helpful support", "Trustworthy service"],
+    "Travel & Hospitality": ["Friendly staff", "Clean rooms", "Comfortable stay", "Great location", "Would stay again"],
+    "Other": ["Great service", "Friendly staff", "Professional experience", "Clean environment", "Highly recommend"],
+  };
+
+  const getDefaultTagsForCategory = (category: string): string[] => {
+    return categoryDefaultTags[category] || categoryDefaultTags["Other"];
+  };
+
+  const defaultFocusAreas = getDefaultTagsForCategory(business.category || "Other");
+  // Always show defaults, plus any custom tags from business
+  const customTags = business.focusAreas && business.focusAreas.length > 0 
+    ? business.focusAreas.filter((tag: string) => !defaultFocusAreas.includes(tag))
+    : [];
+  const tags = [...defaultFocusAreas, ...customTags];
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -32,7 +62,12 @@ export default function ReviewGenerator() {
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (isRegeneration = false) => {
+    // Check regeneration limit
+    if (isRegeneration && regenerationCount >= MAX_REGENERATIONS) {
+      return;
+    }
+
     setStep("generate");
     try {
       const result = await generateMutation.mutateAsync({
@@ -43,8 +78,14 @@ export default function ReviewGenerator() {
       });
       setGeneratedReview(result.review);
       setStep("copy");
+      
+      // Increment regeneration count if this is a regeneration
+      if (isRegeneration) {
+        setRegenerationCount((prev) => prev + 1);
+      }
     } catch (e) {
       console.error(e);
+      // Don't increment count on error
     }
   };
 
@@ -164,15 +205,38 @@ export default function ReviewGenerator() {
               </div>
 
               <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 p-6 rounded-2xl border-2 border-slate-200 relative group">
-                <p className="text-slate-700 italic leading-relaxed">"{generatedReview}"</p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                  onClick={handleGenerate}
-                >
-                  <RefreshCw className="w-4 h-4 text-slate-400" />
-                </Button>
+                <Textarea
+                  value={generatedReview}
+                  onChange={(e) => setGeneratedReview(e.target.value)}
+                  className="resize-none bg-transparent border-none text-slate-700 italic leading-relaxed p-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[100px]"
+                  placeholder="Your review will appear here..."
+                />
+                <div className="flex items-center justify-between mt-3">
+                  {regenerationCount < MAX_REGENERATIONS ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                      onClick={() => handleGenerate(true)}
+                      disabled={generateMutation.isPending}
+                      title={`Regenerate (${MAX_REGENERATIONS - regenerationCount} remaining)`}
+                    >
+                      <RefreshCw className="w-4 h-4 text-slate-400 mr-2" />
+                      <span className="text-xs text-slate-500">Regenerate</span>
+                    </Button>
+                  ) : (
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="px-2 py-1 bg-slate-100 rounded text-xs text-slate-500">
+                        Regeneration limit reached
+                      </div>
+                    </div>
+                  )}
+                  {regenerationCount > 0 && (
+                    <div className="text-xs text-slate-500">
+                      Regenerated {regenerationCount} of {MAX_REGENERATIONS} times
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3">

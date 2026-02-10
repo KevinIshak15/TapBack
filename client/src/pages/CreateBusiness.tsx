@@ -8,6 +8,7 @@ import { useUser } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, ArrowLeft, Building2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -106,12 +107,35 @@ export default function CreateBusiness() {
                   <Label htmlFor="category" className="text-sm font-semibold">
                     Category *
                   </Label>
-                  <Input
-                    id="category"
-                    placeholder="e.g. Restaurant, Retail, Service"
-                    className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                    {...form.register("category")}
-                  />
+                  <Select
+                    value={form.watch("category")}
+                    onValueChange={(value) => form.setValue("category", value, { shouldValidate: true })}
+                  >
+                    <SelectTrigger
+                      id="category"
+                      className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                    >
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200 shadow-lg">
+                      <SelectItem value="Restaurant">Restaurant</SelectItem>
+                      <SelectItem value="Cafe">Cafe</SelectItem>
+                      <SelectItem value="Retail">Retail</SelectItem>
+                      <SelectItem value="Service">Service</SelectItem>
+                      <SelectItem value="Healthcare">Healthcare</SelectItem>
+                      <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
+                      <SelectItem value="Automotive">Automotive</SelectItem>
+                      <SelectItem value="Home Services">Home Services</SelectItem>
+                      <SelectItem value="Education">Education</SelectItem>
+                      <SelectItem value="Entertainment">Entertainment</SelectItem>
+                      <SelectItem value="Fitness & Sports">Fitness & Sports</SelectItem>
+                      <SelectItem value="Real Estate">Real Estate</SelectItem>
+                      <SelectItem value="Legal">Legal</SelectItem>
+                      <SelectItem value="Financial">Financial</SelectItem>
+                      <SelectItem value="Travel & Hospitality">Travel & Hospitality</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                   {form.formState.errors.category && (
                     <p className="text-sm text-red-500">
                       {form.formState.errors.category.message}

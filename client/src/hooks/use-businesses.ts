@@ -101,12 +101,19 @@ export function useUpdateBusiness() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include", // Include cookies for session
       });
       if (!res.ok) throw new Error("Failed to update business");
       return api.businesses.update.responses[200].parse(await res.json());
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [api.businesses.get.path, variables.id] });
+    onSuccess: (updatedBusiness) => {
+      queryClient.invalidateQueries({ queryKey: [api.businesses.get.path, updatedBusiness.id] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0]?.toString() || "";
+          return key.startsWith(api.businesses.getBySlug.path);
+        }
+      });
       queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
     },
   });
