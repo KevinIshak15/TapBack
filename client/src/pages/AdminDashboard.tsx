@@ -1,19 +1,11 @@
-import { motion } from "framer-motion";
 import { useUser } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Users, 
-  Building2, 
-  MessageSquare, 
-  TrendingUp, 
-  Shield, 
-  ThumbsUp,
-  ThumbsDown
-} from "lucide-react";
+import { Users, Building2, MessageSquare, TrendingUp, ThumbsUp, ThumbsDown } from "lucide-react";
+import { AppShell } from "@/components/app/AppShell";
+import { PageHeader } from "@/components/app/PageHeader";
 
 interface AdminStats {
   users: {
@@ -50,17 +42,17 @@ export default function AdminDashboard() {
 
   if (userLoading || statsLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <Skeleton className="h-12 w-48" />
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Skeleton className="h-32 w-full rounded-2xl" />
-            <Skeleton className="h-32 w-full rounded-2xl" />
-            <Skeleton className="h-32 w-full rounded-2xl" />
-            <Skeleton className="h-32 w-full rounded-2xl" />
+      <AppShell>
+        <div className="space-y-6">
+          <Skeleton className="h-9 w-48" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
           </div>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
@@ -75,171 +67,103 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900">
-                Admin Dashboard
-              </h1>
-              <p className="text-lg text-slate-600 mt-1">
-                Platform overview and management
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Stats Grid */}
+    <AppShell>
+      <div className="space-y-6">
+        <PageHeader
+          title="Admin"
+          description="Platform overview and management"
+        />
         {stats && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
-          >
-            {/* Total Users */}
-            <Card className="modern-card-hover">
-              <CardHeader className="pb-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="app-card">
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-slate-600">
-                    Total Users
-                  </CardTitle>
-                  <Users className="w-5 h-5 text-blue-600" />
+                  <CardTitle className="text-sm font-medium text-slate-500">Total users</CardTitle>
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900 mb-1">
-                  {stats.users.total}
-                </div>
-                <div className="text-xs text-slate-500">
-                  {stats.users.admins} admin{stats.users.admins !== 1 ? "s" : ""}, {stats.users.regular} regular
-                </div>
+                <div className="text-2xl font-semibold text-slate-900">{stats.users.total}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{stats.users.admins} admin{stats.users.admins !== 1 ? "s" : ""}, {stats.users.regular} regular</div>
               </CardContent>
             </Card>
-
-            {/* Total Businesses */}
-            <Card className="modern-card-hover">
-              <CardHeader className="pb-3">
+            <Card className="app-card">
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-slate-600">
-                    Total Businesses
-                  </CardTitle>
-                  <Building2 className="w-5 h-5 text-purple-600" />
+                  <CardTitle className="text-sm font-medium text-slate-500">Total businesses</CardTitle>
+                  <Building2 className="h-5 w-5 text-primary" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900 mb-1">
-                  {stats.businesses.total}
-                </div>
-                <div className="text-xs text-slate-500">
-                  Active businesses
-                </div>
+                <div className="text-2xl font-semibold text-slate-900">{stats.businesses.total}</div>
+                <div className="text-xs text-slate-500 mt-0.5">Active businesses</div>
               </CardContent>
             </Card>
-
-            {/* Total Reviews */}
-            <Card className="modern-card-hover">
-              <CardHeader className="pb-3">
+            <Card className="app-card">
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-slate-600">
-                    Total Reviews
-                  </CardTitle>
-                  <MessageSquare className="w-5 h-5 text-green-600" />
+                  <CardTitle className="text-sm font-medium text-slate-500">Total reviews</CardTitle>
+                  <MessageSquare className="h-5 w-5 text-primary" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900 mb-1">
-                  {stats.reviews.total}
-                </div>
-                <div className="text-xs text-slate-500">
-                  {stats.reviews.generated} AI-generated
-                </div>
+                <div className="text-2xl font-semibold text-slate-900">{stats.reviews.total}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{stats.reviews.generated} AI-generated</div>
               </CardContent>
             </Card>
-
-            {/* Review Breakdown */}
-            <Card className="modern-card-hover">
-              <CardHeader className="pb-3">
+            <Card className="app-card">
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-slate-600">
-                    Review Types
-                  </CardTitle>
-                  <TrendingUp className="w-5 h-5 text-orange-600" />
+                  <CardTitle className="text-sm font-medium text-slate-500">Review types</CardTitle>
+                  <TrendingUp className="h-5 w-5 text-primary" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-slate-600">Great</span>
-                    </div>
-                    <span className="text-lg font-bold text-slate-900">
-                      {stats.reviews.great}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ThumbsDown className="w-4 h-4 text-red-600" />
-                      <span className="text-sm text-slate-600">Concerns</span>
-                    </div>
-                    <span className="text-lg font-bold text-slate-900">
-                      {stats.reviews.concerns}
-                    </span>
-                  </div>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-slate-600"><ThumbsUp className="h-4 w-4 text-green-600" /> Great</span>
+                  <span className="font-semibold text-slate-900">{stats.reviews.great}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-slate-600"><ThumbsDown className="h-4 w-4 text-red-600" /> Concerns</span>
+                  <span className="font-semibold text-slate-900">{stats.reviews.concerns}</span>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         )}
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="glass-strong border-slate-200/60 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-2xl font-display">Quick Actions</CardTitle>
-              <CardDescription>Manage platform users and businesses</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <Link href="/admin/users">
-                  <Button
-                    variant="outline"
-                    className="w-full h-auto py-6 flex-col gap-2 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 rounded-xl transition-all"
-                  >
-                    <Users className="w-6 h-6" />
-                    <span className="font-semibold">Manage Users</span>
-                    <span className="text-xs text-slate-500">View and manage all users</span>
-                  </Button>
-                </Link>
-                <Link href="/admin/businesses">
-                  <Button
-                    variant="outline"
-                    className="w-full h-auto py-6 flex-col gap-2 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 rounded-xl transition-all"
-                  >
-                    <Building2 className="w-6 h-6" />
-                    <span className="font-semibold">Manage Businesses</span>
-                    <span className="text-xs text-slate-500">View and manage all businesses</span>
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </main>
-    </div>
+        <Card className="app-card">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900">Quick actions</CardTitle>
+            <CardDescription>Manage platform users and businesses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Link href="/admin/users">
+                <a className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900">Manage users</p>
+                    <p className="text-sm text-slate-500">View and manage all users</p>
+                  </div>
+                </a>
+              </Link>
+              <Link href="/admin/businesses">
+                <a className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900">Manage businesses</p>
+                    <p className="text-sm text-slate-500">View and manage all businesses</p>
+                  </div>
+                </a>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppShell>
   );
 }

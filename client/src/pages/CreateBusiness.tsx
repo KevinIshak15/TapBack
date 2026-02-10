@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Building2, Sparkles } from "lucide-react";
+import { Loader2, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AppShell } from "@/components/app/AppShell";
+import { PageHeader } from "@/components/app/PageHeader";
 
 export default function CreateBusiness() {
   const [, setLocation] = useLocation();
@@ -53,138 +54,101 @@ export default function CreateBusiness() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Button
-            variant="ghost"
-            onClick={() => setLocation("/dashboard")}
-            className="mb-8 rounded-xl"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="glass-strong border-slate-200/60 shadow-2xl">
-            <CardHeader className="space-y-2 pb-6">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                <Building2 className="w-7 h-7 text-white" />
+    <AppShell>
+      <div className="max-w-2xl space-y-6">
+        <PageHeader
+          title="Add business"
+          description="Set up your business profile to start collecting reviews."
+        />
+        <Card className="app-card">
+          <CardContent className="p-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+                  Business name
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="e.g. Joe's Coffee Shop"
+                  className="h-10 rounded-lg border-slate-200 bg-white"
+                  {...form.register("name")}
+                />
+                {form.formState.errors.name && (
+                  <p className="text-sm text-red-600">{form.formState.errors.name.message}</p>
+                )}
               </div>
-              <CardTitle className="text-3xl font-display">Add New Business</CardTitle>
-              <CardDescription className="text-base">
-                Set up your business profile to start collecting reviews and growing your online reputation.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-semibold">
-                    Business Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    placeholder="e.g. Joe's Coffee Shop"
-                    className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                    {...form.register("name")}
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-red-500">
-                      {form.formState.errors.name.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-sm font-semibold">
-                    Category *
-                  </Label>
-                  <Select
-                    value={form.watch("category")}
-                    onValueChange={(value) => form.setValue("category", value, { shouldValidate: true })}
-                  >
-                    <SelectTrigger
-                      id="category"
-                      className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                    >
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200 shadow-lg">
-                      <SelectItem value="Restaurant">Restaurant</SelectItem>
-                      <SelectItem value="Cafe">Cafe</SelectItem>
-                      <SelectItem value="Retail">Retail</SelectItem>
-                      <SelectItem value="Service">Service</SelectItem>
-                      <SelectItem value="Healthcare">Healthcare</SelectItem>
-                      <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
-                      <SelectItem value="Automotive">Automotive</SelectItem>
-                      <SelectItem value="Home Services">Home Services</SelectItem>
-                      <SelectItem value="Education">Education</SelectItem>
-                      <SelectItem value="Entertainment">Entertainment</SelectItem>
-                      <SelectItem value="Fitness & Sports">Fitness & Sports</SelectItem>
-                      <SelectItem value="Real Estate">Real Estate</SelectItem>
-                      <SelectItem value="Legal">Legal</SelectItem>
-                      <SelectItem value="Financial">Financial</SelectItem>
-                      <SelectItem value="Travel & Hospitality">Travel & Hospitality</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.category && (
-                    <p className="text-sm text-red-500">
-                      {form.formState.errors.category.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="googleReviewUrl" className="text-sm font-semibold">
-                    Google Review URL *
-                  </Label>
-                  <Input
-                    id="googleReviewUrl"
-                    placeholder="https://g.page/r/..."
-                    className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-                    {...form.register("googleReviewUrl")}
-                  />
-                  <p className="text-xs text-slate-500 mt-1">
-                    Find this in your Google Business Profile dashboard under "Get more reviews".
-                  </p>
-                  {form.formState.errors.googleReviewUrl && (
-                    <p className="text-sm text-red-500">
-                      {form.formState.errors.googleReviewUrl.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-base font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all mt-8"
-                  disabled={createMutation.isPending}
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-medium text-slate-700">
+                  Category
+                </Label>
+                <Select
+                  value={form.watch("category")}
+                  onValueChange={(value) => form.setValue("category", value, { shouldValidate: true })}
                 >
-                  {createMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Create Business
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </motion.div>
+                  <SelectTrigger id="category" className="h-10 rounded-lg border-slate-200 bg-white">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-slate-200">
+                    <SelectItem value="Restaurant">Restaurant</SelectItem>
+                    <SelectItem value="Cafe">Cafe</SelectItem>
+                    <SelectItem value="Retail">Retail</SelectItem>
+                    <SelectItem value="Service">Service</SelectItem>
+                    <SelectItem value="Healthcare">Healthcare</SelectItem>
+                    <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
+                    <SelectItem value="Automotive">Automotive</SelectItem>
+                    <SelectItem value="Home Services">Home Services</SelectItem>
+                    <SelectItem value="Education">Education</SelectItem>
+                    <SelectItem value="Entertainment">Entertainment</SelectItem>
+                    <SelectItem value="Fitness & Sports">Fitness & Sports</SelectItem>
+                    <SelectItem value="Real Estate">Real Estate</SelectItem>
+                    <SelectItem value="Legal">Legal</SelectItem>
+                    <SelectItem value="Financial">Financial</SelectItem>
+                    <SelectItem value="Travel & Hospitality">Travel & Hospitality</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.category && (
+                  <p className="text-sm text-red-600">{form.formState.errors.category.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-slate-700">
+                  Google review URL
+                </Label>
+                <Input
+                  id="googleReviewUrl"
+                  placeholder="https://g.page/r/..."
+                  className="h-10 rounded-lg border-slate-200 bg-white"
+                  {...form.register("googleReviewUrl")}
+                />
+                <p className="text-xs text-slate-500">
+                  From your Google Business Profile under “Get more reviews”.
+                </p>
+                {form.formState.errors.googleReviewUrl && (
+                  <p className="text-sm text-red-600">{form.formState.errors.googleReviewUrl.message}</p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                className="w-full font-medium"
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Creating…
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="h-5 w-5 mr-2" />
+                    Create business
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AppShell>
   );
 }

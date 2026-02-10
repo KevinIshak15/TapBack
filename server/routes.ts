@@ -4,6 +4,7 @@ import { setupAuth } from "./auth";
 import { registerBusinessRoutes } from "./routes/businesses";
 import { registerReviewRoutes } from "./routes/reviews";
 import { registerAdminRoutes } from "./routes/admin";
+import { registerPosterRoutes } from "./routes/posters";
 import { errorHandler } from "./middleware/errorHandler";
 
 export async function registerRoutes(
@@ -17,6 +18,7 @@ export async function registerRoutes(
   registerBusinessRoutes(app);
   registerReviewRoutes(app);
   registerAdminRoutes(app);
+  registerPosterRoutes(app);
 
   // Global error handler (must be last)
   app.use(errorHandler);

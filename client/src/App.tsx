@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +14,7 @@ import ManageUsers from "@/pages/admin/ManageUsers";
 import ManageBusinesses from "@/pages/admin/ManageBusinesses";
 import CreateBusiness from "@/pages/CreateBusiness";
 import BusinessQR from "@/pages/BusinessQR";
+import BusinessPosters from "@/pages/BusinessPosters";
 import BusinessDetails from "@/pages/BusinessDetails";
 
 // Review Flow Pages
@@ -56,6 +57,7 @@ function Router() {
       </Route>
       <Route path="/business/new" component={CreateBusiness} />
       <Route path="/business/:slug/qr" component={BusinessQR} />
+      <Route path="/business/:slug/posters" component={BusinessPosters} />
       <Route path="/business/:slug" component={BusinessDetails} />
       
       {/* Customer Review Flow */}
@@ -70,11 +72,14 @@ function Router() {
 }
 
 function App() {
+  const [location] = useLocation();
+  const isAppRoute = /^\/(dashboard|admin|business)/.test(location);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Header />
+        {!isAppRoute && <Header />}
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
