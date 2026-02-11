@@ -21,69 +21,76 @@
   --google-c-green: #34A853;
   --google-star: #FBBC04;
 
-  /* Main app palette */
+  /* RevsBoost logo colors */
+  --revsboost-dark-blue: 216 56% 20%; /* #162C4E - Primary dark blue */
+  --revsboost-light-blue: 183 83% 72%; /* #7DEEF3 - Light cyan */
+  --revsboost-teal: 179 80% 55%; /* #2EE8E6 - Vibrant teal */
+  --revsboost-intermediate-blue: 182 75% 65%; /* #53E1EE - Intermediate blue */
+  --revsboost-intermediate-teal: 180 78% 58%; /* #32E4EB - Intermediate teal */
+
+  /* Main app palette – RevsBoost theme */
   --background: 0 0% 100%;
-  --foreground: 220 13% 18%;
-  --primary: 217 85% 42%;
+  --foreground: 216 56% 20%; /* Dark blue from logo */
+  --primary: 216 56% 20%; /* Dark blue from logo */
   --primary-foreground: 0 0% 100%;
-  --primary-border: 217 85% 38%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 220 13% 18%;
-  --secondary-border: 220 13% 85%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 218 11% 40%;
-  --accent: 217 85% 42%;
+  --primary-border: 216 56% 18%;
+  --secondary: 183 83% 96%; /* Very light cyan tint */
+  --secondary-foreground: 216 56% 20%;
+  --secondary-border: 183 83% 85%;
+  --muted: 183 83% 96%;
+  --muted-foreground: 216 30% 40%;
+  --accent: 216 56% 20%; /* Same as primary for focus only */
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --destructive-border: 0 72% 51%;
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 217 85% 42%;
+  --ring: 216 56% 30%; /* Dark blue focus ring */
   --card: 0 0% 100%;
-  --card-foreground: 220 13% 18%;
+  --card-foreground: 216 56% 20%;
   --card-border: 220 13% 91%;
   --radius: 0.5rem;
 
-  /* Sidebar – white/light grey, darker blue text */
-  --sidebar: 220 14% 98%;
-  --sidebar-foreground: 217 85% 28%;
+  /* Sidebar – white, dark blue text (logo #162C4E) */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 216 56% 20%; /* Dark blue from logo */
   --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217 85% 28%;
-  --sidebar-primary: 220 14% 94%;
-  --sidebar-primary-foreground: 217 85% 28%;
-  --sidebar-accent: 220 14% 94%;
-  --sidebar-accent-foreground: 217 85% 28%;
+  --sidebar-ring: 216 56% 30%;
+  --sidebar-primary: 220 14% 94%; /* Subtle grey for selected */
+  --sidebar-primary-foreground: 216 56% 20%;
+  --sidebar-accent: 220 14% 96%;
+  --sidebar-accent-foreground: 216 56% 20%;
 
-  /* App surface – Google-style very light grey */
-  --app-surface: 220 14% 97%;
+  /* App surface – white, same as side panel */
+  --app-surface: 0 0% 100%;
 }
 
 .dark {
   --background: 222 47% 11%;
   --foreground: 210 40% 98%;
   
-  --primary: 217 91% 60%;
-  --primary-foreground: 222 47% 11%;
+  --primary: 216 56% 20%;
+  --primary-foreground: 0 0% 100%;
   
-  --secondary: 217 19% 27%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 216 56% 18%;
+  --secondary-foreground: 183 83% 85%;
   
-  --muted: 217 19% 27%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 216 56% 18%;
+  --muted-foreground: 183 70% 70%;
   
-  --accent: 221 83% 53%;
+  --accent: 216 56% 30%;
   --accent-foreground: 0 0% 100%;
   
   --destructive: 0 62% 30%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 183 83% 85%;
   
-  --border: 217 19% 27%;
-  --input: 217 19% 27%;
-  --ring: 217 91% 60%;
+  --border: 216 56% 18%;
+  --input: 216 56% 18%;
+  --ring: 179 80% 55%;
   
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
+  --card: 216 56% 11%;
+  --card-foreground: 183 83% 85%;
 }
 
 @layer base {
@@ -114,9 +121,21 @@
   @apply bg-white border border-slate-200 shadow-sm;
 }
 
-/* Primary accent text (single blue, no animation) */
+/* Primary accent text – RevsBoost gradient */
 .gradient-text {
-  @apply text-primary;
+  background: linear-gradient(135deg, hsl(var(--revsboost-dark-blue)) 0%, hsl(var(--revsboost-teal)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* RevsBoost gradient utilities */
+.revsboost-gradient {
+  background: linear-gradient(135deg, hsl(var(--revsboost-light-blue)) 0%, hsl(var(--revsboost-teal)) 100%);
+}
+
+.revsboost-gradient-dark {
+  background: linear-gradient(135deg, hsl(var(--revsboost-dark-blue)) 0%, hsl(var(--revsboost-teal)) 100%);
 }
 
 /* Smooth Animations */

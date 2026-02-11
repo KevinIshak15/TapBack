@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type InsertReview } from "@shared/routes";
 
 export function useGenerateReview() {
@@ -22,6 +22,7 @@ export function useGenerateReview() {
 }
 
 export function useCreateReview() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: InsertReview) => {
       const res = await fetch(api.reviews.create.path, {
@@ -31,6 +32,11 @@ export function useCreateReview() {
       });
       if (!res.ok) throw new Error("Failed to save review");
       return api.reviews.create.responses[201].parse(await res.json());
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [api.businesses.listReviews.path, variables.businessId],
+      });
     },
   });
 }

@@ -16,7 +16,7 @@ import { Loader2, ArrowLeft, Building2, AlertTriangle, ExternalLink, Unplug } fr
 import { useToast } from "@/hooks/use-toast";
 
 const WARNING_MESSAGE =
-  "You must connect Google Business Profile to add a business. TapBack needs access to your profile to import locations, reviews, and insights.";
+  "You must connect Google Business Profile to add a business. RevsBoost needs access to your profile to import locations, reviews, and insights.";
 
 export default function CreateBusiness() {
   const [, setLocation] = useLocation();

@@ -91,6 +91,7 @@ export const collections = {
   reviews: "reviews",
   googleIntegrations: "googleIntegrations",
   googleLocationLinks: "googleLocationLinks",
+  passwordResets: "passwordResets",
 } as const;
 
 /**

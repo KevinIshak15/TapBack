@@ -41,11 +41,43 @@ export default function Settings() {
   const { toast } = useToast();
 
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [resetLinkSending, setResetLinkSending] = useState(false);
+  const [resetLinkSent, setResetLinkSent] = useState(false);
   const passwordForm = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   });
   const [passwordSaving, setPasswordSaving] = useState(false);
+
+  const accountEmail = (user?.email?.trim() || (user?.username && /@/.test(user.username) ? user.username?.trim() : "") || "") as string;
+  const hasEmail = accountEmail.length > 0;
+
+  const onSendResetLink = async () => {
+    if (!hasEmail || !accountEmail) {
+      toast({ variant: "destructive", title: "No email", description: "Your account has no email on file." });
+      return;
+    }
+    setResetLinkSending(true);
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: accountEmail.toLowerCase() }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "Request failed");
+      setResetLinkSent(true);
+      toast({
+        title: "Reset link sent",
+        description: "If an account exists for that email, you'll receive a link shortly. Check your inbox and spam folder.",
+      });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Error", description: e.message || "Something went wrong." });
+    } finally {
+      setResetLinkSending(false);
+    }
+  };
 
   const onUpdatePassword = async (data: PasswordForm) => {
     setPasswordSaving(true);
@@ -224,6 +256,28 @@ export default function Settings() {
                     </form>
                   </CollapsibleContent>
                 </Collapsible>
+                {hasEmail && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <p className="text-sm text-slate-600 mb-2">
+                      Forgot your password? We’ll send a reset link to <strong>{accountEmail}</strong>.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      disabled={resetLinkSending || resetLinkSent}
+                      onClick={onSendResetLink}
+                    >
+                      {resetLinkSending ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending…</>
+                      ) : resetLinkSent ? (
+                        "Reset link sent — check your email"
+                      ) : (
+                        "Send password reset link"
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

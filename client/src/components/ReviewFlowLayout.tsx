@@ -1,14 +1,14 @@
 /**
  * Shared layout for the customer review flow (/r/:slug, /r/:slug/review, /r/:slug/feedback).
  * - Header: company name only (logo is shown per-page where needed, e.g. under the question on landing).
- * - Footer: Revues logo + "Want this for your business?" — mobile-friendly, always visible.
+ * - Footer: RevsBoost logo + "Want this for your business?" — mobile-friendly, always visible.
  */
 
 import React from "react";
 import { ExternalLink, Star } from "lucide-react";
 
 const FOOTER_LINK = "https://ai.revues.ca";
-const REVUES_LOGO = "/tapback-logo.png";
+const REVUES_LOGO = "/revsboost-logo.png";
 
 const GOOGLE_COLORS = ["#4285F4", "#EA4335", "#FBBC04", "#4285F4", "#34A853", "#EA4335"] as const;
 function ReviewUsOnGoogle() {
@@ -54,8 +54,8 @@ export function ReviewFlowLayout({ companyName, children, style }: ReviewFlowLay
         <ReviewUsOnGoogle />
       </div>
 
-      {/* Main — card content; extra bottom padding so content stays above footer on mobile */}
-      <main className="flex-1 flex flex-col items-center justify-start px-4 pt-2 pb-40 sm:pb-36">
+      {/* Main — card content; responsive padding so card uses space without touching edges */}
+      <main className="flex-1 flex flex-col items-center justify-start px-4 sm:px-6 md:px-8 pt-2 pb-40 sm:pb-36 w-full max-w-4xl mx-auto">
         {children}
       </main>
 
@@ -69,8 +69,8 @@ export function ReviewFlowLayout({ companyName, children, style }: ReviewFlowLay
         >
           <img
             src={REVUES_LOGO}
-            alt="Revues"
-            className="h-7 sm:h-8 w-auto max-w-[90px] sm:max-w-[100px] object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+            alt="RevsBoost"
+            className="h-16 sm:h-20 w-auto max-w-[200px] sm:max-w-[260px] object-contain opacity-90 group-hover:opacity-100 transition-opacity"
           />
           <span className="text-xs sm:text-sm text-slate-600 group-hover:text-slate-900 transition-colors inline-flex items-center gap-1.5">
             Want this for your business?

@@ -40,12 +40,12 @@ export default function CustomerSidebar() {
       <div className="p-6 border-b border-slate-200">
         <Link href="/dashboard" className="flex items-center gap-3">
           <img 
-            src="/tapback-logo.png" 
-            alt="TapBack Logo" 
+            src="/revsboost-logo.png" 
+            alt="RevsBoost Logo" 
             className="h-8 w-auto object-contain"
           />
-          <span className="font-display font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            TapBack
+          <span className="font-display font-bold text-lg revsboost-gradient-dark bg-clip-text text-transparent">
+            RevsBoost
           </span>
         </Link>
       </div>
@@ -78,14 +78,14 @@ export default function CustomerSidebar() {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-slate-100 text-slate-900 font-bold"
+                        : "text-slate-700 hover:bg-slate-50 hover:font-bold"
                     )}
                   >
                     <Icon className="w-5 h-5" />
                     <span className="flex-1">{item.label}</span>
                     {item.badge && (
-                      <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                      <span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-700 rounded-full font-medium">
                         {item.badge}
                       </span>
                     )}

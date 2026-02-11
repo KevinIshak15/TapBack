@@ -37,12 +37,12 @@ export default function Header() {
           <Link href={user ? "/dashboard" : "/"}>
             <div className="flex items-center gap-3 cursor-pointer group">
               <img 
-                src="/tapback-logo.png" 
-                alt="TapBack Logo" 
+                src="/revsboost-logo.png" 
+                alt="RevsBoost Logo" 
                 className="h-9 w-auto object-contain"
               />
               <span className="font-display font-bold text-lg text-slate-900">
-                TapBack
+                RevsBoost
               </span>
             </div>
           </Link>

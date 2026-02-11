@@ -118,7 +118,16 @@ export const api = {
         }),
         404: errorSchemas.notFound,
       },
-    }
+    },
+    listReviews: {
+      method: 'GET' as const,
+      path: '/api/businesses/:id/reviews' as const,
+      responses: {
+        200: z.array(reviewSchema),
+        403: errorSchemas.unauthorized,
+        404: errorSchemas.notFound,
+      },
+    },
   },
   reviews: {
     create: {

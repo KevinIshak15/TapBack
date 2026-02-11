@@ -49,17 +49,19 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
     password: z.string().min(6, "Password must be at least 6 characters"),
   });
 
-  // Signup: no username field (generated from email in onSubmit). Validate only what the form collects.
+  // Signup: all fields mandatory; username generated from email in onSubmit.
   const signupSchema = z.object({
     email: z.string().min(1, "Email is required").email("Enter a valid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    adminCode: z.string().optional(),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    phoneNumber: z
+      .string()
+      .min(1, "Phone number is required")
+      .refine((v) => (v || "").replace(/\D/g, "").length >= 7, "Enter a valid phone number (at least 7 digits)"),
   });
 
-  const form = useForm<InsertUser & { adminCode?: string; emailOrUsername?: string }>({
+  const form = useForm<InsertUser & { emailOrUsername?: string }>({
     resolver: zodResolver(isLogin ? loginSchema : signupSchema),
     defaultValues: { 
       username: "", 
@@ -68,7 +70,6 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
       firstName: "",
       lastName: "",
       phoneNumber: "",
-      adminCode: "",
       emailOrUsername: "",
     },
   });
@@ -210,14 +211,17 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
           });
           return;
         }
+        const localPart = (data.email || "").split("@")[0] || "";
+        const baseUsername = data.username || localPart || `user_${Date.now()}`;
+        const username =
+          baseUsername.length >= 3 ? baseUsername : `${baseUsername}${Date.now().toString().slice(-4)}`.slice(0, 50);
         const signupData: InsertUser = {
-          username: data.username || data.email.split("@")[0] || `user_${Date.now()}`,
+          username,
           password: data.password,
           email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phoneNumber: data.phoneNumber,
-          adminCode: data.adminCode,
+          firstName: data.firstName ?? "",
+          lastName: data.lastName ?? "",
+          phoneNumber: (data.phoneNumber ?? "").trim(),
         };
         const user = await registerMutation.mutateAsync(signupData);
         // Wait a moment to ensure session is established
@@ -258,8 +262,8 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
         >
           <Link href="/" className="block mb-6">
             <img 
-              src="/tapback-logo.png" 
-              alt="TapBack Logo" 
+src="/revsboost-logo.png" 
+            alt="RevsBoost Logo"
               className="h-20 w-auto object-contain"
             />
           </Link>
@@ -307,7 +311,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                       <Input
                         id="emailOrUsername"
                         placeholder="Enter your email address or username"
-                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
+                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all"
                         {...form.register("emailOrUsername")}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -332,7 +336,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           id="password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all pr-12"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all pr-12"
                           {...form.register("password")}
                         />
                         <button
@@ -352,6 +356,11 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           {form.formState.errors.password.message}
                         </p>
                       )}
+                      <div className="flex justify-end">
+                        <Link href="/forgot-password" className="text-sm text-slate-600 hover:font-medium transition-colors">
+                          Forgot password?
+                        </Link>
+                      </div>
                     </div>
                   </>
                 ) : (
@@ -360,25 +369,31 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-sm font-semibold">
-                          First name <span className="text-xs text-slate-400 font-normal">(Optional)</span>
+                          First name
                         </Label>
                         <Input
                           id="firstName"
                           placeholder="First name"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all"
                           {...form.register("firstName")}
                         />
+                        {form.formState.errors.firstName && (
+                          <p className="text-sm text-red-500">{form.formState.errors.firstName.message}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-sm font-semibold">
-                          Last name <span className="text-xs text-slate-400 font-normal">(Optional)</span>
+                          Last name
                         </Label>
                         <Input
                           id="lastName"
                           placeholder="Last name"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all"
                           {...form.register("lastName")}
                         />
+                        {form.formState.errors.lastName && (
+                          <p className="text-sm text-red-500">{form.formState.errors.lastName.message}</p>
+                        )}
                       </div>
                     </div>
 
@@ -390,7 +405,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                         id="email"
                         type="email"
                         placeholder="Enter your email address"
-                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
+                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all"
                         {...form.register("email")}
                       />
                       {form.formState.errors.email && (
@@ -402,13 +417,18 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
 
                     <div className="space-y-2">
                       <Label htmlFor="phoneNumber" className="text-sm font-semibold">
-                        Phone number <span className="text-xs text-slate-400 font-normal">(Optional)</span>
+                        Phone number
                       </Label>
                       <div className="flex gap-2">
                         <select
                           value={countryCode}
-                          onChange={(e) => setCountryCode(e.target.value)}
-                          className="h-12 px-3 rounded-xl border border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all text-sm font-medium"
+                          onChange={(e) => {
+                            const newCode = e.target.value;
+                            setCountryCode(newCode);
+                            const digits = (form.getValues("phoneNumber") || "").replace(/\D/g, "");
+                            form.setValue("phoneNumber", `${newCode} ${digits}`.trim(), { shouldValidate: true });
+                          }}
+                          className="h-12 px-3 rounded-xl border border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all text-sm font-medium"
                         >
                           <option value="+1">CA</option>
                           <option value="+1">US</option>
@@ -419,13 +439,18 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           id="phoneNumber"
                           type="tel"
                           placeholder="Enter your phone number"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all flex-1"
-                          {...form.register("phoneNumber")}
-                          onChange={(e) => {
-                            form.setValue("phoneNumber", `${countryCode} ${e.target.value}`);
-                          }}
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all flex-1"
+                          {...form.register("phoneNumber", {
+                            onChange: (e) => {
+                              const digits = (e.target.value || "").replace(/\D/g, "");
+                              form.setValue("phoneNumber", `${countryCode} ${digits}`.trim(), { shouldValidate: true });
+                            },
+                          })}
                         />
                       </div>
+                      {form.formState.errors.phoneNumber && (
+                        <p className="text-sm text-red-500">{form.formState.errors.phoneNumber.message}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -437,7 +462,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           id="password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all pr-12"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all pr-12"
                           {...form.register("password")}
                         />
                         <button
@@ -459,18 +484,6 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="adminCode" className="text-sm font-semibold">
-                        Admin Code <span className="text-xs text-slate-400 font-normal">(Optional)</span>
-                      </Label>
-                      <Input
-                        id="adminCode"
-                        type="password"
-                        placeholder="Enter admin code if applicable"
-                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
-                        {...form.register("adminCode")}
-                      />
-                    </div>
                   </>
                 )}
 

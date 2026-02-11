@@ -47,13 +47,13 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-[hsl(var(--revsboost-light-blue))]/10">
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-[hsl(var(--revsboost-light-blue))]/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[hsl(var(--revsboost-teal))]/20 rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -65,7 +65,7 @@ export default function Landing() {
           >
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-blue-200/50 text-blue-700 text-sm font-semibold mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-[hsl(var(--revsboost-light-blue))]/30 text-[hsl(var(--revsboost-teal))] text-sm font-semibold mb-8"
             >
               <Sparkles className="w-4 h-4" />
               <span>AI-Powered Review Generation</span>
@@ -158,13 +158,13 @@ export default function Landing() {
                 icon: <QrCode className="w-8 h-8" />,
                 title: "One-Click QR Codes",
                 desc: "Generate beautiful QR codes instantly. No apps, no friction—just scan and review.",
-                gradient: "from-blue-500 to-cyan-500",
+                gradient: `from-[hsl(var(--revsboost-light-blue))] to-[hsl(var(--revsboost-teal))]`,
               },
               {
                 icon: <Sparkles className="w-8 h-8" />,
                 title: "AI Writing Assistant",
                 desc: "Help customers craft detailed, authentic reviews in seconds with our AI-powered generator.",
-                gradient: "from-purple-500 to-pink-500",
+                gradient: `from-[hsl(var(--revsboost-intermediate-blue))] to-[hsl(var(--revsboost-teal))]`,
               },
               {
                 icon: <Shield className="w-8 h-8" />,
@@ -197,7 +197,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700">
+      <section className="py-24 revsboost-gradient-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -208,14 +208,14 @@ export default function Landing() {
             <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">
               Ready to get more reviews?
             </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of businesses using TapBack to grow their online reputation.
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              Join thousands of businesses using RevsBoost to grow their online reputation.
             </p>
             <Link href="/signup">
               <Button
                 size="lg"
                 variant="secondary"
-                className="text-base font-semibold h-12 px-6 bg-white text-slate-900 hover:bg-slate-100 border-0 shadow-lg"
+                className="text-base font-semibold h-12 px-6 bg-white text-[hsl(var(--revsboost-dark-blue))] hover:font-bold border-0 shadow-lg"
               >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -228,7 +228,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p>© 2024 TapBack. All rights reserved.</p>
+          <p>© 2024 RevsBoost. All rights reserved.</p>
         </div>
       </footer>
     </div>

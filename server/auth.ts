@@ -3,10 +3,11 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { scrypt, randomBytes, timingSafeEqual, createHash } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as SelectUser } from "@shared/schema";
+import { sendPasswordResetEmail } from "./email";
+import { User as SelectUser, insertUserSchema } from "@shared/schema";
 
 declare global {
   namespace Express {
@@ -148,17 +149,25 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      const parsed = insertUserSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const first = parsed.error.flatten().fieldErrors;
+        const message = first.username?.[0] ?? first.password?.[0] ?? first.email?.[0] ?? "Invalid signup data";
+        return res.status(400).json({ message });
+      }
+      const body = parsed.data;
+
       // Check if username already exists
-      if (req.body.username) {
-        const existingUser = await storage.getUserByUsername(req.body.username);
+      if (body.username) {
+        const existingUser = await storage.getUserByUsername(body.username);
         if (existingUser) {
           return res.status(400).json({ message: "Username already exists" });
         }
       }
 
       // Check if email already exists
-      if (req.body.email) {
-        const existingUserByEmail = await storage.getUserByEmail(req.body.email);
+      if (body.email) {
+        const existingUserByEmail = await storage.getUserByEmail(body.email);
         if (existingUserByEmail) {
           return res.status(400).json({ message: "Email already exists" });
         }
@@ -166,17 +175,17 @@ export function setupAuth(app: Express) {
 
       // Check admin code if provided
       let userRole: "user" | "admin" = "user";
-      if (req.body.adminCode) {
+      if (body.adminCode) {
         const adminCode = process.env.ADMIN_SIGNUP_CODE || "admin-secret-2024";
-        if (req.body.adminCode === adminCode) {
+        if (body.adminCode === adminCode) {
           userRole = "admin";
         } else {
           return res.status(400).json({ message: "Invalid admin code" });
         }
       }
 
-      const hashedPassword = await hashPassword(req.body.password);
-      const { adminCode, ...userData } = req.body; // Remove adminCode before storing
+      const hashedPassword = await hashPassword(body.password);
+      const { adminCode, ...userData } = body;
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
@@ -281,6 +290,63 @@ export function setupAuth(app: Express) {
       res.json({ ok: true });
     } catch (e: any) {
       res.status(400).json({ message: e.message || "Failed to update password" });
+    }
+  });
+
+  // Forgot password: send reset link to email
+  app.post("/api/forgot-password", async (req, res) => {
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    try {
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(200).json({ message: "If an account exists for that email, you will receive a reset link." });
+      }
+      const rawToken = randomBytes(32).toString("hex");
+      const tokenHash = createHash("sha256").update(rawToken).digest("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      await storage.createPasswordReset(user.id, tokenHash, expiresAt);
+      const baseUrl = (process.env.PUBLIC_APP_URL || process.env.BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+      const resetLink = `${baseUrl}/reset-password?token=${rawToken}`;
+      await sendPasswordResetEmail(user.email, resetLink);
+      res.status(200).json({ message: "If an account exists for that email, you will receive a reset link." });
+    } catch (e: any) {
+      console.error("Forgot password error:", e?.message || e);
+      const msg =
+        process.env.NODE_ENV === "development" && e?.message
+          ? e.message
+          : "Something went wrong. Please try again.";
+      res.status(500).json({ message: msg });
+    }
+  });
+
+  // Reset password: validate token and set new password
+  app.post("/api/reset-password", async (req, res) => {
+    const { token, newPassword } = req.body as { token?: string; newPassword?: string };
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: "Token and new password are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters" });
+    }
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    try {
+      const reset = await storage.getPasswordResetByToken(tokenHash);
+      if (!reset) {
+        return res.status(400).json({ message: "Invalid or expired reset link. Please request a new one." });
+      }
+      if (reset.expiresAt < new Date()) {
+        await storage.deletePasswordResetToken(tokenHash);
+        return res.status(400).json({ message: "This reset link has expired. Please request a new one." });
+      }
+      const hashed = await hashPassword(newPassword);
+      await storage.setUserPassword(reset.userId, hashed);
+      await storage.deletePasswordResetToken(tokenHash);
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(400).json({ message: e.message || "Failed to reset password" });
     }
   });
 

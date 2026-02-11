@@ -61,6 +61,7 @@ export const insertBusinessSchema = z.object({
   reviewKeywords: z.string().max(500).optional(), // Keywords/phrases to include in AI-generated reviews
   reviewTheme: z.string().max(50).optional(), // Theme id for customer review flow (e.g. classic, warm-friendly)
   logo: z.string().max(500000).optional(), // Logo URL or data URL (transparent PNG); shown in review flow header
+  concernsNotificationEmail: z.string().email().optional(), // Where to email new concerns (defaults to owner account email)
 });
 
 // Internal schema (for database/storage) - uses Date objects
@@ -105,8 +106,19 @@ export const insertReviewSchema = z.object({
   content: z.string().optional(),
   isGenerated: z.boolean().default(false),
   // Additional metadata
-  rating: z.number().min(1).max(5).optional(), // If user provides rating
-  customerEmail: z.string().email().optional(), // For follow-up
+  rating: z.number().min(1).max(5).optional(),
+  customerEmail: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.string().email().optional()
+  ),
+  customerName: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.string().max(200).optional()
+  ),
+  customerPhone: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.string().max(50).optional()
+  ),
 });
 
 // Internal schema (for database/storage) - uses Date objects

@@ -61,6 +61,20 @@ export function useBusinessStats(id: number) {
   });
 }
 
+export function useBusinessReviews(businessId: number) {
+  return useQuery({
+    queryKey: [api.businesses.listReviews.path, businessId],
+    queryFn: async () => {
+      const url = buildUrl(api.businesses.listReviews.path, { id: businessId });
+      const res = await fetch(url, { credentials: "include" });
+      if (res.status === 403 || res.status === 404) throw new Error("Not found");
+      if (!res.ok) throw new Error("Failed to fetch reviews");
+      return api.businesses.listReviews.responses[200].parse(await res.json());
+    },
+    enabled: !!businessId,
+  });
+}
+
 /** Create business from Google locations. Pass locationResourceNames or leave empty to use stored selection. */
 export function useCreateBusiness() {
   const queryClient = useQueryClient();

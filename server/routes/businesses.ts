@@ -153,4 +153,22 @@ export function registerBusinessRoutes(app: Express) {
       res.json(stats);
     })
   );
+
+  // List reviews for a business (owner only)
+  app.get(
+    api.businesses.listReviews.path,
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const businessId = Number(req.params.id);
+      const business = await storage.getBusiness(businessId);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+      if (business.ownerId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to view this business's reviews" });
+      }
+      const reviews = await storage.getReviewsByBusiness(businessId);
+      res.json(reviews.map((r) => serializeDates(r)));
+    })
+  );
 }

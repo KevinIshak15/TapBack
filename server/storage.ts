@@ -3,7 +3,7 @@ import { db, collections } from "./db";
 import { randomBytes } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp, FieldValue } from "firebase-admin/firestore";
 
 const MemorySessionStore = createMemoryStore(session);
 
@@ -74,6 +74,10 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "phoneNumber">>): Promise<User>;
   setUserPassword(id: number, newPasswordHash: string): Promise<void>;
+
+  createPasswordReset(userId: number, tokenHash: string, expiresAt: Date): Promise<void>;
+  getPasswordResetByToken(tokenHash: string): Promise<{ userId: number; expiresAt: Date } | undefined>;
+  deletePasswordResetToken(tokenHash: string): Promise<void>;
 
   createBusiness(business: InsertBusiness & { ownerId: number; locationResourceName?: string }): Promise<Business>;
   getBusinessesByOwner(ownerId: number): Promise<Business[]>;
@@ -201,6 +205,27 @@ export class FirebaseStorage implements IStorage {
     await docRef.update(dataToDoc({ password: newPasswordHash, updatedAt: new Date() }));
   }
 
+  async createPasswordReset(userId: number, tokenHash: string, expiresAt: Date): Promise<void> {
+    const ref = db.collection(collections.passwordResets).doc(tokenHash);
+    await ref.set({
+      userId,
+      expiresAt: Timestamp.fromDate(expiresAt),
+    });
+  }
+
+  async getPasswordResetByToken(tokenHash: string): Promise<{ userId: number; expiresAt: Date } | undefined> {
+    const doc = await db.collection(collections.passwordResets).doc(tokenHash).get();
+    if (!doc.exists) return undefined;
+    const data = doc.data();
+    if (!data?.userId || !data?.expiresAt) return undefined;
+    const expiresAt = data.expiresAt?.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+    return { userId: Number(data.userId), expiresAt };
+  }
+
+  async deletePasswordResetToken(tokenHash: string): Promise<void> {
+    await db.collection(collections.passwordResets).doc(tokenHash).delete();
+  }
+
   async createBusiness(business: InsertBusiness & { ownerId: number; locationResourceName?: string }): Promise<Business> {
     // Generate unique slug from name + random string
     const baseSlug = business.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -295,7 +320,7 @@ export class FirebaseStorage implements IStorage {
     // Update business review count (increment)
     const businessRef = db.collection(collections.businesses).doc(review.businessId.toString());
     await businessRef.update({
-      totalReviews: db.FieldValue.increment(1),
+      totalReviews: FieldValue.increment(1),
       updatedAt: Timestamp.fromDate(now),
     });
 
@@ -306,10 +331,11 @@ export class FirebaseStorage implements IStorage {
     const snapshot = await db
       .collection(collections.reviews)
       .where("businessId", "==", businessId)
-      .orderBy("createdAt", "desc") // Most recent first
       .get();
 
-    return snapshot.docs.map((doc) => docToData<Review>(doc)!).filter(Boolean);
+    const reviews = snapshot.docs.map((doc) => docToData<Review>(doc)!).filter(Boolean);
+    reviews.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return reviews;
   }
 
   async getStats(businessId: number): Promise<{ scans: number; reviewsGenerated: number; redirects: number; concerns: number }> {

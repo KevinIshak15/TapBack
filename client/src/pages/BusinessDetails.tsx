@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBusinessSchema, type InsertBusiness } from "@shared/schema";
 import { useUser } from "@/hooks/use-auth";
-import { useBusinessBySlug, useUpdateBusiness } from "@/hooks/use-businesses";
+import { useBusinessBySlug, useUpdateBusiness, useBusinessReviews } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown } from "lucide-react";
+import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar } from "lucide-react";
 import {
   CATEGORIES,
   getDefaultTagsForCategory,
@@ -568,7 +568,7 @@ function ReviewOptionsView({ business }: { business: any }) {
           </p>
           <div className="flex justify-center">
             <div className="w-full max-w-[375px] rounded-[2rem] border-[10px] border-slate-800 bg-slate-800 shadow-2xl overflow-hidden">
-              <div className="rounded-[1.25rem] overflow-hidden bg-white max-h-[640px] overflow-y-auto">
+              <div className="rounded-[1.25rem] overflow-hidden bg-white min-h-[720px] flex flex-col">
                 <div
                   className="p-4 flex flex-col gap-6"
                   style={{
@@ -621,8 +621,20 @@ function ReviewOptionsView({ business }: { business: any }) {
                         <span className="px-2.5 py-1.5 rounded-full text-[11px] opacity-80" style={{ color: selectedTheme.text }}>+{allTags.length - 5}</span>
                       )}
                     </div>
-                    <div className="rounded-lg border-2 border-dashed py-2 text-center text-[11px] opacity-50" style={{ borderColor: selectedTheme.primary + "40" }}>
-                      Additional comments...
+                    <p className="text-[10px] font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: selectedTheme.text }}>
+                      Additional comments (optional)
+                    </p>
+                    <div
+                      className="w-full min-h-[80px] rounded-xl border-2 px-3 py-2.5 text-sm"
+                      style={{
+                        borderColor: selectedTheme.primary + "60",
+                        background: selectedTheme.cardBg ?? "#fff",
+                        color: selectedTheme.text,
+                      }}
+                    >
+                      <span className="text-sm opacity-50" style={{ color: selectedTheme.text }}>
+                        e.g. specific staff member, wait time...
+                      </span>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -640,7 +652,7 @@ function ReviewOptionsView({ business }: { business: any }) {
                     </div>
                   </div>
                   <p className="text-[10px] opacity-50 pt-2" style={{ color: selectedTheme.text }}>
-                    Powered by TapBack
+                    Powered by RevsBoost
                   </p>
                 </div>
               </div>
@@ -1322,30 +1334,254 @@ function InsightsView({ business }: { business: any }) {
   );
 }
 
-// Reviews & Concerns View (merged)
+// Review item type for list
+type ReviewItem = {
+  id: number;
+  experienceType: string;
+  content?: string;
+  createdAt: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  isGenerated?: boolean;
+};
+
+// Reviews & Concerns View (merged) with filters, date range, sort
 function ReviewsAndConcernsView({ business }: { business: any }) {
+  const { data: reviews = [], isLoading } = useBusinessReviews(business.id);
+  const updateBusiness = useUpdateBusiness();
+  const { toast } = useToast();
+  const [filterType, setFilterType] = useState<"all" | "concern" | "great">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name-az" | "name-za">("newest");
+  const [concernsEmail, setConcernsEmail] = useState(business.concernsNotificationEmail ?? "");
+  const [savingEmail, setSavingEmail] = useState(false);
+
+  // Sync concerns email when business updates (e.g. after save)
+  useEffect(() => {
+    setConcernsEmail(business.concernsNotificationEmail ?? "");
+  }, [business.concernsNotificationEmail]);
+
+  const handleSaveConcernsEmail = async () => {
+    setSavingEmail(true);
+    try {
+      await updateBusiness.mutateAsync({
+        id: business.id,
+        concernsNotificationEmail: concernsEmail.trim() || undefined,
+      });
+      toast({ title: "Saved", description: "Concerns will be sent to this email." });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to save", description: e?.message ?? "Please try again." });
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
+  const filtered = ((): ReviewItem[] => {
+    let list: ReviewItem[] = reviews as ReviewItem[];
+    if (filterType === "concern") list = list.filter((r) => r.experienceType === "concern");
+    else if (filterType === "great") list = list.filter((r) => r.experienceType === "great");
+
+    if (dateFrom || dateTo) {
+      list = list.filter((r) => {
+        const d = new Date(r.createdAt).getTime();
+        if (dateFrom && d < new Date(dateFrom).setHours(0, 0, 0, 0)) return false;
+        if (dateTo && d > new Date(dateTo).setHours(23, 59, 59, 999)) return false;
+        return true;
+      });
+    }
+
+    const name = (r: ReviewItem) => (r.customerName || r.customerEmail || "").toLowerCase();
+    if (sortBy === "newest") list = [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    else if (sortBy === "oldest") list = [...list].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    else if (sortBy === "name-az") list = [...list].sort((a, b) => name(a).localeCompare(name(b)));
+    else if (sortBy === "name-za") list = [...list].sort((a, b) => name(b).localeCompare(name(a)));
+
+    return list;
+  })();
+
+  const isEmpty = !reviews.length;
+  const noResults = reviews.length > 0 && filtered.length === 0;
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  };
+
   return (
-    <Card className="bg-white border border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-display font-bold">Reviews &amp; Concerns</CardTitle>
-        <CardDescription>
+    <Card className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <CardHeader className="border-b border-slate-100 bg-slate-50/30">
+        <CardTitle className="text-2xl font-display font-bold text-slate-900">Reviews &amp; Concerns</CardTitle>
+        <CardDescription className="text-slate-600">
           Customer reviews and private concerns in one place.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-8">
-        <div className="text-center py-12">
-          <div className="flex justify-center gap-4 mb-4">
-            <MessageSquare className="w-16 h-16 text-slate-400" />
-            <AlertTriangle className="w-16 h-16 text-slate-400" />
+      <CardContent className="p-0">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
           </div>
-          <p className="text-slate-600">Reviews &amp; concerns view coming soon...</p>
-          <p className="text-sm text-slate-500 mt-2">
-            Total Reviews: {business.totalReviews || 0}
-          </p>
-          <p className="text-sm text-slate-500 mt-1">
-            View customer concerns and feedback here
-          </p>
-        </div>
+        ) : (
+          <>
+            {/* Receive concerns at this email */}
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <Label className="text-sm font-medium text-slate-700">Receive concerns at</Label>
+              <p className="text-xs text-slate-500 mt-0.5 mb-2">
+                New concerns are emailed here. Leave blank to use your account email.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="email"
+                  placeholder="e.g. support@yourbusiness.com"
+                  value={concernsEmail}
+                  onChange={(e) => setConcernsEmail(e.target.value)}
+                  className="h-9 max-w-xs bg-white border-slate-200 rounded-lg text-sm"
+                />
+                <Button
+                  size="sm"
+                  className="h-9"
+                  disabled={savingEmail || (concernsEmail.trim() === (business.concernsNotificationEmail ?? ""))}
+                  onClick={handleSaveConcernsEmail}
+                >
+                  {savingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Toolbar: filters, date range, sort */}
+            <div className="border-b border-slate-100 bg-slate-100/80 px-6 py-4">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
+                    <Filter className="h-4 w-4" strokeWidth={2} />
+                  </div>
+                  <Select value={filterType} onValueChange={(v: "all" | "concern" | "great") => setFilterType(v)}>
+                    <SelectTrigger className="w-[150px] h-9 rounded-lg border border-slate-200 !bg-white text-slate-900 shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-50 rounded-xl border-slate-200 !bg-white shadow-lg">
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="concern">Concerns only</SelectItem>
+                      <SelectItem value="great">Great (reviews) only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator orientation="vertical" className="h-8 hidden sm:block bg-slate-200" />
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
+                    <Calendar className="h-[18px] w-[18px] shrink-0" strokeWidth={2} stroke="currentColor" />
+                  </div>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="h-9 min-w-[140px] bg-white border-slate-200 rounded-lg text-sm shadow-sm [color-scheme:light]"
+                  />
+                  <span className="text-slate-500 text-sm font-medium">to</span>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="h-9 min-w-[140px] bg-white border-slate-200 rounded-lg text-sm shadow-sm [color-scheme:light]"
+                  />
+                </div>
+                <Separator orientation="vertical" className="h-8 hidden sm:block bg-slate-200" />
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
+                    <ArrowUpDown className="h-4 w-4" strokeWidth={2} />
+                  </div>
+                  <Select value={sortBy} onValueChange={(v: "newest" | "oldest" | "name-az" | "name-za") => setSortBy(v)}>
+                    <SelectTrigger className="w-[150px] h-9 rounded-lg border border-slate-200 !bg-white text-slate-900 shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-50 rounded-xl border-slate-200 !bg-white shadow-lg">
+                      <SelectItem value="newest">Newest first</SelectItem>
+                      <SelectItem value="oldest">Oldest first</SelectItem>
+                      <SelectItem value="name-az">Name A–Z</SelectItem>
+                      <SelectItem value="name-za">Name Z–A</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-5">
+              {isEmpty ? (
+                <div className="text-center py-14 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
+                  <div className="flex justify-center gap-3 mb-4">
+                    <MessageSquare className="w-12 h-12 text-slate-300" />
+                    <AlertTriangle className="w-12 h-12 text-slate-300" />
+                  </div>
+                  <p className="text-slate-600 font-medium">No reviews or concerns yet</p>
+                  <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                    When customers use your review link, their feedback will appear here.
+                  </p>
+                </div>
+              ) : noResults ? (
+                <div className="text-center py-14 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
+                  <p className="text-slate-600 font-medium">No items match the current filters or date range.</p>
+                  <Button variant="outline" size="sm" className="mt-4 rounded-lg" onClick={() => { setFilterType("all"); setDateFrom(""); setDateTo(""); }}>
+                    Clear filters
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-slate-500">
+                      Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of {reviews.length} item{reviews.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <ul className="space-y-4">
+                    {filtered.map((r) => (
+                      <li
+                        key={r.id}
+                        className={cn(
+                          "rounded-2xl border text-left shadow-sm transition-shadow hover:shadow-md",
+                          r.experienceType === "concern"
+                            ? "border-amber-200/80 bg-gradient-to-br from-amber-50/80 to-white"
+                            : "border-slate-200/80 bg-gradient-to-br from-slate-50/50 to-white"
+                        )}
+                      >
+                        <div className="p-5">
+                          <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                            <span
+                              className={cn(
+                                "inline-flex items-center text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-md",
+                                r.experienceType === "concern"
+                                  ? "bg-amber-100 text-amber-800 border border-amber-200/60"
+                                  : "bg-emerald-100 text-emerald-800 border border-emerald-200/60"
+                              )}
+                            >
+                              {r.experienceType === "concern" ? "Concern" : "Review"}
+                            </span>
+                            <time className="text-xs text-slate-500 tabular-nums" dateTime={r.createdAt}>
+                              {formatDate(r.createdAt)}
+                            </time>
+                          </div>
+                          {r.content && (
+                            <p className="text-slate-800 whitespace-pre-wrap text-[15px] leading-relaxed mb-4">{r.content}</p>
+                          )}
+                          {(r.customerName || r.customerEmail || r.customerPhone) && (
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 pt-3 border-t border-slate-100">
+                              {r.customerName && <span className="font-medium text-slate-700">{r.customerName}</span>}
+                              {r.customerEmail && (
+                                <a href={`mailto:${r.customerEmail}`} className="text-[hsl(var(--primary))] hover:underline font-medium">
+                                  {r.customerEmail}
+                                </a>
+                              )}
+                              {r.customerPhone && <span className="text-slate-600">{r.customerPhone}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -1510,10 +1746,10 @@ function QRView({ business }: { business: any }) {
             className="group flex items-center gap-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all"
             title={reviewUrl}
           >
-            <span className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:text-blue-600 transition-colors">
+            <span className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:font-bold transition-colors">
               {reviewUrl}
             </span>
-            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600 flex-shrink-0 transition-colors" />
+            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-700 flex-shrink-0 transition-colors" />
           </a>
         </div>
       </CardContent>

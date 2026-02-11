@@ -2,13 +2,14 @@ import { useEffect } from "react";
 import { Switch, Route, useLocation, useRoute } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/Header";
 import AdminRoute from "@/components/AdminRoute";
 
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/Auth";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import ManageUsers from "@/pages/admin/ManageUsers";
@@ -39,6 +40,8 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/login" component={() => <AuthPage mode="login" />} />
       <Route path="/signup" component={() => <AuthPage mode="signup" />} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
 
       {/* App Routes */}
       <Route path="/dashboard" component={Dashboard} />
@@ -86,7 +89,6 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
         {!isAppRoute && <Header />}
         <Router />
       </TooltipProvider>

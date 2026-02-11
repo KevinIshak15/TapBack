@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRoute } from "wouter";
 import { useBusinessBySlug } from "@/hooks/use-businesses";
-import { useGenerateReview } from "@/hooks/use-reviews";
+import { useGenerateReview, useCreateReview } from "@/hooks/use-reviews";
 import { Loader2, Copy, RefreshCw, Send, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ export default function ReviewLanding() {
   const themeStyle = getReviewThemeStyle(theme);
   const cardStyle = getReviewCardStyle(theme);
   const generateMutation = useGenerateReview();
+  const createReviewMutation = useCreateReview();
 
   const [logoError, setLogoError] = useState(false);
   const [choice, setChoice] = useState<"great" | "concern" | null>(null);
@@ -105,24 +106,40 @@ export default function ReviewLanding() {
     toast({ title: "Copied!", description: "Paste your review on Google." });
   };
 
-  const handleConcernSubmit = (e: React.FormEvent) => {
+  const handleConcernSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Thank you",
-      description: "Your feedback has been sent directly to the owner.",
-    });
-    setFeedbackText("");
-    setConcernName("");
-    setConcernNumber("");
-    setConcernEmail("");
-    setChoice(null);
+    try {
+      await createReviewMutation.mutateAsync({
+        businessId: business.id,
+        experienceType: "concern",
+        content: feedbackText.trim() || undefined,
+        customerEmail: concernEmail.trim() || undefined,
+        customerName: concernName.trim() || undefined,
+        customerPhone: concernNumber.trim() || undefined,
+      });
+      toast({
+        title: "Thank you",
+        description: "Your feedback has been sent directly to the owner.",
+      });
+      setFeedbackText("");
+      setConcernName("");
+      setConcernNumber("");
+      setConcernEmail("");
+      setChoice(null);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "Could not send your feedback. Please try again.",
+      });
+    }
   };
 
   return (
     <ReviewFlowLayout companyName={business.name} style={themeStyle}>
-      {/* Same layout as Live Preview: one card, all sections stacked */}
+      {/* Same layout as Live Preview: one card, all sections stacked — responsive width to use space */}
       <div
-        className="w-full max-w-[375px] rounded-2xl overflow-hidden flex flex-col gap-6 p-4 sm:p-6"
+        className="w-full max-w-[min(100%,26rem)] sm:max-w-[30rem] md:max-w-[34rem] lg:max-w-[38rem] rounded-2xl overflow-hidden flex flex-col gap-6 p-5 sm:p-6 md:p-8"
         style={{
           ...cardStyle,
           fontFamily: theme.fontFamily,
@@ -375,13 +392,25 @@ export default function ReviewLanding() {
                   </button>
                 ))}
               </div>
+              <label className="block text-[10px] font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: theme.text }}>
+                Additional comments (optional)
+              </label>
               <textarea
-                placeholder="Additional comments..."
-                className="w-full min-h-[72px] rounded-lg border-2 border-dashed px-3 py-2 text-[11px] resize-none"
+                placeholder="e.g. specific staff member, wait time..."
+                className="w-full min-h-[80px] rounded-xl border-2 px-3 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-offset-1"
                 style={{
-                  borderColor: theme.primary + "40",
-                  background: theme.cardBg,
+                  borderColor: theme.primary + "60",
+                  background: theme.cardBg ?? "#fff",
                   color: theme.text,
+                  outline: "none",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = theme.primary;
+                  e.target.style.boxShadow = `0 0 0 2px ${theme.primary}30`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.primary + "60";
+                  e.target.style.boxShadow = "none";
                 }}
                 value={additionalComments}
                 onChange={(e) => setAdditionalComments(e.target.value)}
@@ -522,12 +551,29 @@ export default function ReviewLanding() {
                   </span>
                 )}
               </div>
-              <div
-                className="rounded-lg border-2 border-dashed py-2 text-center text-[11px] opacity-50"
-                style={{ borderColor: theme.primary + "40", color: theme.text }}
-              >
-                Additional comments...
-              </div>
+              <label className="block text-[10px] font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: theme.text }}>
+                Additional comments (optional)
+              </label>
+              <textarea
+                placeholder="e.g. specific staff member, wait time..."
+                className="w-full min-h-[80px] rounded-xl border-2 px-3 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-offset-1"
+                style={{
+                  borderColor: theme.primary + "60",
+                  background: theme.cardBg ?? "#fff",
+                  color: theme.text,
+                  outline: "none",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = theme.primary;
+                  e.target.style.boxShadow = `0 0 0 2px ${theme.primary}30`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.primary + "60";
+                  e.target.style.boxShadow = "none";
+                }}
+                value={additionalComments}
+                onChange={(e) => setAdditionalComments(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
@@ -558,7 +604,7 @@ export default function ReviewLanding() {
         )}
 
         <p className="text-[10px] opacity-50 pt-1" style={{ color: theme.text }}>
-          Powered by TapBack
+          Powered by RevsBoost
         </p>
     </div>
     </ReviewFlowLayout>

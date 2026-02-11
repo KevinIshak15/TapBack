@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const inputClass =
-  "h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all";
+  "h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all";
 const labelClass = "text-sm font-semibold";
 
 export interface SettingsSectionProps {
