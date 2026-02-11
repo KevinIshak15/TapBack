@@ -59,6 +59,8 @@ export const insertBusinessSchema = z.object({
   phone: z.string().max(20).optional(),
   website: z.string().url().optional(),
   reviewKeywords: z.string().max(500).optional(), // Keywords/phrases to include in AI-generated reviews
+  reviewTheme: z.string().max(50).optional(), // Theme id for customer review flow (e.g. classic, warm-friendly)
+  logo: z.string().max(500000).optional(), // Logo URL or data URL (transparent PNG); shown in review flow header
 });
 
 // Internal schema (for database/storage) - uses Date objects

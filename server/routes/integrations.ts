@@ -52,21 +52,21 @@ export function registerIntegrationRoutes(app: Express) {
     asyncHandler(async (req, res) => {
       const { code, state, error } = req.query as { code?: string; state?: string; error?: string };
       if (error) {
-        const front = process.env.VITE_APP_ORIGIN || process.env.BASE_URL || "http://localhost:5173";
+        const front = process.env.VITE_APP_ORIGIN || process.env.BASE_URL || "http://localhost:5000";
         return res.redirect(`${front}/business/new?google_error=${encodeURIComponent(String(error))}`);
       }
       const sessionState = (req.session as any)?.googleIntegrationState;
       if (!state || state !== sessionState) {
-        return res.redirect((process.env.VITE_APP_ORIGIN || "http://localhost:5173") + "/business/new?google_error=invalid_state");
+        return res.redirect((process.env.VITE_APP_ORIGIN || process.env.BASE_URL || "http://localhost:5000") + "/business/new?google_error=invalid_state");
       }
       const userId = (req.session as any)?.googleIntegrationReturnUserId;
       if (!userId || !code) {
-        return res.redirect((process.env.VITE_APP_ORIGIN || "http://localhost:5173") + "/business/new?google_error=missing");
+        return res.redirect((process.env.VITE_APP_ORIGIN || process.env.BASE_URL || "http://localhost:5000") + "/business/new?google_error=missing");
       }
       (req.session as any).googleIntegrationState = undefined;
       (req.session as any).googleIntegrationReturnUserId = undefined;
 
-      const front = process.env.VITE_APP_ORIGIN || process.env.BASE_URL || "http://localhost:5173";
+      const front = process.env.VITE_APP_ORIGIN || process.env.BASE_URL || "http://localhost:5000";
       try {
         const tokens = await exchangeCodeForTokens(code);
         const connectedEmail = undefined;

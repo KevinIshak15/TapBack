@@ -16,6 +16,7 @@ import CreateBusiness from "@/pages/CreateBusiness";
 import BusinessQR from "@/pages/BusinessQR";
 import BusinessPosters from "@/pages/BusinessPosters";
 import BusinessDetails from "@/pages/BusinessDetails";
+import Settings from "@/pages/Settings";
 
 // Review Flow Pages
 import ReviewLanding from "@/pages/review/ReviewLanding";
@@ -55,6 +56,7 @@ function Router() {
           </AdminRoute>
         )}
       </Route>
+      <Route path="/settings" component={Settings} />
       <Route path="/business/new" component={CreateBusiness} />
       <Route path="/business/:slug/qr" component={BusinessQR} />
       <Route path="/business/:slug/posters" component={BusinessPosters} />
@@ -73,7 +75,7 @@ function Router() {
 
 function App() {
   const [location] = useLocation();
-  const isAppRoute = /^\/(dashboard|admin|business)/.test(location);
+  const isAppRoute = /^\/(dashboard|admin|business|settings)/.test(location);
 
   return (
     <QueryClientProvider client={queryClient}>

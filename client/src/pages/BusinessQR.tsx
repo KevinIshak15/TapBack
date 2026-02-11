@@ -4,7 +4,7 @@ import { useBusinessBySlug } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Download, ExternalLink, Printer, QrCode, CheckCircle2, FileImage } from "lucide-react";
-import { AppShell } from "@/components/app/AppShell";
+import { BusinessLayout } from "@/components/BusinessLayout";
 
 export default function BusinessQR() {
   const [, params] = useRoute("/business/:slug/qr");
@@ -85,7 +85,7 @@ export default function BusinessQR() {
   ];
 
   return (
-    <AppShell>
+    <BusinessLayout business={business} slug={slug}>
       <div className="max-w-4xl space-y-6">
         <div className="grid md:grid-cols-2 gap-6">
           <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
@@ -168,6 +168,6 @@ export default function BusinessQR() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </BusinessLayout>
   );
 }

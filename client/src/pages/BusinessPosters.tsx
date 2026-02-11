@@ -58,6 +58,97 @@ function downloadPngUrl(base: string, templateId: string, size: PaperSize, varia
   return `${base}/download.png?${params.toString()}`;
 }
 
+/** Single poster card: shows preview image (same as Preview button), loading state, and actions. */
+function PosterCard({
+  template,
+  apiBase,
+  size,
+  variant,
+  onPreview,
+  onDownload,
+  downloadPending,
+}: {
+  template: TemplateMeta;
+  apiBase: string;
+  size: PaperSize;
+  variant: Variant;
+  onPreview: () => void;
+  onDownload: (format: "pdf" | "png", templateId: string) => void;
+  downloadPending: "pdf" | "png" | null;
+}) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const previewSrc = previewUrl(apiBase, template.id, size, variant);
+
+  return (
+    <Card className="border border-slate-200 bg-white overflow-hidden flex flex-col">
+      <div className="aspect-[8.5/11] bg-slate-100 relative overflow-hidden rounded-t-lg flex items-center justify-center min-h-[200px]">
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+          </div>
+        )}
+        {imageError && (
+          <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm p-4 text-center">
+            Preview unavailable — use Preview button
+          </div>
+        )}
+        <img
+          src={previewSrc}
+          alt={`Preview: ${template.name}`}
+          className={`absolute inset-0 w-full h-full object-contain ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+          loading="lazy"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+        />
+      </div>
+      <CardHeader className="flex-1">
+        <CardTitle className="text-lg">{template.name}</CardTitle>
+        <CardDescription className="text-sm">{template.description}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-2 pt-0">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 min-w-[100px]"
+          onClick={onPreview}
+        >
+          <Eye className="w-4 h-4 mr-1.5" />
+          Preview
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 min-w-[100px]"
+          onClick={() => onDownload("pdf", template.id)}
+          disabled={downloadPending !== null}
+        >
+          {downloadPending === "pdf" ? (
+            <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+          ) : (
+            <FileText className="w-4 h-4 mr-1.5" />
+          )}
+          PDF
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 min-w-[100px]"
+          onClick={() => onDownload("png", template.id)}
+          disabled={downloadPending !== null}
+        >
+          {downloadPending === "png" ? (
+            <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4 mr-1.5" />
+          )}
+          PNG
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function BusinessPosters() {
   const [, params] = useRoute("/business/:slug/posters");
   const slug = params?.slug ?? "";
@@ -272,61 +363,16 @@ export default function BusinessPosters() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {templates.map((t) => (
-              <Card
+              <PosterCard
                 key={t.id}
-                className="border border-slate-200 bg-white overflow-hidden flex flex-col"
-              >
-                <div className="aspect-[8.5/11] bg-white relative overflow-hidden rounded-t-lg flex items-center justify-center min-h-[200px]">
-                  <iframe
-                    title={`Preview: ${t.name}`}
-                    src={htmlPreviewUrl(apiBase, t.id, size, variant)}
-                    className="absolute inset-0 w-full h-full border-0 pointer-events-none"
-                  />
-                </div>
-                <CardHeader className="flex-1">
-                  <CardTitle className="text-lg">{t.name}</CardTitle>
-                  <CardDescription className="text-sm">{t.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 min-w-[100px]"
-                    onClick={() => openPreview(t)}
-                  >
-                    <Eye className="w-4 h-4 mr-1.5" />
-                    Preview
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 min-w-[100px]"
-                    onClick={() => handleDownload("pdf", t.id)}
-                    disabled={downloadPending !== null}
-                  >
-                    {downloadPending === "pdf" ? (
-                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                    ) : (
-                      <FileText className="w-4 h-4 mr-1.5" />
-                    )}
-                    PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 min-w-[100px]"
-                    onClick={() => handleDownload("png", t.id)}
-                    disabled={downloadPending !== null}
-                  >
-                    {downloadPending === "png" ? (
-                      <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4 mr-1.5" />
-                    )}
-                    PNG
-                  </Button>
-                </CardContent>
-              </Card>
+                template={t}
+                apiBase={apiBase}
+                size={size}
+                variant={variant}
+                onPreview={() => openPreview(t)}
+                onDownload={handleDownload}
+                downloadPending={downloadPending}
+              />
             ))}
           </div>
         )}

@@ -32,6 +32,7 @@ declare module "http" {
 
 app.use(
   express.json({
+    limit: "2mb", // allow base64 logos in PATCH /api/businesses/:id
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },

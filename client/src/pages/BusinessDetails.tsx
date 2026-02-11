@@ -11,13 +11,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, GripVertical, X, Plus, ZoomIn, ZoomOut, Eye } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown } from "lucide-react";
+import {
+  CATEGORIES,
+  getDefaultTagsForCategory,
+  OPTIONAL_TAG_BANK,
+  isOptionalBankTag,
+} from "@/lib/categoriesAndTags";
+import { makeLogoTransparent } from "@/lib/logoToTransparent";
+import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { AppShell } from "@/components/app/AppShell";
+import { BusinessLayout } from "@/components/BusinessLayout";
+import { REVIEW_THEMES, getReviewTheme, type ReviewThemeId } from "@/lib/reviewThemes";
 
 type TabType = "settings" | "qr" | "insights" | "reviews" | "complaints";
 
@@ -75,47 +87,9 @@ export default function BusinessDetails() {
     return null;
   }
 
-  const tabItems: { id: TabType; label: string; icon: typeof Settings }[] = [
-    { id: "settings", label: "Settings", icon: Settings },
-    { id: "qr", label: "QR Code", icon: QrCode },
-    { id: "insights", label: "Insights", icon: BarChart },
-    { id: "reviews", label: "Reviews", icon: MessageSquare },
-    { id: "complaints", label: "Complaints", icon: AlertTriangle },
-  ];
-
   return (
-    <AppShell>
-      <div className="space-y-6">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Store className="h-6 w-6 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-semibold text-slate-900 truncate">
-              {business.name}
-            </h1>
-            <p className="text-sm text-slate-600 mt-0.5">
-              {business.category}
-            </p>
-          </div>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={(v) => setTab(v as TabType)} className="w-full">
-          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl h-11 shadow-card flex flex-wrap gap-1">
-            {tabItems.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className="rounded-lg px-3 gap-1.5 data-[state=active]:bg-[hsl(var(--app-surface))] data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {tab.label}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
+    <BusinessLayout business={business} slug={slug}>
+      <Tabs value={activeTab} onValueChange={(v) => setTab(v as TabType)} className="w-full">
           <TabsContent value="settings" className="mt-6">
             <BusinessSettingsView business={business} />
           </TabsContent>
@@ -132,53 +106,38 @@ export default function BusinessDetails() {
             <ComplaintsView business={business} />
           </TabsContent>
         </Tabs>
-      </div>
-    </AppShell>
+    </BusinessLayout>
   );
-}
-
-// Category-specific default tags
-const categoryDefaultTags: Record<string, string[]> = {
-  "Restaurant": ["Great food", "Friendly staff", "Fast service", "Clean place", "Good value"],
-  "Cafe": ["Great coffee", "Cozy atmosphere", "Friendly staff", "Consistent quality", "Relaxing spot"],
-  "Retail": ["Helpful staff", "Good selection", "Easy checkout", "Clean store", "Smooth experience"],
-  "Service": ["Professional service", "On time", "Clear communication", "Quality work", "Easy to work with"],
-  "Healthcare": ["Caring staff", "Professional experience", "Clean facility", "Clear explanations", "Well organized"],
-  "Beauty & Wellness": ["Relaxing experience", "Friendly staff", "Great results", "Clean space", "Professional service"],
-  "Automotive": ["Honest service", "Quick turnaround", "Fair pricing", "Knowledgeable staff", "Quality work"],
-  "Home Services": ["On time", "Professional team", "Clean work", "Clear pricing", "Job done right"],
-  "Education": ["Supportive staff", "Clear instruction", "Positive environment", "Well organized", "Helpful experience"],
-  "Entertainment": ["Great experience", "Fun atmosphere", "Friendly staff", "Well organized", "Would come again"],
-  "Fitness & Sports": ["Clean facility", "Motivating trainers", "Friendly staff", "Great workouts", "Welcoming environment"],
-  "Real Estate": ["Professional agent", "Responsive", "Knowledgeable", "Smooth process", "Helpful guidance"],
-  "Legal": ["Professional service", "Clear communication", "Responsive", "Knowledgeable", "Helpful guidance"],
-  "Financial": ["Clear advice", "Professional staff", "Easy process", "Helpful support", "Trustworthy service"],
-  "Travel & Hospitality": ["Friendly staff", "Clean rooms", "Comfortable stay", "Great location", "Would stay again"],
-  "Other": ["Great service", "Friendly staff", "Professional experience", "Clean environment", "Highly recommend"],
-};
-
-// Get default tags for a category, fallback to generic if category not found
-function getDefaultTagsForCategory(category: string): string[] {
-  return categoryDefaultTags[category] || categoryDefaultTags["Other"];
 }
 
 // Business Settings View Component
 function BusinessSettingsView({ business }: { business: any }) {
   const { toast } = useToast();
   const updateMutation = useUpdateBusiness();
-  const [activeTab, setActiveTab] = useState("business-info");
-  // Default tags that always show (category-specific)
-  const defaultTags = getDefaultTagsForCategory(business.category || "Other");
+  const [selectedThemeId, setSelectedThemeId] = useState<string>(
+    business.reviewTheme || "classic"
+  );
   // Custom tags stored in database (max 2 additional)
   const [customTags, setCustomTags] = useState<string[]>(
     business.focusAreas && business.focusAreas.length > 0 
-      ? business.focusAreas.filter((tag: string) => !defaultTags.includes(tag))
+      ? business.focusAreas.filter((tag: string) => !getDefaultTagsForCategory(business.category || "Other").includes(tag))
       : []
   );
   const [newTag, setNewTag] = useState("");
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // All tags for display (defaults + custom)
+  const form = useForm<Partial<InsertBusiness>>({
+    resolver: zodResolver(insertBusinessSchema.partial()),
+    defaultValues: {
+      name: business.name,
+      category: business.category,
+      googleReviewUrl: business.googleReviewUrl,
+      logo: business.logo ?? "",
+    },
+  });
+
+  // Use form's current category so tags update immediately when user selects a category
+  const displayCategory = form.watch("category") || business.category || "Other";
+  const defaultTags = getDefaultTagsForCategory(displayCategory);
   const allTags = [...defaultTags, ...customTags];
 
   // Sync custom tags when business data changes
@@ -191,14 +150,10 @@ function BusinessSettingsView({ business }: { business: any }) {
     );
   }, [business.focusAreas, business.category]);
 
-  const form = useForm<Partial<InsertBusiness>>({
-    resolver: zodResolver(insertBusinessSchema.partial()),
-    defaultValues: {
-      name: business.name,
-      category: business.category,
-      googleReviewUrl: business.googleReviewUrl,
-    },
-  });
+  // Sync theme when business data changes
+  useEffect(() => {
+    setSelectedThemeId(business.reviewTheme || "classic");
+  }, [business.reviewTheme]);
 
   // Reset form when business data changes
   useEffect(() => {
@@ -206,6 +161,7 @@ function BusinessSettingsView({ business }: { business: any }) {
       name: business.name,
       category: business.category,
       googleReviewUrl: business.googleReviewUrl,
+      logo: business.logo ?? "",
     });
   }, [business, form]);
 
@@ -248,11 +204,20 @@ function BusinessSettingsView({ business }: { business: any }) {
     }
   };
 
-  const handleAddTag = () => {
-    if (newTag.trim() && customTags.length < 2 && !allTags.includes(newTag.trim())) {
-      setCustomTags([...customTags, newTag.trim()]);
-      setNewTag("");
-    }
+  const customCount = customTags.filter((t) => !isOptionalBankTag(t)).length; // max 1 custom allowed
+  const canAddFromBank = customTags.length < 2;
+  const canAddCustom = customTags.length < 2 && customCount < 1;
+
+  const handleAddCustomTag = () => {
+    const tag = newTag.trim();
+    if (!tag || !canAddCustom || allTags.includes(tag)) return;
+    setCustomTags([...customTags, tag]);
+    setNewTag("");
+  };
+
+  const handleAddFromBank = (tag: string) => {
+    if (!canAddFromBank || customTags.includes(tag)) return;
+    setCustomTags([...customTags, tag]);
   };
 
   const handleRemoveTag = (index: number) => {
@@ -264,226 +229,426 @@ function BusinessSettingsView({ business }: { business: any }) {
     }
   };
 
-  const handleDragStart = (index: number) => {
-    // Only allow dragging custom tags
-    if (index >= defaultTags.length) {
-      setDraggedIndex(index);
+  const handleSaveTheme = async () => {
+    try {
+      await updateMutation.mutateAsync({
+        id: business.id,
+        reviewTheme: selectedThemeId as ReviewThemeId,
+      });
+      toast({
+        title: "Theme saved",
+        description: "Review page theme updated. Customers will see this look when leaving a review.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to save theme",
+      });
     }
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (draggedIndex === null) return;
-    
-    // Only allow reordering custom tags (not defaults)
-    if (index < defaultTags.length || draggedIndex < defaultTags.length) {
-      return;
-    }
-
-    const newCustomTags = [...customTags];
-    const draggedItem = newCustomTags[draggedIndex - defaultTags.length];
-    newCustomTags.splice(draggedIndex - defaultTags.length, 1);
-    newCustomTags.splice(index - defaultTags.length, 0, draggedItem);
-    setCustomTags(newCustomTags);
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
-
+  const selectedTheme = getReviewTheme(selectedThemeId);
 
   return (
     <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-display font-bold">Business Settings</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="business-info">Business Information</TabsTrigger>
-            <TabsTrigger value="review-options">Review Options</TabsTrigger>
-          </TabsList>
-
-          {/* Tab 1: Business Information */}
-          <TabsContent value="business-info" className="space-y-6">
-            <form onSubmit={form.handleSubmit(handleSaveBusinessInfo)} className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="text-sm font-medium text-slate-700">
-                    Business Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    {...form.register("name")}
-                    className="mt-1"
-                    placeholder="Enter business name"
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.name.message}</p>
-                  )}
-                </div>
-
-                <Separator />
-
-                <div>
-                  <Label htmlFor="category" className="text-sm font-medium text-slate-700">
-                    Category *
-                  </Label>
-                  <Input
-                    id="category"
-                    {...form.register("category")}
-                    className="mt-1"
-                    placeholder="e.g., Restaurant, Salon, Clinic"
-                  />
-                  {form.formState.errors.category && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.category.message}</p>
-                  )}
-                </div>
-
-                <Separator />
-
-                <div>
-                  <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-slate-700">
-                    Google Review URL *
-                  </Label>
-                  <Input
-                    id="googleReviewUrl"
-                    {...form.register("googleReviewUrl")}
-                    className="mt-1"
-                    placeholder="https://www.google.com/..."
-                  />
-                  {form.formState.errors.googleReviewUrl && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.googleReviewUrl.message}</p>
-                  )}
-                </div>
-
+      <CardContent className="space-y-8">
+        {/* Single page: left = Business Info, right = Review Options (smaller) */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(0,340px)] gap-8 items-start">
+          {/* Left: Business Information */}
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-slate-800 mb-4">Business Information</h3>
+            <form onSubmit={form.handleSubmit(handleSaveBusinessInfo)} className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="text-sm font-medium text-slate-700">Business Name *</Label>
+                <Input
+                  id="name"
+                  {...form.register("name")}
+                  className="mt-1"
+                  placeholder="Enter business name"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.name.message}</p>
+                )}
               </div>
-
-              <div className="pt-4">
-                <Button
-                  type="submit"
-                  disabled={updateMutation.isPending}
-                  className="w-full sm:w-auto"
-                >
+              <Separator />
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Category *</Label>
+                <p className="text-xs text-slate-500 mt-0.5 mb-1">Search to find your business type. Used for review tags and SEO.</p>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full mt-1 justify-between h-10 font-normal",
+                        !form.watch("category") && "text-slate-500"
+                      )}
+                    >
+                      {form.watch("category") || "Select category..."}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] bg-white border-slate-200 shadow-lg overflow-hidden"
+                    align="start"
+                    sideOffset={4}
+                  >
+                    <Command className="bg-white rounded-md border-0">
+                      <CommandInput placeholder="Search category..." className="bg-white" />
+                      <CommandList className="max-h-[280px] overflow-y-auto bg-white">
+                        <CommandEmpty>No category found.</CommandEmpty>
+                        <CommandGroup className="bg-white p-1">
+                          {CATEGORIES.map((cat) => (
+                            <CommandItem
+                              key={cat}
+                              value={cat}
+                              onSelect={() => {
+                                form.setValue("category", cat);
+                              }}
+                              className="cursor-pointer rounded-md"
+                            >
+                              {cat}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {form.formState.errors.category && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.category.message}</p>
+                )}
+              </div>
+              <Separator />
+              <div>
+                <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-slate-700">Google Review URL *</Label>
+                <Input
+                  id="googleReviewUrl"
+                  {...form.register("googleReviewUrl")}
+                  className="mt-1"
+                  placeholder="https://www.google.com/..."
+                />
+                {form.formState.errors.googleReviewUrl && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.googleReviewUrl.message}</p>
+                )}
+              </div>
+              <Separator />
+              <div>
+                <Label htmlFor="logo" className="text-sm font-medium text-slate-700">Logo (optional)</Label>
+                <p className="text-xs text-slate-500 mt-0.5 mb-1">Any image format. We make the background transparent so it looks clean on your QR code and review flow.</p>
+                {form.watch("logo") ? (
+                  <div className="mt-2 flex items-center gap-3 flex-wrap">
+                    <img
+                      src={form.watch("logo")}
+                      alt="Logo preview"
+                      className="h-14 w-auto max-w-[140px] object-contain rounded border border-slate-200 bg-white"
+                    />
+                    <div className="flex gap-2">
+                      <Label htmlFor="logo-file" className="cursor-pointer">
+                        <span className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700">
+                          Change
+                        </span>
+                        <input
+                          id="logo-file"
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const r = new FileReader();
+                              r.onload = async () => {
+                                const dataUrl = r.result as string;
+                                try {
+                                  const transparent = await makeLogoTransparent(dataUrl);
+                                  form.setValue("logo", transparent);
+                                } catch {
+                                  form.setValue("logo", dataUrl);
+                                }
+                              };
+                              r.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => form.setValue("logo", "")}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-1 flex gap-2">
+                    <Input
+                      id="logo"
+                      {...form.register("logo")}
+                      className="flex-1"
+                      placeholder="Logo URL or upload below"
+                    />
+                    <Label htmlFor="logo-upload" className="cursor-pointer shrink-0">
+                      <span className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 border border-input bg-background hover:bg-slate-50">
+                        Upload
+                      </span>
+                      <input
+                        id="logo-upload"
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const r = new FileReader();
+                            r.onload = async () => {
+                              const dataUrl = r.result as string;
+                              try {
+                                const transparent = await makeLogoTransparent(dataUrl);
+                                form.setValue("logo", transparent);
+                              } catch {
+                                form.setValue("logo", dataUrl);
+                              }
+                            };
+                            r.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </Label>
+                  </div>
+                )}
+              </div>
+              <div className="pt-2">
+                <Button type="submit" disabled={updateMutation.isPending} className="w-full sm:w-auto">
                   {updateMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
                   ) : (
-                    <>
-                      Save Changes
-                      <CheckCircle2 className="w-4 h-4 ml-2" />
-                    </>
+                    <><CheckCircle2 className="w-4 h-4 ml-2" /> Save Changes</>
                   )}
                 </Button>
               </div>
             </form>
-          </TabsContent>
+          </div>
 
-          {/* Tab 2: Review Options */}
-          <TabsContent value="review-options" className="space-y-6">
-            <div className="space-y-6">
-              {/* Tags Section */}
-              <div>
-                <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                  Focus Areas (Tags)
-                </Label>
-                <p className="text-xs text-slate-500 mb-4">
-                  These tags appear as options for customers to select when leaving a review. Default tags for {business.category || "your category"} are always shown. You can add up to 2 additional custom tags.
-                </p>
-
-                <div className="space-y-2 mb-4">
-                  {/* Default tags (always shown, non-removable) */}
-                  {defaultTags.map((tag, index) => (
+          {/* Right: Review Options — tags only (themes moved to full-width below) */}
+          <div className="lg:max-w-[340px] space-y-6 text-sm w-full">
+            <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+              <Palette className="w-4 h-4 text-slate-600" />
+              Review Options
+            </h3>
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Focus Areas (Tags)</Label>
+              <p className="text-xs text-slate-500 mt-0.5 mb-2">5 tags are set by category (best for Google). Add up to 2 more from the options below or one of your own.</p>
+              <div className="space-y-1.5 mb-3">
+                {defaultTags.map((tag) => (
+                  <div key={`default-${tag}`} className="flex items-center gap-2 py-2 px-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                    <span className="flex-1 font-medium text-slate-900 text-xs">{tag}</span>
+                    <span className="text-[10px] text-slate-400 px-1.5 py-0.5 bg-slate-100 rounded">Best for Google</span>
+                  </div>
+                ))}
+                {customTags.map((tag, index) => {
+                  const displayIndex = defaultTags.length + index;
+                  return (
                     <div
-                      key={`default-${tag}`}
-                      className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200"
+                      key={`extra-${index}`}
+                      className="flex items-center gap-2 py-2 px-2.5 bg-primary/5 rounded-lg border border-primary/20 text-xs"
                     >
-                      <GripVertical className="w-4 h-4 text-slate-300" />
                       <span className="flex-1 font-medium text-slate-900">{tag}</span>
-                      <span className="text-xs text-slate-400 px-2 py-1 bg-slate-100 rounded">Default</span>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveTag(displayIndex)} className="h-6 w-6 p-0 text-slate-400 hover:text-red-600">
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
-                  ))}
-                  
-                  {/* Custom tags (removable, draggable) */}
-                  {customTags.map((tag, index) => {
-                    const displayIndex = defaultTags.length + index;
-                    return (
-                      <div
-                        key={`custom-${index}`}
-                        draggable
-                        onDragStart={() => handleDragStart(displayIndex)}
-                        onDragOver={(e) => handleDragOver(e, displayIndex)}
-                        onDragEnd={handleDragEnd}
-                        className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 cursor-move hover:bg-slate-100 transition-colors"
+                  );
+                })}
+              </div>
+              {customTags.length < 2 && (
+                <>
+                  <p className="text-[11px] text-slate-500 mb-1.5">Add from options (max 2 total) or your own (max 1 custom):</p>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {OPTIONAL_TAG_BANK.map((tag) => (
+                      <Button
+                        key={tag}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        disabled={!canAddFromBank || customTags.includes(tag)}
+                        onClick={() => handleAddFromBank(tag)}
                       >
-                        <GripVertical className="w-4 h-4 text-slate-400" />
-                        <span className="flex-1 font-medium text-slate-900">{tag}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveTag(displayIndex)}
-                          className="h-8 w-8 p-0 text-slate-400 hover:text-red-600"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {customTags.length < 2 && (
-                  <div className="flex gap-2">
+                        {tag}
+                        <Plus className="w-3 h-3 ml-1 opacity-70" />
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="flex gap-1.5">
                     <Input
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                      placeholder="Add a custom tag (max 2)"
-                      className="flex-1"
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCustomTag(); } }}
+                      placeholder="Your own tag (max 1)"
+                      className="flex-1 h-8 text-xs"
+                      disabled={!canAddCustom}
                     />
-                    <Button
-                      type="button"
-                      onClick={handleAddTag}
-                      disabled={!newTag.trim() || customTags.length >= 2 || allTags.includes(newTag.trim())}
-                    >
+                    <Button type="button" size="sm" onClick={handleAddCustomTag} disabled={!canAddCustom || !newTag.trim() || allTags.includes(newTag.trim())}>
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                )}
+                </>
+              )}
+              <Button type="button" size="sm" variant="outline" onClick={handleSaveTags} disabled={updateMutation.isPending} className="mt-2 w-full">
+                {updateMutation.isPending ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-3 h-3 mr-1.5" />}
+                Save Tags
+              </Button>
+            </div>
+          </div>
+        </div>
 
-                <div className="pt-4">
-                  <Button
-                    type="button"
-                    onClick={handleSaveTags}
-                    disabled={updateMutation.isPending}
-                    className="w-full sm:w-auto"
+        {/* Theme selector — full width, improved design */}
+        <div className="w-full">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
+            <div>
+              <Label className="text-sm font-semibold text-slate-800">Review page theme</Label>
+              <p className="text-xs text-slate-500 mt-0.5">Used on the customer review flow (experience, tags, AI step).</p>
+            </div>
+            <Button type="button" size="sm" onClick={handleSaveTheme} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-3 h-3 mr-1.5" />}
+              Save theme
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+            {Object.values(REVIEW_THEMES).map((theme) => (
+              <button
+                key={theme.id}
+                type="button"
+                onClick={() => setSelectedThemeId(theme.id)}
+                className={`rounded-xl border-2 p-4 text-left transition-all w-full min-w-0 flex flex-col gap-3 ${
+                  selectedThemeId === theme.id ? "border-primary ring-2 ring-primary/30 shadow-lg scale-[1.02]" : "border-slate-200 hover:border-slate-300 hover:shadow-md"
+                }`}
+              >
+                <div
+                  className="h-14 rounded-lg overflow-hidden flex flex-col gap-1.5 p-2"
+                  style={{ background: theme.pageBackground ?? theme.background }}
+                >
+                  <div
+                    className="flex-1 min-h-0 rounded-md border"
+                    style={{ background: theme.cardBg, borderColor: theme.backgroundAccent }}
+                  />
+                  <div
+                    className="h-4 rounded text-[9px] font-medium flex items-center justify-center text-white truncate"
+                    style={{ background: theme.primary }}
                   >
-                    {updateMutation.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        Save Tags
-                        <CheckCircle2 className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
+                    Button
+                  </div>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900 text-sm">{theme.name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{theme.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Live Preview: all review flow steps in one phone */}
+        <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100 p-6">
+          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-4">
+            Live Preview — all steps on phone
+          </p>
+          <div className="flex justify-center">
+            <div className="w-full max-w-[375px] rounded-[2rem] border-[10px] border-slate-800 bg-slate-800 shadow-2xl overflow-hidden">
+              <div className="rounded-[1.25rem] overflow-hidden bg-white max-h-[640px] overflow-y-auto">
+                <div
+                  className="p-4 flex flex-col gap-6"
+                  style={{
+                    background: selectedTheme.pageBackground ?? selectedTheme.background,
+                    color: selectedTheme.text,
+                    fontFamily: selectedTheme.fontFamily,
+                  }}
+                >
+                  {/* Step 1: How did you like your visit */}
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">1. How did you like your visit?</p>
+                    <h4 className="text-base font-bold" style={{ color: selectedTheme.text }}>{business.name}</h4>
+                    <p className="text-sm opacity-90">How was your experience at {business.name}?</p>
+                    <p className="text-xs opacity-70">We value your honest feedback</p>
+                  </div>
+
+                  {/* Step 2: Great experience or it wasn't */}
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">2. Great or concerns?</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div
+                        className="py-3 rounded-xl text-center text-xs font-semibold border-2"
+                        style={{ background: selectedTheme.backgroundAccent, color: selectedTheme.primary, borderColor: selectedTheme.primary + "50" }}
+                      >
+                        It was Great!
+                      </div>
+                      <div
+                        className="py-3 rounded-xl text-center text-xs font-semibold border-2 opacity-80"
+                        style={{ background: selectedTheme.backgroundAccent, color: selectedTheme.secondary, borderColor: selectedTheme.secondary + "50" }}
+                      >
+                        I have concerns
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Tags you can choose from */}
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">3. Choose tags</p>
+                    <p className="text-sm font-medium">What stood out about your visit?</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {allTags.slice(0, 5).map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2.5 py-1.5 rounded-full text-[11px] font-medium border-2"
+                          style={{
+                            background: selectedTheme.backgroundAccent,
+                            color: selectedTheme.primary,
+                            borderColor: selectedTheme.primary + "40",
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {allTags.length > 5 && (
+                        <span className="px-2.5 py-1.5 rounded-full text-[11px] opacity-80" style={{ color: selectedTheme.text }}>+{allTags.length - 5}</span>
+                      )}
+                    </div>
+                    <div className="rounded-lg border-2 border-dashed py-2 text-center text-[11px] opacity-50" style={{ borderColor: selectedTheme.primary + "40" }}>
+                      Additional comments...
+                    </div>
+                  </div>
+
+                  {/* Step 4: AI generation */}
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">4. AI-generated review</p>
+                    <p className="text-sm font-semibold">Review Ready!</p>
+                    <p className="text-[11px] opacity-80">Review generated based on your inputs</p>
+                    <div className="rounded-lg p-2 text-[11px] italic opacity-90" style={{ background: selectedTheme.backgroundAccent }}>
+                      &ldquo;Great experience! Professional service and clear communication. Highly recommend.&rdquo;
+                    </div>
+                    <div
+                      className="py-2.5 rounded-xl text-center text-[11px] font-semibold text-white"
+                      style={{ background: `linear-gradient(90deg, ${selectedTheme.primary}, ${selectedTheme.secondary})` }}
+                    >
+                      Copy & Post on Google
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] opacity-50 pt-2" style={{ color: selectedTheme.text }}>
+                    Powered by TapBack
+                  </p>
                 </div>
               </div>
-
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
