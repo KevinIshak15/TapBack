@@ -3,7 +3,7 @@ import { useRoute, Link } from "wouter";
 import { useBusinessBySlug } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Download, ExternalLink, Printer, QrCode, CheckCircle2, FileImage } from "lucide-react";
+import { Download, ExternalLink, Printer, QrCode, CheckCircle2 } from "lucide-react";
 import { BusinessLayout } from "@/components/BusinessLayout";
 
 export default function BusinessQR() {
@@ -150,23 +150,6 @@ export default function BusinessQR() {
             </CardContent>
           </Card>
         </div>
-
-        <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">QR Marketing Materials</h3>
-                <p className="text-sm text-slate-600 mt-1">Professionally designed, print-ready posters with your business name and QR code.</p>
-              </div>
-              <Link href={`/business/${business.slug}/posters`}>
-                <Button variant="outline" className="rounded-xl">
-                  <FileImage className="w-4 h-4 mr-2" />
-                  View templates &amp; download
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </BusinessLayout>
   );

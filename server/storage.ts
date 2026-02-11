@@ -72,6 +72,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "phoneNumber">>): Promise<User>;
+  setUserPassword(id: number, newPasswordHash: string): Promise<void>;
 
   createBusiness(business: InsertBusiness & { ownerId: number; locationResourceName?: string }): Promise<Business>;
   getBusinessesByOwner(ownerId: number): Promise<Business[]>;
@@ -112,33 +114,57 @@ export class FirebaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    const trimmed = username.trim();
+    if (!trimmed) return undefined;
+
     const snapshot = await db
       .collection(collections.users)
-      .where("username", "==", username)
+      .where("username", "==", trimmed)
       .limit(1)
       .get();
 
-    if (snapshot.empty) return undefined;
-    return docToData<User>(snapshot.docs[0]);
+    if (!snapshot.empty) return docToData<User>(snapshot.docs[0]);
+    const lower = trimmed.toLowerCase();
+    if (lower === trimmed) return undefined;
+    const snapshotLower = await db
+      .collection(collections.users)
+      .where("username", "==", lower)
+      .limit(1)
+      .get();
+    if (snapshotLower.empty) return undefined;
+    return docToData<User>(snapshotLower.docs[0]);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    const trimmed = email.trim();
+    if (!trimmed) return undefined;
+    const normalized = trimmed.toLowerCase();
+
     const snapshot = await db
       .collection(collections.users)
-      .where("email", "==", email)
+      .where("email", "==", normalized)
       .limit(1)
       .get();
-
-    if (snapshot.empty) return undefined;
-    return docToData<User>(snapshot.docs[0]);
+    if (!snapshot.empty) return docToData<User>(snapshot.docs[0]);
+    if (normalized !== trimmed) {
+      const snapshotExact = await db
+        .collection(collections.users)
+        .where("email", "==", trimmed)
+        .limit(1)
+        .get();
+      if (!snapshotExact.empty) return docToData<User>(snapshotExact.docs[0]);
+    }
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const newId = await getNextId(collections.users);
     const now = new Date();
-    
+    const emailNormalized = insertUser.email?.trim().toLowerCase();
+
     const userData: User = {
       ...insertUser,
+      ...(emailNormalized !== undefined && { email: emailNormalized }),
       role: insertUser.role || "user", // Default to "user" if not specified
       id: newId,
       createdAt: now,
@@ -148,6 +174,31 @@ export class FirebaseStorage implements IStorage {
     await db.collection(collections.users).doc(newId.toString()).set(dataToDoc(userData));
 
     return userData;
+  }
+
+  async updateUser(
+    id: number,
+    updates: Partial<Pick<User, "firstName" | "lastName" | "email" | "phoneNumber">>
+  ): Promise<User> {
+    const docRef = db.collection(collections.users).doc(id.toString());
+    const doc = await docRef.get();
+    if (!doc.exists) throw new Error("User not found");
+    const existing = docToData<User>(doc)!;
+    const emailNormalized =
+      updates.email !== undefined ? updates.email.trim().toLowerCase() : undefined;
+    const updated: User = {
+      ...existing,
+      ...updates,
+      ...(emailNormalized !== undefined && { email: emailNormalized }),
+      updatedAt: new Date(),
+    };
+    await docRef.update(dataToDoc(updated));
+    return updated;
+  }
+
+  async setUserPassword(id: number, newPasswordHash: string): Promise<void> {
+    const docRef = db.collection(collections.users).doc(id.toString());
+    await docRef.update(dataToDoc({ password: newPasswordHash, updatedAt: new Date() }));
   }
 
   async createBusiness(business: InsertBusiness & { ownerId: number; locationResourceName?: string }): Promise<Business> {

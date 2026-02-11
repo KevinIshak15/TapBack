@@ -52,14 +52,28 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy(async (usernameOrEmail, password, done) => {
       try {
-        const user = await storage.getUserByUsername(username);
+        const input = (usernameOrEmail && typeof usernameOrEmail === "string")
+          ? usernameOrEmail.trim()
+          : "";
+        if (!input) return done(null, false);
+
+        let user: Awaited<ReturnType<typeof storage.getUserByUsername>>;
+        if (input.includes("@")) {
+          user = await storage.getUserByEmail(input);
+          if (!user) {
+            const localPart = input.split("@")[0]?.trim();
+            if (localPart) user = await storage.getUserByUsername(localPart);
+          }
+          if (!user) user = await storage.getUserByUsername(input);
+        } else {
+          user = await storage.getUserByUsername(input);
+        }
         if (!user || !(await comparePasswords(password, user.password))) {
           return done(null, false);
-        } else {
-          return done(null, user);
         }
+        return done(null, user);
       } catch (err) {
         return done(err);
       }
@@ -220,13 +234,54 @@ export function setupAuth(app: Express) {
       }
       return res.sendStatus(401);
     }
-    // Convert dates to ISO strings for JSON response
     const user = req.user;
-    const serialized = { ...user, createdAt: user.createdAt.toISOString() };
+    const { password: _p, ...safe } = user as Express.User & { password?: string };
+    const serialized = { ...safe, createdAt: user.createdAt.toISOString() };
     if (user.updatedAt) {
       serialized.updatedAt = user.updatedAt.toISOString();
     }
     res.json(serialized);
+  });
+
+  app.patch("/api/user", async (req, res, next) => {
+    if (!req.isAuthenticated() || !req.user) return res.sendStatus(401);
+    const userId = (req.user as Express.User).id;
+    const body = req.body as Record<string, unknown>;
+    const updates: Partial<Pick<Express.User, "firstName" | "lastName" | "email" | "phoneNumber">> = {};
+    if (typeof body.firstName === "string") updates.firstName = body.firstName;
+    if (typeof body.lastName === "string") updates.lastName = body.lastName;
+    if (typeof body.email === "string") updates.email = body.email;
+    if (typeof body.phoneNumber === "string") updates.phoneNumber = body.phoneNumber;
+    try {
+      const updated = await storage.updateUser(userId, updates);
+      const { password: _p, ...safe } = updated as Express.User & { password?: string };
+      res.json({ ...safe, createdAt: updated.createdAt.toISOString(), updatedAt: updated.updatedAt?.toISOString() });
+    } catch (e: any) {
+      res.status(400).json({ message: e.message || "Update failed" });
+    }
+  });
+
+  app.post("/api/account/change-password", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user) return res.sendStatus(401);
+    const userId = (req.user as Express.User).id;
+    const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "currentPassword and newPassword are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters" });
+    }
+    try {
+      const user = await storage.getUser(userId);
+      if (!user || !(await comparePasswords(currentPassword, user.password))) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      const hashed = await hashPassword(newPassword);
+      await storage.setUserPassword(userId, hashed);
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(400).json({ message: e.message || "Failed to update password" });
+    }
   });
 
   // Google Identity Services - Verify ID token endpoint

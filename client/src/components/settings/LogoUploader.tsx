@@ -61,7 +61,7 @@ export function LogoUploader({
             onClick={() => inputRef.current?.click()}
           >
             <Upload className="w-4 h-4 mr-2" />
-            Upload
+            Upload picture
           </Button>
           {value && onChange && (
             <Button

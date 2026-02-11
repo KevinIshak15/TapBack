@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, type InsertUser } from "@shared/schema";
@@ -49,8 +49,18 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
     password: z.string().min(6, "Password must be at least 6 characters"),
   });
 
+  // Signup: no username field (generated from email in onSubmit). Validate only what the form collects.
+  const signupSchema = z.object({
+    email: z.string().min(1, "Email is required").email("Enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    phoneNumber: z.string().optional(),
+    adminCode: z.string().optional(),
+  });
+
   const form = useForm<InsertUser & { adminCode?: string; emailOrUsername?: string }>({
-    resolver: zodResolver(isLogin ? loginSchema : insertUserSchema),
+    resolver: zodResolver(isLogin ? loginSchema : signupSchema),
     defaultValues: { 
       username: "", 
       password: "", 
@@ -226,11 +236,11 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
   const isPending = loginMutation.isPending || registerMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-[hsl(var(--app-surface))] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-slate-200/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate-300/20 rounded-full blur-3xl" />
       </div>
 
       <motion.div
@@ -246,11 +256,13 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
           transition={{ delay: 0.1 }}
           className="flex flex-col items-center"
         >
-          <img 
-            src="/tapback-logo.png" 
-            alt="TapBack Logo" 
-            className="h-20 w-auto object-contain mb-6"
-          />
+          <Link href="/" className="block mb-6">
+            <img 
+              src="/tapback-logo.png" 
+              alt="TapBack Logo" 
+              className="h-20 w-auto object-contain"
+            />
+          </Link>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-2">
             {isLogin ? "Welcome back" : "Create your account"}
           </h2>
@@ -295,7 +307,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                       <Input
                         id="emailOrUsername"
                         placeholder="Enter your email address or username"
-                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
                         {...form.register("emailOrUsername")}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -320,7 +332,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           id="password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all pr-12"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all pr-12"
                           {...form.register("password")}
                         />
                         <button
@@ -353,7 +365,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                         <Input
                           id="firstName"
                           placeholder="First name"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
                           {...form.register("firstName")}
                         />
                       </div>
@@ -364,7 +376,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                         <Input
                           id="lastName"
                           placeholder="Last name"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
                           {...form.register("lastName")}
                         />
                       </div>
@@ -378,7 +390,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                         id="email"
                         type="email"
                         placeholder="Enter your email address"
-                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
                         {...form.register("email")}
                       />
                       {form.formState.errors.email && (
@@ -396,7 +408,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                         <select
                           value={countryCode}
                           onChange={(e) => setCountryCode(e.target.value)}
-                          className="h-12 px-3 rounded-xl border border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all text-sm font-medium"
+                          className="h-12 px-3 rounded-xl border border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all text-sm font-medium"
                         >
                           <option value="+1">CA</option>
                           <option value="+1">US</option>
@@ -407,7 +419,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           id="phoneNumber"
                           type="tel"
                           placeholder="Enter your phone number"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all flex-1"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all flex-1"
                           {...form.register("phoneNumber")}
                           onChange={(e) => {
                             form.setValue("phoneNumber", `${countryCode} ${e.target.value}`);
@@ -425,7 +437,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                           id="password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all pr-12"
+                          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all pr-12"
                           {...form.register("password")}
                         />
                         <button
@@ -455,7 +467,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                         id="adminCode"
                         type="password"
                         placeholder="Enter admin code if applicable"
-                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                        className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 transition-all"
                         {...form.register("adminCode")}
                       />
                     </div>
@@ -464,7 +476,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all"
+                  className="w-full h-12 text-base font-semibold"
                   disabled={isPending}
                 >
                   {isPending ? (
@@ -488,7 +500,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                     New here?{" "}
                     <button
                       onClick={toggleMode}
-                      className="text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors"
+                      className="text-slate-700 font-semibold hover:text-slate-900 hover:underline transition-colors"
                     >
                       Create an account
                     </button>
@@ -498,7 +510,7 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
                     Already have an account?{" "}
                     <button
                       onClick={toggleMode}
-                      className="text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors"
+                      className="text-slate-700 font-semibold hover:text-slate-900 hover:underline transition-colors"
                     >
                       Sign in
                     </button>

@@ -1,6 +1,4 @@
 import { useState, useCallback, useEffect } from "react";
-import { useRoute, Link } from "wouter";
-import { useBusinessBySlug } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,7 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Download, Eye, FileText, Loader2 } from "lucide-react";
+import { Download, Eye, FileText, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type PaperSize = "LETTER" | "A4";
@@ -149,10 +147,14 @@ function PosterCard({
   );
 }
 
-export default function BusinessPosters() {
-  const [, params] = useRoute("/business/:slug/posters");
-  const slug = params?.slug ?? "";
-  const { data: business, isLoading: businessLoading } = useBusinessBySlug(slug);
+export interface PostersViewBusiness {
+  id: number;
+  slug: string;
+  name?: string;
+}
+
+/** Posters / QR Marketing content. Use as tab content (pass business) or standalone page. */
+export function PostersView({ business }: { business: PostersViewBusiness }) {
   const [templates, setTemplates] = useState<TemplateMeta[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [size, setSize] = useState<PaperSize>("LETTER");
@@ -163,9 +165,8 @@ export default function BusinessPosters() {
   const [downloadPending, setDownloadPending] = useState<"pdf" | "png" | null>(null);
   const { toast } = useToast();
 
-  const apiBase = business ? buildApiBase(business.id) : "";
+  const apiBase = buildApiBase(business.id);
   const fetchTemplates = useCallback(async () => {
-    if (!business) return;
     setTemplatesLoading(true);
     try {
       const res = await fetch(apiBase + "/templates", { credentials: "include" });
@@ -185,11 +186,11 @@ export default function BusinessPosters() {
     } finally {
       setTemplatesLoading(false);
     }
-  }, [business, apiBase, toast]);
+  }, [apiBase, toast]);
 
   useEffect(() => {
-    if (business) fetchTemplates();
-  }, [business?.id]);
+    fetchTemplates();
+  }, [business.id, fetchTemplates]);
 
   const openPreview = useCallback((t: TemplateMeta) => {
     setPreviewImageUrl((prev) => {
@@ -282,35 +283,18 @@ export default function BusinessPosters() {
     [business, apiBase, size, variant, toast]
   );
 
-  if (businessLoading || !business) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-slate-600">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Loading…</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
-      <div className="max-w-5xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <Link href={`/business/${slug}/qr`}>
-              <Button variant="ghost" size="sm" className="mb-2 -ml-2">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to QR
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-display font-bold text-slate-900">
-              QR Marketing Materials
-            </h1>
-            <p className="text-slate-600 mt-1">
-              Professionally designed posters — ready to print.
-            </p>
-          </div>
+    <>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-slate-900">
+            QR Marketing Materials
+          </h1>
+          <p className="text-slate-600 mt-1">
+            Professionally designed posters — ready to print.
+          </p>
+        </div>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Label htmlFor="poster-size" className="text-sm font-medium text-slate-700 whitespace-nowrap">
@@ -428,6 +412,6 @@ export default function BusinessPosters() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

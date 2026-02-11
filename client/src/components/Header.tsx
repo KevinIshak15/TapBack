@@ -80,7 +80,7 @@ export default function Header() {
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-2 h-auto py-2 px-3 hover:bg-slate-100 rounded-lg">
+                    <Button variant="ghost" className="gap-2 h-auto py-2 px-3">
                       <Avatar className="w-8 h-8">
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
                           {userInitials}

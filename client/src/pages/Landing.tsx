@@ -102,19 +102,12 @@ export default function Landing() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <Link href="/signup">
-                <Button
-                  size="lg"
-                  className="text-lg px-8 h-14 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all font-semibold"
-                >
+                <Button size="lg" className="text-base font-semibold h-12 px-6">
                   Start Free Trial
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 h-14 rounded-2xl border-2 hover:bg-slate-50 font-semibold"
-              >
+              <Button size="lg" variant="outline" className="font-semibold h-12 px-6">
                 Watch Demo
               </Button>
             </motion.div>
@@ -221,7 +214,8 @@ export default function Landing() {
             <Link href="/signup">
               <Button
                 size="lg"
-                className="text-lg px-8 h-14 rounded-2xl bg-white text-blue-600 hover:bg-blue-50 shadow-2xl font-semibold"
+                variant="secondary"
+                className="text-base font-semibold h-12 px-6 bg-white text-slate-900 hover:bg-slate-100 border-0 shadow-lg"
               >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />

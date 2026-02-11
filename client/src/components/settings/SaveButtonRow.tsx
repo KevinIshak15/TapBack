@@ -24,11 +24,7 @@ export function SaveButtonRow({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={
-          variant === "default"
-            ? "h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all font-semibold"
-            : undefined
-        }
+        className={variant === "default" ? "h-11 min-h-11 font-semibold" : undefined}
         variant={variant === "default" ? undefined : variant}
       >
         {loading ? (

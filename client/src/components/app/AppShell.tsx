@@ -23,6 +23,8 @@ import {
   BarChart,
   MessageSquare,
   AlertTriangle,
+  Palette,
+  FileImage,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,22 +58,25 @@ export function AppShell({ children }: AppShellProps) {
   const isAdmin = user?.role === "admin";
 
   const pathname = location.split("?")[0];
+  const pathParts = pathname.split("/").filter(Boolean);
+  const currentBusinessSlug = pathname.startsWith("/business/") && pathname !== "/business/new"
+    ? pathParts[1]
+    : null;
+  const businessTabSegment = pathParts[2]; // undefined | 'qr' | 'review-options' | 'insights' | ...
+
   const search = typeof window !== "undefined" ? window.location.search : "";
   const tabParam = new URLSearchParams(search).get("tab");
-  const currentBusinessSlug = pathname.startsWith("/business/") && pathname !== "/business/new"
-    ? pathname.split("/")[2]
-    : null;
-
   const isDashboard = pathname === "/dashboard";
   const isDashboardBusinesses = isDashboard && (!tabParam || tabParam === "businesses");
   const isDashboardSubscription = isDashboard && tabParam === "subscription";
 
   const businessSubNav = [
-    { label: "Settings", href: (s: string) => `/business/${s}`, icon: Settings, active: pathname === `/business/${currentBusinessSlug}` && !tabParam },
-    { label: "QR Code", href: (s: string) => `/business/${s}/qr`, icon: QrCode, active: pathname === `/business/${currentBusinessSlug}/qr` },
-    { label: "Insights", href: (s: string) => `/business/${s}?tab=insights`, icon: BarChart, active: pathname === `/business/${currentBusinessSlug}` && tabParam === "insights" },
-    { label: "Reviews", href: (s: string) => `/business/${s}?tab=reviews`, icon: MessageSquare, active: pathname === `/business/${currentBusinessSlug}` && tabParam === "reviews" },
-    { label: "Complaints", href: (s: string) => `/business/${s}?tab=complaints`, icon: AlertTriangle, active: pathname === `/business/${currentBusinessSlug}` && tabParam === "complaints" },
+    { label: "Settings", href: (s: string) => `/business/${s}`, icon: Settings, active: pathname === `/business/${currentBusinessSlug}` || pathname === `/business/${currentBusinessSlug}/` },
+    { label: "Review Options", href: (s: string) => `/business/${s}/review-options`, icon: Palette, active: businessTabSegment === "review-options" },
+    { label: "QR Code", href: (s: string) => `/business/${s}/qr`, icon: QrCode, active: businessTabSegment === "qr" },
+    { label: "QR Marketing", href: (s: string) => `/business/${s}/posters`, icon: FileImage, active: businessTabSegment === "posters" },
+    { label: "Insights", href: (s: string) => `/business/${s}/insights`, icon: BarChart, active: businessTabSegment === "insights" },
+    { label: "Reviews & Concerns", href: (s: string) => `/business/${s}/feedback`, icon: MessageSquare, active: businessTabSegment === "feedback" },
   ];
 
   return (

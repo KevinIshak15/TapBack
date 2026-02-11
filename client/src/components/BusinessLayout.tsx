@@ -4,24 +4,27 @@
  */
 import { Link, useLocation } from "wouter";
 import { AppShell } from "@/components/app/AppShell";
-import { Store, Settings, QrCode, BarChart, MessageSquare, AlertTriangle } from "lucide-react";
+import { Store, Settings, QrCode, BarChart, MessageSquare, AlertTriangle, Palette, FileImage } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type TabId = "settings" | "qr" | "insights" | "reviews" | "complaints";
+type TabId = "settings" | "review-options" | "qr" | "posters" | "insights" | "feedback";
 
 const TAB_ITEMS: { id: TabId; label: string; icon: typeof Settings }[] = [
   { id: "settings", label: "Settings", icon: Settings },
+  { id: "review-options", label: "Review Options", icon: Palette },
   { id: "qr", label: "QR Code", icon: QrCode },
+  { id: "posters", label: "QR Marketing", icon: FileImage },
   { id: "insights", label: "Insights", icon: BarChart },
-  { id: "reviews", label: "Reviews", icon: MessageSquare },
-  { id: "complaints", label: "Complaints", icon: AlertTriangle },
+  { id: "feedback", label: "Reviews & Concerns", icon: MessageSquare },
 ];
 
-function getActiveTab(pathname: string, search: string): TabId {
+const PATH_TAB_IDS: TabId[] = ["review-options", "insights", "feedback"];
+
+function getActiveTab(pathname: string): TabId {
   if (pathname.endsWith("/qr")) return "qr";
-  const tab = new URLSearchParams(search).get("tab");
-  const valid: TabId[] = ["settings", "insights", "reviews", "complaints"];
-  return valid.includes(tab as TabId) ? (tab as TabId) : "settings";
+  if (pathname.endsWith("/posters")) return "posters";
+  const segment = pathname.split("/").filter(Boolean)[2];
+  return PATH_TAB_IDS.includes(segment as TabId) ? (segment as TabId) : "settings";
 }
 
 interface BusinessLayoutProps {
@@ -33,13 +36,13 @@ interface BusinessLayoutProps {
 export function BusinessLayout({ business, slug, children }: BusinessLayoutProps) {
   const [location] = useLocation();
   const pathname = location.split("?")[0];
-  const search = location.includes("?") ? "?" + location.split("?")[1] : "";
-  const activeTab = getActiveTab(pathname, search);
+  const activeTab = getActiveTab(pathname);
 
   const tabHref = (tab: TabId) => {
     if (tab === "qr") return `/business/${slug}/qr`;
+    if (tab === "posters") return `/business/${slug}/posters`;
     if (tab === "settings") return `/business/${slug}`;
-    return `/business/${slug}?tab=${tab}`;
+    return `/business/${slug}/${tab}`;
   };
 
   return (

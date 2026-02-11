@@ -37,7 +37,7 @@ export function ColorPickerField({
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           placeholder="#2563eb"
-          className="h-12 rounded-xl border-slate-200 bg-white focus:border-blue-500 focus:ring-blue-500/20 flex-1 font-mono text-sm"
+          className="h-12 rounded-xl border-slate-200 bg-white focus:border-slate-500 focus:ring-slate-500/20 flex-1 font-mono text-sm"
         />
       </div>
     </div>

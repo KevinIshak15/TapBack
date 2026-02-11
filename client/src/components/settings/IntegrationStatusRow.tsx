@@ -49,26 +49,21 @@ export function IntegrationStatusRow({
       </div>
       <div className="flex flex-wrap gap-2">
         {!connected && (
-          <Button
-            type="button"
-            onClick={onConnect}
-            disabled={loading}
-            className="rounded-xl h-10 gap-2"
-          >
+          <Button type="button" onClick={onConnect} disabled={loading} className="gap-2">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
             Connect Google Business Profile
           </Button>
         )}
         {connected && (
           <>
-            <Button type="button" variant="outline" size="sm" className="rounded-xl h-10" onClick={onReconnect}>
+            <Button type="button" variant="outline" size="sm" onClick={onReconnect}>
               Reconnect
             </Button>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="rounded-xl h-10 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
               onClick={onDisconnect}
               disabled={disconnectLoading}
             >
