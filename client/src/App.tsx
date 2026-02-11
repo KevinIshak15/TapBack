@@ -1,4 +1,5 @@
-import { Switch, Route, useLocation } from "wouter";
+import { useEffect } from "react";
+import { Switch, Route, useLocation, useRoute } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,12 +18,19 @@ import BusinessQR from "@/pages/BusinessQR";
 import BusinessDetails from "@/pages/BusinessDetails";
 import Settings from "@/pages/Settings";
 
-// Review Flow Pages
+// Review Flow — single page at /r/:slug (old /review and /feedback redirect here)
 import ReviewLanding from "@/pages/review/ReviewLanding";
-import ReviewGenerator from "@/pages/review/ReviewGenerator";
-import ReviewFeedback from "@/pages/review/ReviewFeedback";
-
 import NotFound from "@/pages/not-found";
+
+function RedirectToReviewSlug({ path }: { path: string }) {
+  const [, params] = useRoute(path);
+  const [, setLocation] = useLocation();
+  const slug = params?.slug ?? "";
+  useEffect(() => {
+    if (slug) setLocation(`/r/${slug}`);
+  }, [slug, setLocation]);
+  return null;
+}
 
 function Router() {
   return (
@@ -60,10 +68,10 @@ function Router() {
       <Route path="/business/:slug/qr" component={BusinessQR} />
       <Route path="/business/:slug/:tab?" component={BusinessDetails} />
       
-      {/* Customer Review Flow */}
+      {/* Customer Review Flow — single page; old URLs redirect */}
       <Route path="/r/:slug" component={ReviewLanding} />
-      <Route path="/r/:slug/review" component={ReviewGenerator} />
-      <Route path="/r/:slug/feedback" component={ReviewFeedback} />
+      <Route path="/r/:slug/review">{(params) => <RedirectToReviewSlug path="/r/:slug/review" />}</Route>
+      <Route path="/r/:slug/feedback">{(params) => <RedirectToReviewSlug path="/r/:slug/feedback" />}</Route>
 
       {/* Fallback */}
       <Route component={NotFound} />

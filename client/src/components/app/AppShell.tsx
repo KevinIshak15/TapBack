@@ -33,10 +33,10 @@ const HEADER_HEIGHT = 56;
 
 const navLinkClass = (
   isActive: boolean
-) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
   isActive
-    ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]"
-    : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
+    ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))] font-bold"
+    : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] font-medium"
 }`;
 
 export interface AppShellProps {
@@ -100,7 +100,7 @@ export function AppShell({ children }: AppShellProps) {
         </div>
         <nav className="flex-1 overflow-y-auto p-3 space-y-6">
           <div className="space-y-0.5">
-            <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--sidebar-foreground))]/60">
+            <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Main
             </p>
             <Link href="/dashboard">
@@ -111,7 +111,7 @@ export function AppShell({ children }: AppShellProps) {
             </Link>
           </div>
           <div className="space-y-0.5">
-            <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--sidebar-foreground))]/60">
+            <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Business
             </p>
             {businesses?.map((b) => {
@@ -128,7 +128,7 @@ export function AppShell({ children }: AppShellProps) {
                     <div className="pl-6 space-y-0.5">
                       {businessSubNav.map((item) => (
                         <Link key={item.label} href={item.href(b.slug)}>
-                          <a className={cn("flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors", item.active ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]" : "text-[hsl(var(--sidebar-foreground))]/80 hover:bg-[hsl(var(--sidebar-accent))]")}>
+                          <a className={cn("flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors", item.active ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))] font-bold" : "text-[hsl(var(--sidebar-foreground))]/80 hover:bg-[hsl(var(--sidebar-accent))] font-medium")}>
                             <item.icon className="h-4 w-4 shrink-0" />
                             {item.label}
                           </a>
@@ -147,7 +147,7 @@ export function AppShell({ children }: AppShellProps) {
             </Link>
           </div>
           <div className="space-y-0.5">
-            <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--sidebar-foreground))]/60">
+            <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Your account
             </p>
             <Link href="/dashboard?tab=subscription">
@@ -165,7 +165,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
           {isAdmin && (
             <div className="space-y-0.5">
-              <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--sidebar-foreground))]/60">
+              <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Admin
               </p>
               <Link href="/admin">
@@ -184,7 +184,8 @@ export function AppShell({ children }: AppShellProps) {
         style={{ marginLeft: SIDEBAR_WIDTH }}
       >
         <header
-          className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6"
+          className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b bg-white px-4 sm:px-6 shadow-sm"
+          style={{ borderBottomColor: 'hsl(var(--border))' }}
           style={{ height: HEADER_HEIGHT }}
         >
           <Link
@@ -215,7 +216,7 @@ export function AppShell({ children }: AppShellProps) {
                       className="gap-2 h-9 px-2.5 rounded-lg text-slate-700 hover:bg-slate-100"
                     >
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-[hsl(var(--sidebar-primary))] text-white text-sm font-medium">
+                        <AvatarFallback className="bg-[hsl(var(--primary))] text-white text-sm font-medium">
                           {userInitials}
                         </AvatarFallback>
                       </Avatar>
