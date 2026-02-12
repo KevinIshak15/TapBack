@@ -1,15 +1,7 @@
 import * as React from "react";
 import { Link, useLocation } from "wouter";
-import { useUser, useLogout } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-auth";
 import { useBusinesses } from "@/hooks/use-businesses";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   LayoutDashboard,
   Building2,
@@ -17,19 +9,15 @@ import {
   CreditCard,
   Settings,
   Shield,
-  LogOut,
-  ChevronDown,
   QrCode,
   BarChart,
   MessageSquare,
-  AlertTriangle,
   Palette,
   FileImage,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_WIDTH = 260;
-const HEADER_HEIGHT = 56;
 
 const navLinkClass = (
   isActive: boolean
@@ -45,16 +33,8 @@ export interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const [location] = useLocation();
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
   const { data: businesses } = useBusinesses();
-  const logoutMutation = useLogout();
-
-  const handleLogout = async () => {
-    await logoutMutation.mutateAsync();
-    window.location.href = "/";
-  };
-
-  const userInitials = user?.username?.charAt(0).toUpperCase() ?? "U";
   const isAdmin = user?.role === "admin";
 
   const pathname = location.split("?")[0];
@@ -80,25 +60,11 @@ export function AppShell({ children }: AppShellProps) {
   ];
 
   return (
-    <div className="min-h-screen flex app-surface">
+    <div className="min-h-screen flex app-surface pt-14 sm:pt-16">
       <aside
-        className="fixed left-0 top-0 z-40 flex h-full flex-col bg-[hsl(var(--sidebar))] border-r border-[hsl(var(--sidebar-border))]"
-        style={{ width: SIDEBAR_WIDTH }}
+        className="fixed left-0 top-14 sm:top-16 z-40 flex flex-col w-[260px] bg-[hsl(var(--sidebar))] border-r border-[hsl(var(--sidebar-border))] overflow-y-auto h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)]"
       >
-        <div className="flex h-14 shrink-0 items-center px-5 border-b border-[hsl(var(--sidebar-border))]">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 font-semibold text-[hsl(var(--sidebar-foreground))]"
-          >
-            <img
-              src="/revsboost-logo.png"
-              alt=""
-              className="h-12 w-auto object-contain"
-            />
-            <span className="text-lg font-semibold">RevsBoost</span>
-          </Link>
-        </div>
-        <nav className="flex-1 overflow-y-auto p-3 space-y-6">
+        <nav className="flex-1 p-3 space-y-6 min-h-0">
           <div className="space-y-0.5">
             <p className="px-3 mb-1.5 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--sidebar-foreground))]/70">
               Main
@@ -176,67 +142,6 @@ export function AppShell({ children }: AppShellProps) {
         className="flex flex-1 flex-col min-h-screen"
         style={{ marginLeft: SIDEBAR_WIDTH }}
       >
-        <header
-          className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-end border-b border-slate-200 bg-white px-4 sm:px-6 shadow-sm"
-          style={{ height: HEADER_HEIGHT }}
-        >
-          <div className="flex items-center gap-3">
-            {!isLoading && user != null && (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors hidden sm:inline-flex items-center gap-2"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="gap-2 h-9 px-2.5 rounded-lg text-slate-700 hover:bg-slate-100"
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-[hsl(var(--primary))] text-white text-sm font-medium">
-                          {userInitials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden sm:inline text-sm font-medium max-w-[140px] truncate">
-                        {user.username}
-                      </span>
-                      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-56 bg-white border border-slate-200 shadow-card-hover rounded-xl"
-                  >
-                    <div className="px-3 py-2.5 border-b border-slate-100">
-                      <p className="text-sm font-medium text-slate-900">{user.username}</p>
-                      <p className="text-xs text-slate-500">
-                        {isAdmin ? "Admin" : "User"}
-                      </p>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="flex items-center cursor-pointer rounded-lg">
-                        <LayoutDashboard className="h-4 w-4 mr-2" />
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleLogout}
-                      className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 rounded-lg"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
-          </div>
-        </header>
-
         <main className="flex-1 p-6 bg-[hsl(var(--app-surface))]">
           <div className="mx-auto max-w-5xl">{children}</div>
         </main>

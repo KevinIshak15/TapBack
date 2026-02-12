@@ -7,6 +7,7 @@ import { scrypt, randomBytes, timingSafeEqual, createHash } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { sendPasswordResetEmail } from "./email";
+import { z } from "zod";
 import { User as SelectUser, insertUserSchema } from "@shared/schema";
 
 declare global {
@@ -210,14 +211,24 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    // Convert dates to ISO strings for JSON response
-    const user = req.user!;
-    const serialized = { ...user, createdAt: user.createdAt.toISOString() };
-    if (user.updatedAt) {
-      serialized.updatedAt = user.updatedAt.toISOString();
-    }
-    res.status(200).json(serialized);
+  app.post("/api/login", (req, res, next) => {
+    const body = req.body as Record<string, unknown>;
+    const username = typeof body?.username === "string" ? body.username.trim() : "";
+    const password = typeof body?.password === "string" ? body.password : "";
+    if (!username) return res.status(400).json({ message: "Email or username is required" });
+    if (!password) return res.status(400).json({ message: "Password is required" });
+    passport.authenticate("local", (err: any, user: Express.User | false) => {
+      if (err) return next(err);
+      if (!user) return res.status(401).json({ message: "Incorrect username or password." });
+      req.login(user, (loginErr) => {
+        if (loginErr) return next(loginErr);
+        const serialized = { ...user, createdAt: (user as Express.User).createdAt.toISOString() };
+        if ((user as Express.User).updatedAt) {
+          serialized.updatedAt = (user as Express.User).updatedAt!.toISOString();
+        }
+        res.status(200).json(serialized);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {

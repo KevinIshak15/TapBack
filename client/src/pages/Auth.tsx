@@ -45,10 +45,10 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
   const loginMutation = useLogin();
   const registerMutation = useRegister();
 
-  // Create a custom schema for login
+  // Login: require both so we never send empty values to the server
   const loginSchema = z.object({
     emailOrUsername: z.string().min(1, "Email or username is required"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(1, "Password is required"),
   });
 
   // Signup: all fields mandatory; username generated from email in onSubmit.
@@ -199,11 +199,13 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
     setSignupError(null);
     try {
       if (isLogin) {
-        const loginData = {
-          username: data.emailOrUsername || data.email || data.username || "",
-          password: data.password,
-        };
-        await loginMutation.mutateAsync(loginData);
+        const username = (data.emailOrUsername || data.email || data.username || "").trim();
+        const password = (data.password ?? "").trim();
+        if (!username || !password) {
+          setLoginError("Email/username and password are required.");
+          return;
+        }
+        await loginMutation.mutateAsync({ username, password });
         setLocation("/dashboard");
       } else {
         // For signup, generate username from email if not provided

@@ -1,0 +1,42 @@
+/* Landing page only — scoped under .landing-page. Matches logo theme and dashboard/login. */
+.landing-page {
+  /* RevsBoost logo colors */
+  --landing-primary: #162C4E;       /* dark blue from logo */
+  --landing-primary-hover: #112240; /* slightly darker */
+  --landing-teal: #2EE8E6;          /* vibrant teal from logo */
+  --landing-teal-soft: rgba(46, 232, 230, 0.15);
+  --landing-light-cyan: #7DEEF3;    /* light cyan from logo */
+
+  /* Background — light like dashboard/login */
+  --landing-bg-start: #f8fafc;
+  --landing-bg-end: #ffffff;
+  --landing-bg: linear-gradient(180deg, var(--landing-bg-start) 0%, var(--landing-bg-end) 100%);
+
+  /* Accent (primary CTA, highlights) */
+  --landing-accent: var(--landing-primary);
+  --landing-accent-hover: var(--landing-primary-hover);
+
+  /* Surface (cards, navbar when scrolled) */
+  --landing-surface: #ffffff;
+  --landing-surface-elevated: #f1f5f9;
+
+  /* Border */
+  --landing-border: rgba(0, 0, 0, 0.08);
+  --landing-border-strong: #e2e8f0;
+
+  /* Text */
+  --landing-text-primary: #0f172a;
+  --landing-text-secondary: #475569;
+  --landing-text-muted: #64748b;
+
+  /* Laptop screen content only (stays dark, brand blue/teal) */
+  --landing-screen-bg: #0d1520;
+  --landing-screen-surface: #1e2a3a;
+  --landing-screen-surface-elevated: #162C4E;
+  --landing-screen-border: rgba(255, 255, 255, 0.08);
+  --landing-screen-accent: #2EE8E6;
+  --landing-screen-text: #e2e8f0;
+  --landing-screen-text-muted: #94a3b8;
+
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}

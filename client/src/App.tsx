@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import AdminRoute from "@/components/AdminRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 
-import Landing from "@/pages/Landing";
+import Home from "@/pages/Home";
 import AuthPage from "@/pages/Auth";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -59,7 +59,7 @@ function Router() {
   return (
     <Switch>
       {/* Public Marketing Routes */}
-      <Route path="/" component={Landing} />
+      <Route path="/" component={Home} />
       <Route path="/login" component={() => <AuthPage mode="login" />} />
       <Route path="/signup" component={() => <AuthPage mode="signup" />} />
       <Route path="/forgot-password" component={ForgotPassword} />
@@ -171,12 +171,12 @@ function Router() {
 
 function App() {
   const [location] = useLocation();
-  const isAppRoute = /^\/(dashboard|admin|business|settings)/.test(location);
+  const showHeader = !location.startsWith("/r/");
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {!isAppRoute && <Header />}
+        {showHeader && <Header />}
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
