@@ -93,22 +93,22 @@ export default function BusinessDetails() {
   return (
     <BusinessLayout business={business} slug={slug}>
       <Tabs value={activeTab} onValueChange={(v) => setTab(v as TabType)} className="w-full">
-          <TabsContent value="settings" className="mt-6">
+          <TabsContent value="settings" className="mt-4">
             <BusinessSettingsView business={business} />
           </TabsContent>
-          <TabsContent value="review-options" className="mt-6">
+          <TabsContent value="review-options" className="mt-4">
             <ReviewOptionsView business={business} />
           </TabsContent>
-          <TabsContent value="qr" className="mt-6">
+          <TabsContent value="qr" className="mt-4">
             <QRView business={business} />
           </TabsContent>
-          <TabsContent value="posters" className="mt-6">
+          <TabsContent value="posters" className="mt-4">
             <PostersView business={business} />
           </TabsContent>
-          <TabsContent value="insights" className="mt-6">
+          <TabsContent value="insights" className="mt-4">
             <InsightsView business={business} />
           </TabsContent>
-          <TabsContent value="feedback" className="mt-6">
+          <TabsContent value="feedback" className="mt-4">
             <ReviewsAndConcernsView business={business} />
           </TabsContent>
         </Tabs>
@@ -162,13 +162,13 @@ function BusinessSettingsView({ business }: { business: any }) {
 
   return (
     <Card className="bg-white border border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-display font-bold">Business Information</CardTitle>
+      <CardHeader className="pb-2 pt-4">
+        <CardTitle className="text-xl font-display font-bold">Business Information</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="max-w-2xl">
-          <h3 className="text-sm font-semibold text-slate-800 mb-4">Business Information</h3>
-            <form onSubmit={form.handleSubmit(handleSaveBusinessInfo)} className="space-y-4">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">Business Information</h3>
+            <form onSubmit={form.handleSubmit(handleSaveBusinessInfo)} className="space-y-3">
               <div>
                 <Label htmlFor="name" className="text-sm font-medium text-slate-700">Business Name *</Label>
                 <Input
@@ -578,13 +578,18 @@ function ReviewOptionsView({ business }: { business: any }) {
                   }}
                 >
                   <div className="space-y-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">1. How did you like your visit?</p>
-                    <h4 className="text-base font-bold" style={{ color: selectedTheme.text }}>{business.name}</h4>
-                    <p className="text-sm opacity-90">How was your experience at {business.name}?</p>
-                    <p className="text-xs opacity-70">We value your honest feedback</p>
+                    <p className="text-xs font-semibold tracking-wide opacity-90" style={{ color: selectedTheme.text }}>
+                      How was your experience at{" "}
+                      <span className="font-bold" style={{ color: selectedTheme.text }}>{business.name}</span>
+                      ?
+                    </p>
+                    {business.logo && (
+                      <div className="flex justify-center items-center pt-2 pb-1 h-28 max-w-[220px] mx-auto">
+                        <img src={business.logo} alt="" className="object-contain w-full h-full" style={{ maxHeight: 112, maxWidth: 220, objectFit: "contain" }} />
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">2. Great or concerns?</p>
                     <div className="grid grid-cols-2 gap-2">
                       <div
                         className="py-3 rounded-xl text-center text-xs font-semibold border-2"
@@ -601,8 +606,8 @@ function ReviewOptionsView({ business }: { business: any }) {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">3. Choose tags</p>
-                    <p className="text-sm font-medium">What stood out about your visit?</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide opacity-60">2. What stood out?</p>
+                    <p className="text-base font-medium">Pick any that apply (optional).</p>
                     <div className="flex flex-wrap gap-1.5">
                       {allTags.slice(0, 5).map((tag) => (
                         <span
@@ -621,11 +626,11 @@ function ReviewOptionsView({ business }: { business: any }) {
                         <span className="px-2.5 py-1.5 rounded-full text-[11px] opacity-80" style={{ color: selectedTheme.text }}>+{allTags.length - 5}</span>
                       )}
                     </div>
-                    <p className="text-[10px] font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: selectedTheme.text }}>
-                      Additional comments (optional)
+                    <p className="text-xs font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: selectedTheme.text }}>
+                      Anything else to add?
                     </p>
                     <div
-                      className="w-full min-h-[80px] rounded-xl border-2 px-3 py-2.5 text-sm"
+                      className="w-full min-h-[2.5rem] rounded-xl border-2 px-3 py-2 text-sm flex items-center"
                       style={{
                         borderColor: selectedTheme.primary + "60",
                         background: selectedTheme.cardBg ?? "#fff",
@@ -638,9 +643,9 @@ function ReviewOptionsView({ business }: { business: any }) {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">4. AI-generated review</p>
-                    <p className="text-sm font-semibold">Review Ready!</p>
-                    <p className="text-[11px] opacity-80">Review generated based on your inputs</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide opacity-60">3. AI-generated review</p>
+                    <p className="text-base font-semibold">Review Ready!</p>
+                    <p className="text-xs opacity-80">Review generated based on your inputs</p>
                     <div className="rounded-lg p-2 text-[11px] italic opacity-90" style={{ background: selectedTheme.backgroundAccent }}>
                       &ldquo;Great experience! Professional service and clear communication. Highly recommend.&rdquo;
                     </div>
@@ -651,8 +656,17 @@ function ReviewOptionsView({ business }: { business: any }) {
                       Copy & Post on Google
                     </div>
                   </div>
-                  <p className="text-[10px] opacity-50 pt-2" style={{ color: selectedTheme.text }}>
-                    Powered by RevsBoost
+                  <p className="text-xs opacity-50 pt-2" style={{ color: selectedTheme.text }}>
+                    Powered by{" "}
+                    <a
+                      href="https://revsboost.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:opacity-80"
+                      style={{ color: selectedTheme.text }}
+                    >
+                      RevsBoost
+                    </a>
                   </p>
                 </div>
               </div>
@@ -1539,7 +1553,7 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                         className={cn(
                           "rounded-2xl border text-left shadow-sm transition-shadow hover:shadow-md",
                           r.experienceType === "concern"
-                            ? "border-amber-200/80 bg-gradient-to-br from-amber-50/80 to-white"
+                            ? "border-rose-200/80 bg-gradient-to-br from-rose-50/80 to-white"
                             : "border-slate-200/80 bg-gradient-to-br from-slate-50/50 to-white"
                         )}
                       >
@@ -1549,7 +1563,7 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                               className={cn(
                                 "inline-flex items-center text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-md",
                                 r.experienceType === "concern"
-                                  ? "bg-amber-100 text-amber-800 border border-amber-200/60"
+                                  ? "bg-rose-100 text-rose-800 border border-rose-200/60"
                                   : "bg-emerald-100 text-emerald-800 border border-emerald-200/60"
                               )}
                             >

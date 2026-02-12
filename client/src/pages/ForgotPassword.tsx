@@ -36,11 +36,15 @@ export default function ForgotPasswordPage() {
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "Request failed");
       setSubmitted(true);
+      toast({
+        title: "Check your email",
+        description: "If an account exists for that email, you’ll receive a reset link shortly.",
+      });
     } catch (e: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: e.message || "Something went wrong.",
+        description: e.message || "Something went wrong. Please try again.",
       });
     }
   };

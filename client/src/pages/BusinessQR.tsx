@@ -86,21 +86,21 @@ export default function BusinessQR() {
 
   return (
     <BusinessLayout business={business} slug={slug}>
-      <div className="max-w-4xl space-y-6">
-        <div className="grid md:grid-cols-2 gap-6">
+      <div className="max-w-4xl space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
-            <CardHeader className="text-center pb-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                <QrCode className="h-6 w-6 text-primary" />
+            <CardHeader className="text-center pb-2 pt-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <QrCode className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-lg font-semibold text-slate-900">Review QR code</CardTitle>
-              <CardDescription>Customers scan this to leave a review</CardDescription>
+              <CardTitle className="text-base font-semibold text-slate-900">Review QR code</CardTitle>
+              <CardDescription className="text-xs">Customers scan this to leave a review</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              <div className="p-6 bg-white rounded-xl border border-slate-200 mb-6">
-                <QRCodeSVG id="qr-code-svg" value={reviewUrl} size={240} level="H" includeMargin />
+            <CardContent className="flex flex-col items-center pt-0 pb-4">
+              <div className="p-4 bg-white rounded-lg border border-slate-200 mb-4">
+                <QRCodeSVG id="qr-code-svg" value={reviewUrl} size={200} level="H" includeMargin />
               </div>
-              <div className="flex gap-3 w-full">
+              <div className="flex gap-2 w-full">
                 <Button onClick={downloadQR} variant="outline" className="flex-1">
                   <Download className="h-4 w-4 mr-2" />
                   Download PNG
@@ -114,11 +114,11 @@ export default function BusinessQR() {
           </Card>
 
           <Card className="bg-white border border-slate-200 shadow-sm rounded-xl h-full">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900">How it works</CardTitle>
-              <CardDescription>Getting the most out of your QR code</CardDescription>
+            <CardHeader className="pb-2 pt-4">
+              <CardTitle className="text-base font-semibold text-slate-900">How it works</CardTitle>
+              <CardDescription className="text-xs">Getting the most out of your QR code</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 pt-0">
               {steps.map((item, i) => (
                 <div key={i} className="flex gap-3">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">

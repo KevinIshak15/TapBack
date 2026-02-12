@@ -34,14 +34,13 @@ export function registerReviewRoutes(app: Express) {
   app.post(
     api.reviews.generateAI.path,
     asyncHandler(async (req, res) => {
-      const { businessId, tags, experienceType, customText } = req.body;
-      
+      const input = api.reviews.generateAI.input.parse(req.body);
+      const { businessId, tags, experienceType, customText, variation } = input;
+
       const business = await storage.getBusiness(businessId);
       if (!business) {
         return res.status(404).json({ message: "Business not found" });
       }
-
-      // Rate limiting could go here (check storage for recent generations from IP)
 
       const reviewText = await generateReview({
         businessName: business.name,
@@ -49,6 +48,7 @@ export function registerReviewRoutes(app: Express) {
         experienceType,
         tags,
         customText,
+        variation,
       });
 
       res.json({ review: reviewText });

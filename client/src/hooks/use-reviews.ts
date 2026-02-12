@@ -8,6 +8,7 @@ export function useGenerateReview() {
       tags: string[];
       experienceType: string;
       customText?: string;
+      variation?: number;
     }) => {
       const res = await fetch(api.reviews.generateAI.path, {
         method: "POST",

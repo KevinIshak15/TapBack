@@ -147,6 +147,7 @@ export const api = {
         tags: z.array(z.string()),
         experienceType: z.string(),
         customText: z.string().optional(),
+        variation: z.number().optional(), // 1, 2, ... for regeneration — asks for a different take
       }),
       responses: {
         200: z.object({ review: z.string() }),

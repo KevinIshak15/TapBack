@@ -5,15 +5,21 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/Header";
 import AdminRoute from "@/components/AdminRoute";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 
 import Landing from "@/pages/Landing";
 import AuthPage from "@/pages/Auth";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import ManageBusinesses from "@/pages/admin/ManageBusinesses";
+import AdminOverview from "@/pages/admin/AdminOverview";
+import AdminBusinessDetail from "@/pages/admin/AdminBusinessDetail";
+import AdminSystemErrors from "@/pages/admin/AdminSystemErrors";
+import AdminFeatureFlags from "@/pages/admin/AdminFeatureFlags";
+import AdminSettings from "@/pages/admin/AdminSettings";
+import ComingSoonPage from "@/pages/admin/ComingSoonPage";
 import CreateBusiness from "@/pages/CreateBusiness";
 import BusinessQR from "@/pages/BusinessQR";
 import BusinessDetails from "@/pages/BusinessDetails";
@@ -22,6 +28,22 @@ import Settings from "@/pages/Settings";
 // Review Flow — single page at /r/:slug (old /review and /feedback redirect here)
 import ReviewLanding from "@/pages/review/ReviewLanding";
 import NotFound from "@/pages/not-found";
+
+function AdminPage({ children }: { children: React.ReactNode }) {
+  return (
+    <AdminRoute>
+      <AdminLayout>{children}</AdminLayout>
+    </AdminRoute>
+  );
+}
+
+function RedirectAdminToOverview() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/admin/overview");
+  }, [setLocation]);
+  return null;
+}
 
 function RedirectToReviewSlug({ path }: { path: string }) {
   const [, params] = useRoute(path);
@@ -45,25 +67,90 @@ function Router() {
 
       {/* App Routes */}
       <Route path="/dashboard" component={Dashboard} />
+      {/* Admin: redirect /admin to /admin/overview */}
       <Route path="/admin">
+        {() => <RedirectAdminToOverview />}
+      </Route>
+      <Route path="/admin/overview">
         {() => (
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
+          <AdminPage>
+            <AdminOverview />
+          </AdminPage>
         )}
       </Route>
-      <Route path="/admin/users">
+      <Route path="/admin/businesses/:businessId">
         {() => (
-          <AdminRoute>
-            <ManageUsers />
-          </AdminRoute>
+          <AdminPage>
+            <AdminBusinessDetail />
+          </AdminPage>
         )}
       </Route>
       <Route path="/admin/businesses">
         {() => (
-          <AdminRoute>
+          <AdminPage>
             <ManageBusinesses />
-          </AdminRoute>
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/users">
+        {() => (
+          <AdminPage>
+            <ManageUsers />
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/integrations/google">
+        {() => (
+          <AdminPage>
+            <ComingSoonPage
+              title="Google Business Profile"
+              description="Connect and manage Google Business Profile integrations."
+              flag="google_integration_enabled"
+            />
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/billing/subscriptions">
+        {() => (
+          <AdminPage>
+            <ComingSoonPage
+              title="Subscriptions"
+              description="Manage Stripe subscriptions and billing."
+              flag="billing_enabled"
+            />
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/system/jobs">
+        {() => (
+          <AdminPage>
+            <ComingSoonPage
+              title="Jobs & Sync"
+              description="Background jobs and sync status."
+              flag="jobs_sync_enabled"
+            />
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/system/errors">
+        {() => (
+          <AdminPage>
+            <AdminSystemErrors />
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/system/feature-flags">
+        {() => (
+          <AdminPage>
+            <AdminFeatureFlags />
+          </AdminPage>
+        )}
+      </Route>
+      <Route path="/admin/settings">
+        {() => (
+          <AdminPage>
+            <AdminSettings />
+          </AdminPage>
         )}
       </Route>
       <Route path="/settings" component={Settings} />

@@ -35,8 +35,16 @@ export async function generateReview(params: {
   experienceType: string;
   tags: string[];
   customText?: string;
+  variation?: number; // 1-based: first regeneration = 1, second = 2, etc.
 }): Promise<string> {
-  const { businessName, category, experienceType, tags, customText } = params;
+  const { businessName, category, experienceType, tags, customText, variation } = params;
+
+  const variationInstruction =
+    variation != null && variation >= 1
+      ? `
+
+IMPORTANT — This is a regeneration (version ${variation + 1}): Write a completely DIFFERENT review. Use different wording, a different opening sentence, and different sentence structure. Do not repeat the same phrases or idea order. Keep the same length and tone.`
+      : "";
 
   const prompt = `Write a short Google review (2-5 sentences) for a business named "${businessName}" (${category}).
 
@@ -48,7 +56,7 @@ Requirements:
 - Length: 2-5 sentences
 - Tone: Authentic, human, natural. No emojis.
 - Do not sound robotic or overly enthusiastic.
-${experienceType === "concern" ? "- If experience is a concern, be constructive but clear." : ""}`;
+${experienceType === "concern" ? "- If experience is a concern, be constructive but clear." : ""}${variationInstruction}`;
 
   const messages: Array<{ role: "system" | "user"; content: string }> = [
     { role: "user", content: prompt }
@@ -58,7 +66,7 @@ ${experienceType === "concern" ? "- If experience is a concern, be constructive 
     model: process.env.OPENAI_MODEL || "gpt-4o-mini",
     messages,
     max_tokens: 200,
-    temperature: 0.7,
+    temperature: variation != null && variation >= 1 ? 0.9 : 0.7,
   });
 
   return response.choices[0]?.message?.content?.trim() || "Great experience!";

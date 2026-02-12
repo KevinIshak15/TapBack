@@ -317,12 +317,16 @@ export class FirebaseStorage implements IStorage {
 
     await db.collection(collections.reviews).doc(newId.toString()).set(dataToDoc(reviewData));
 
-    // Update business review count (increment)
+    // Update business review and concern counts
     const businessRef = db.collection(collections.businesses).doc(review.businessId.toString());
-    await businessRef.update({
+    const update: Record<string, any> = {
       totalReviews: FieldValue.increment(1),
       updatedAt: Timestamp.fromDate(now),
-    });
+    };
+    if (review.experienceType === "concern") {
+      update.totalConcerns = FieldValue.increment(1);
+    }
+    await businessRef.update(update);
 
     return reviewData;
   }

@@ -38,6 +38,8 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
   const [isLogin, setIsLogin] = useState(mode === "login");
   const [showPassword, setShowPassword] = useState(false);
   const [countryCode, setCountryCode] = useState("+1");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [signupError, setSignupError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const loginMutation = useLogin();
@@ -83,8 +85,9 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
   const toggleMode = () => {
     const newMode = !isLogin;
     setIsLogin(newMode);
+    setLoginError(null);
+    setSignupError(null);
     form.reset();
-    // Update the route to match the mode
     setLocation(newMode ? "/login" : "/signup");
   };
 
@@ -192,9 +195,10 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
   }, [isLogin, handleGoogleSignIn]);
 
   const onSubmit = async (data: InsertUser & { emailOrUsername?: string }) => {
+    setLoginError(null);
+    setSignupError(null);
     try {
       if (isLogin) {
-        // For login, use emailOrUsername as username (backend uses username for auth)
         const loginData = {
           username: data.emailOrUsername || data.email || data.username || "",
           password: data.password,
@@ -229,10 +233,13 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
         setLocation("/dashboard");
       }
     } catch (error: any) {
+      const message = error?.message || "Something went wrong.";
+      if (isLogin) setLoginError(message);
+      else setSignupError(message);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message,
+        title: isLogin ? "Sign-in failed" : "Registration failed",
+        description: message,
       });
     }
   };
@@ -304,6 +311,11 @@ src="/revsboost-logo.png"
                 {isLogin ? (
                   /* Login Form */
                   <>
+                    {loginError && (
+                      <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+                        {loginError}
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="emailOrUsername" className="text-sm font-semibold">
                         Email address or Username
@@ -314,8 +326,8 @@ src="/revsboost-logo.png"
                         className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all"
                         {...form.register("emailOrUsername")}
                         onChange={(e) => {
+                          setLoginError(null);
                           const value = e.target.value;
-                          // Auto-detect if it's an email or username
                           if (value.includes("@")) {
                             form.setValue("email", value);
                             form.setValue("username", "");
@@ -325,6 +337,11 @@ src="/revsboost-logo.png"
                           }
                         }}
                       />
+                      {form.formState.errors.emailOrUsername && (
+                        <p className="text-sm text-red-500">
+                          {form.formState.errors.emailOrUsername.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -338,6 +355,7 @@ src="/revsboost-logo.png"
                           placeholder="Enter your password"
                           className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all pr-12"
                           {...form.register("password")}
+                          onChange={() => setLoginError(null)}
                         />
                         <button
                           type="button"
@@ -357,7 +375,7 @@ src="/revsboost-logo.png"
                         </p>
                       )}
                       <div className="flex justify-end">
-                        <Link href="/forgot-password" className="text-sm text-slate-600 hover:font-medium transition-colors">
+                        <Link href="/forgot-password" className="text-sm text-primary font-medium hover:underline transition-colors">
                           Forgot password?
                         </Link>
                       </div>
@@ -366,6 +384,11 @@ src="/revsboost-logo.png"
                 ) : (
                   /* Signup Form */
                   <>
+                    {signupError && (
+                      <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+                        {signupError}
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-sm font-semibold">

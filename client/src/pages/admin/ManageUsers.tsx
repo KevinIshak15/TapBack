@@ -3,10 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Shield, User as UserIcon } from "lucide-react";
-import { useState } from "react";
-import { AppShell } from "@/components/app/AppShell";
-import { PageHeader } from "@/components/app/PageHeader";
+import { Users, Search, Shield, User as UserIcon, Building2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Link } from "wouter";
 
 interface User {
   id: number;
@@ -31,22 +30,29 @@ export default function ManageUsers() {
     },
   });
 
-  const filteredUsers = users?.filter((user) =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredUsers = useMemo(() => {
+    const list = users ?? [];
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase().trim();
+    const qNum = Number(searchQuery.trim());
+    return list.filter(
+      (user) =>
+        user.username.toLowerCase().includes(q) ||
+        user.email?.toLowerCase().includes(q) ||
+        (!Number.isNaN(qNum) && user.id === qNum)
+    );
+  }, [users, searchQuery]);
 
   return (
-    <AppShell>
-      <div className="space-y-6">
-        <PageHeader
-          title="Manage users"
-          description="View and manage all platform users"
-        />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Users</h1>
+        <p className="text-sm text-slate-600 mt-0.5">View and manage all platform users</p>
+      </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <Input
-            placeholder="Search by username or email…"
+            placeholder="Search by username, email, or user ID…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-10 rounded-lg border-slate-200 bg-white"
@@ -97,14 +103,21 @@ export default function ManageUsers() {
                         <p className="text-xs text-slate-400 mt-0.5">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={() => alert(`Edit user ${user.username} – Coming soon`)}
-                    >
-                      Edit
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link href={`/admin/businesses?owner=${user.id}`}>
+                        <Button variant="outline" size="sm" className="gap-1.5">
+                          <Building2 className="h-4 w-4" />
+                          Businesses
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => alert(`Edit user ${user.username} – Coming soon`)}
+                      >
+                        Edit
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -135,7 +148,6 @@ export default function ManageUsers() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </AppShell>
+    </div>
   );
 }

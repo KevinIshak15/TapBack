@@ -66,6 +66,11 @@
   --app-surface: 0 0% 100%;
 }
 
+/* Slightly larger base text (1px up from default 16px) so body and UI feel less small */
+html {
+  font-size: 17px;
+}
+
 .dark {
   --background: 222 47% 11%;
   --foreground: 210 40% 98%;
@@ -209,4 +214,9 @@
 }
 .google-gradient-soft {
   background: linear-gradient(135deg, rgba(66, 133, 244, 0.08) 0%, rgba(52, 168, 83, 0.06) 50%, rgba(251, 188, 4, 0.06) 100%);
+}
+
+/* Business pages (Settings, QR, QR Marketing, Review options): zoom out so more fits without scrolling */
+.business-page-content {
+  zoom: 0.92;
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRoute } from "wouter";
 import { useBusinessBySlug } from "@/hooks/use-businesses";
 import { useGenerateReview, useCreateReview } from "@/hooks/use-reviews";
@@ -15,10 +15,11 @@ import {
 import { getEffectiveReviewTags } from "@/lib/categoriesAndTags";
 import { ReviewFlowLayout } from "@/components/ReviewFlowLayout";
 
-const LOGO_DISPLAY_HEIGHT = 100;
-const LOGO_DISPLAY_MAX_WIDTH = 220;
+/* Fixed slot so every uploaded logo displays at the same size (object-contain scales to fit) */
+const LOGO_DISPLAY_HEIGHT = 200;
+const LOGO_DISPLAY_MAX_WIDTH = 360;
 
-const SECTION_LABEL_CLASS = "text-[10px] font-semibold uppercase tracking-wide opacity-60";
+const SECTION_LABEL_CLASS = "text-xs font-semibold uppercase tracking-wide opacity-60";
 
 const MAX_AI_REVIEWS = 3; // Total number of AI-generated reviews allowed (1 initial + 2 regenerations)
 
@@ -45,6 +46,25 @@ export default function ReviewLanding() {
   const [concernName, setConcernName] = useState("");
   const [concernNumber, setConcernNumber] = useState("");
   const [concernEmail, setConcernEmail] = useState("");
+  const sectionTagsRef = useRef<HTMLDivElement>(null);
+  const sectionCopyPasteRef = useRef<HTMLDivElement>(null);
+  const sectionConcernRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to new sections when they appear (especially on phone)
+  useEffect(() => {
+    if (choice === "great" && sectionTagsRef.current) {
+      sectionTagsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    if (choice === "concern" && sectionConcernRef.current) {
+      sectionConcernRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [choice]);
+
+  useEffect(() => {
+    if (generatedReview && sectionCopyPasteRef.current) {
+      sectionCopyPasteRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [generatedReview]);
 
   if (isLoading) {
     return (
@@ -89,6 +109,7 @@ export default function ReviewLanding() {
         tags: selectedChips,
         experienceType: "great",
         customText: additionalComments.trim() || undefined,
+        variation: isRegeneration ? generationCount : undefined,
       });
       setGeneratedReview(result.review);
       setEditableReview(result.review);
@@ -146,34 +167,34 @@ export default function ReviewLanding() {
           color: theme.text,
         }}
       >
-        {/* 1. How did you like your visit? */}
+        {/* 1. Intro + logo */}
         <div className="space-y-3">
-          <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
-            1. How did you like your visit?
-          </p>
-          <h4 className="text-base font-bold" style={{ color: theme.text }}>
-            {business.name}
-          </h4>
-          <p className="text-sm opacity-90" style={{ color: theme.text }}>
-            How was your experience at {business.name}?
-          </p>
-          <p className="text-xs opacity-70" style={{ color: theme.text }}>
-            We value your honest feedback
+          <p className="text-xs font-semibold tracking-wide opacity-90" style={{ color: theme.text }}>
+            How was your experience at{" "}
+            <span className="font-bold" style={{ color: theme.text }}>
+              {business.name}
+            </span>
+            ?
           </p>
           {showLogo && (
             <div
-              className="flex justify-center items-center pt-1"
-              style={{ minHeight: LOGO_DISPLAY_HEIGHT }}
+              className="flex justify-center items-center pt-2 pb-1"
+              style={{
+                height: LOGO_DISPLAY_HEIGHT,
+                maxWidth: LOGO_DISPLAY_MAX_WIDTH,
+                margin: "0 auto",
+              }}
             >
               <img
                 src={business.logo!}
                 alt=""
-                className="object-contain"
+                className="object-contain w-full h-full"
                 style={{
                   maxHeight: LOGO_DISPLAY_HEIGHT,
                   maxWidth: LOGO_DISPLAY_MAX_WIDTH,
                   width: "auto",
                   height: "auto",
+                  objectFit: "contain",
                 }}
                 onError={() => setLogoError(true)}
               />
@@ -181,11 +202,8 @@ export default function ReviewLanding() {
           )}
         </div>
 
-        {/* 2. Great or concerns? */}
+        {/* Great or concerns — no number (already asked above) */}
         <div className="space-y-2">
-          <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
-            2. Great or concerns?
-          </p>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -240,7 +258,7 @@ export default function ReviewLanding() {
 
         {/* Concern path: replace sections 3+4 with concern form */}
         {choice === "concern" && (
-          <div className="space-y-4">
+          <div ref={sectionConcernRef} className="space-y-4">
             <p className="text-sm font-medium" style={{ color: theme.text }}>
               We&apos;re sorry to hear that. Tell us what went wrong — this goes privately to management.
             </p>
@@ -356,15 +374,15 @@ export default function ReviewLanding() {
           </div>
         )}
 
-        {/* 3. Choose tags — only when Great path */}
+        {/* 3. Choose tags — only when they chose "Great"; then after generate, show copy/paste */}
         {choice === "great" && (
           <>
-            <div className="space-y-2">
+            <div ref={sectionTagsRef} className="space-y-2">
               <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
-                3. Choose tags
+                2. What stood out?
               </p>
-              <p className="text-sm font-medium" style={{ color: theme.text }}>
-                What stood out about your visit?
+              <p className="text-base font-medium" style={{ color: theme.text }}>
+                Pick any that apply (optional).
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {chipOptions.map((label) => (
@@ -392,12 +410,12 @@ export default function ReviewLanding() {
                   </button>
                 ))}
               </div>
-              <label className="block text-[10px] font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: theme.text }}>
-                Additional comments (optional)
+              <label className="block text-xs font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: theme.text }}>
+                Anything else to add?
               </label>
               <textarea
                 placeholder="e.g. specific staff member, wait time..."
-                className="w-full min-h-[80px] rounded-xl border-2 px-3 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-offset-1"
+                className="w-full min-h-[2.5rem] rounded-xl border-2 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-offset-1"
                 style={{
                   borderColor: theme.primary + "60",
                   background: theme.cardBg ?? "#fff",
@@ -415,196 +433,106 @@ export default function ReviewLanding() {
                 value={additionalComments}
                 onChange={(e) => setAdditionalComments(e.target.value)}
               />
-              <button
-                type="button"
-                onClick={() => handleGenerate(false)}
-                disabled={selectedChips.length === 0 || isGenerating}
-                className="w-full py-2.5 rounded-xl text-[11px] font-semibold disabled:opacity-50"
-                style={
-                  selectedChips.length > 0 && !isGenerating
-                    ? getPrimaryButtonStyle(theme)
-                    : {
-                        background: theme.backgroundAccent,
-                        color: theme.text,
-                        border: "none",
-                      }
-                }
-              >
-                {isGenerating ? "Generating..." : "Generate review"}
-              </button>
-            </div>
-
-            {/* 4. AI-generated review */}
-            <div className="space-y-2">
-              <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
-                4. AI-generated review
-              </p>
-              <p className="text-sm font-semibold" style={{ color: theme.text }}>
-                Review Ready!
-              </p>
-              {isGenerating ? (
+              {!generatedReview && (
+                <button
+                  type="button"
+                  onClick={() => handleGenerate(false)}
+                  disabled={selectedChips.length === 0 || isGenerating}
+                  className="w-full py-2.5 rounded-xl text-[11px] font-semibold disabled:opacity-50"
+                  style={
+                    selectedChips.length > 0 && !isGenerating
+                      ? getPrimaryButtonStyle(theme)
+                      : {
+                          background: theme.backgroundAccent,
+                          color: theme.text,
+                          border: "none",
+                        }
+                  }
+                >
+                  {isGenerating ? "Generating..." : "Generate review"}
+                </button>
+              )}
+              {isGenerating && (
                 <div className="flex items-center gap-2 py-4">
                   <Loader2 className="w-5 h-5 animate-spin" style={{ color: theme.primary }} />
                   <span className="text-[11px] opacity-80" style={{ color: theme.text }}>
                     Writing your review...
                   </span>
                 </div>
-              ) : generatedReview ? (
-                <>
-                  <p className="text-[11px] opacity-80" style={{ color: theme.text }}>
-                    Review generated based on your inputs — you can edit it below
-                  </p>
-                  <p className="text-[10px] font-medium opacity-70" style={{ color: theme.text }}>
-                    Review {generationCount} of {MAX_AI_REVIEWS}
-                  </p>
-                  <textarea
-                    className="w-full min-h-[120px] rounded-lg p-3 text-[11px] leading-relaxed resize-y"
-                    style={{
-                      background: theme.backgroundAccent,
-                      color: theme.text,
-                      border: `1px solid ${theme.primary}30`,
-                    }}
-                    value={editableReview}
-                    onChange={(e) => setEditableReview(e.target.value)}
-                    placeholder="Your review..."
-                  />
-                  <div className="flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={handleCopyAndContinue}
-                      className="w-full py-2.5 rounded-xl text-[11px] font-semibold text-white inline-flex items-center justify-center gap-1.5"
-                      style={{
-                        background: `linear-gradient(90deg, ${theme.primary}, ${theme.secondary})`,
-                      }}
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      Copy & Post on Google
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleGenerate(true)}
-                      disabled={generateMutation.isPending || generationCount >= MAX_AI_REVIEWS}
-                      className="w-full py-2.5 rounded-xl text-[11px] font-semibold border-2 disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
-                      style={getSecondaryButtonStyle(theme)}
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      Regenerate review {generationCount < MAX_AI_REVIEWS ? `(${MAX_AI_REVIEWS - generationCount} left)` : ""}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-[11px] opacity-80" style={{ color: theme.text }}>
-                    Review generated based on your inputs
-                  </p>
-                  <div
-                    className="rounded-lg p-3 text-[11px] italic opacity-70"
-                    style={{
-                      background: theme.backgroundAccent,
-                      color: theme.text,
-                      border: `1px dashed ${theme.primary}40`,
-                    }}
-                  >
-                    Select tags above and click &ldquo;Generate review&rdquo; to see your AI review here.
-                  </div>
-                  <div
-                    className="py-2.5 rounded-xl text-center text-[11px] font-semibold text-white opacity-60"
+              )}
+            </div>
+
+            {/* 3. Copy & paste — only after they generate */}
+            {generatedReview && (
+              <div ref={sectionCopyPasteRef} className="space-y-2">
+                <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
+                  3. Copy & post to Google
+                </p>
+                <p className="text-base font-semibold" style={{ color: theme.text }}>
+                  Your review is ready
+                </p>
+                <p className="text-xs opacity-80" style={{ color: theme.text }}>
+                  Edit if you’d like, then copy and paste it to Google.
+                </p>
+                <textarea
+                  className="w-full min-h-[120px] rounded-lg p-3 text-[11px] leading-relaxed resize-y"
+                  style={{
+                    background: theme.backgroundAccent,
+                    color: theme.text,
+                    border: `1px solid ${theme.primary}30`,
+                  }}
+                  value={editableReview}
+                  onChange={(e) => setEditableReview(e.target.value)}
+                  placeholder="Your review..."
+                />
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyAndContinue}
+                    className="w-full py-2.5 rounded-xl text-[11px] font-semibold text-white inline-flex items-center justify-center gap-1.5"
                     style={{
                       background: `linear-gradient(90deg, ${theme.primary}, ${theme.secondary})`,
                     }}
                   >
+                    <Copy className="w-3.5 h-3.5" />
                     Copy & Post on Google
-                  </div>
-                </>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* When no choice yet, show placeholder for sections 3 & 4 (like live preview) */}
-        {!choice && (
-          <>
-            <div className="space-y-2">
-              <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
-                3. Choose tags
-              </p>
-              <p className="text-sm font-medium opacity-80" style={{ color: theme.text }}>
-                What stood out about your visit?
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {chipOptions.slice(0, 5).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2.5 py-1.5 rounded-full text-[11px] font-medium border-2 opacity-80"
-                    style={{
-                      background: theme.backgroundAccent,
-                      color: theme.primary,
-                      borderColor: theme.primary + "40",
-                    }}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerate(true)}
+                    disabled={generateMutation.isPending || generationCount >= MAX_AI_REVIEWS}
+                    className="w-full py-2.5 rounded-xl text-[11px] font-semibold border-2 disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
+                    style={getSecondaryButtonStyle(theme)}
                   >
-                    {tag}
-                  </span>
-                ))}
-                {chipOptions.length > 5 && (
-                  <span className="text-[11px] opacity-60" style={{ color: theme.text }}>
-                    +{chipOptions.length - 5}
-                  </span>
-                )}
+                    {generateMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: theme.primary }} />
+                        Regenerating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Regenerate review {generationCount < MAX_AI_REVIEWS ? `(${MAX_AI_REVIEWS - generationCount} left)` : ""}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-              <label className="block text-[10px] font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: theme.text }}>
-                Additional comments (optional)
-              </label>
-              <textarea
-                placeholder="e.g. specific staff member, wait time..."
-                className="w-full min-h-[80px] rounded-xl border-2 px-3 py-2.5 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-offset-1"
-                style={{
-                  borderColor: theme.primary + "60",
-                  background: theme.cardBg ?? "#fff",
-                  color: theme.text,
-                  outline: "none",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = theme.primary;
-                  e.target.style.boxShadow = `0 0 0 2px ${theme.primary}30`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = theme.primary + "60";
-                  e.target.style.boxShadow = "none";
-                }}
-                value={additionalComments}
-                onChange={(e) => setAdditionalComments(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
-                4. AI-generated review
-              </p>
-              <p className="text-sm font-semibold opacity-80" style={{ color: theme.text }}>
-                Review Ready!
-              </p>
-              <p className="text-[11px] opacity-70" style={{ color: theme.text }}>
-                Review generated based on your inputs
-              </p>
-              <div
-                className="rounded-lg p-2 text-[11px] italic opacity-70"
-                style={{ background: theme.backgroundAccent, color: theme.text }}
-              >
-                &ldquo;Great experience! Professional service and clear communication. Highly recommend.&rdquo;
-              </div>
-              <div
-                className="py-2.5 rounded-xl text-center text-[11px] font-semibold text-white opacity-80"
-                style={{
-                  background: `linear-gradient(90deg, ${theme.primary}, ${theme.secondary})`,
-                }}
-              >
-                Copy & Post on Google
-              </div>
-            </div>
+            )}
           </>
         )}
 
         <p className="text-[10px] opacity-50 pt-1" style={{ color: theme.text }}>
-          Powered by RevsBoost
+          Powered by{" "}
+          <a
+            href="https://revsboost.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:opacity-80"
+            style={{ color: theme.text }}
+          >
+            RevsBoost
+          </a>
         </p>
     </div>
     </ReviewFlowLayout>

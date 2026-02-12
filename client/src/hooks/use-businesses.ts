@@ -53,7 +53,7 @@ export function useBusinessStats(id: number) {
     queryKey: [api.businesses.getStats.path, id],
     queryFn: async () => {
       const url = buildUrl(api.businesses.getStats.path, { id });
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch stats");
       return api.businesses.getStats.responses[200].parse(await res.json());
     },

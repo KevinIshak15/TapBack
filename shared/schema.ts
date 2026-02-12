@@ -75,6 +75,7 @@ const businessSchemaInternal = insertBusinessSchema.extend({
   // Analytics fields (computed/cached)
   totalScans: z.number().default(0).optional(),
   totalReviews: z.number().default(0).optional(),
+  totalConcerns: z.number().default(0).optional(),
   averageRating: z.number().min(0).max(5).optional(),
 });
 
@@ -89,6 +90,7 @@ export const businessSchema = insertBusinessSchema.extend({
   // Analytics fields (computed/cached)
   totalScans: z.number().default(0).optional(),
   totalReviews: z.number().default(0).optional(),
+  totalConcerns: z.number().default(0).optional(),
   averageRating: z.number().min(0).max(5).optional(),
 });
 

@@ -14,8 +14,8 @@ const GOOGLE_COLORS = ["#4285F4", "#EA4335", "#FBBC04", "#4285F4", "#34A853", "#
 function ReviewUsOnGoogle() {
   const letters = "Google".split("");
   return (
-    <div className="flex flex-col items-center justify-center gap-1.5 py-3 px-4">
-      <p className="text-sm font-semibold text-slate-700 tracking-wide">
+    <div className="flex flex-col items-center justify-center gap-2 py-4 px-4">
+      <p className="text-lg sm:text-xl font-semibold text-slate-700 tracking-wide">
         Review us on{" "}
         <span className="inline-flex font-bold" style={{ letterSpacing: "-0.02em" }}>
           {letters.map((char, i) => (
@@ -25,9 +25,9 @@ function ReviewUsOnGoogle() {
           ))}
         </span>
       </p>
-      <span className="flex items-center gap-0.5 text-amber-500" aria-label="5 stars">
+      <span className="flex items-center gap-1 text-amber-500" aria-label="5 stars">
         {[1, 2, 3, 4, 5].map((i) => (
-          <Star key={i} className="w-5 h-5 fill-current" strokeWidth={0} />
+          <Star key={i} className="w-7 h-7 sm:w-8 sm:h-8 fill-current" strokeWidth={0} />
         ))}
       </span>
     </div>
@@ -35,22 +35,16 @@ function ReviewUsOnGoogle() {
 }
 
 interface ReviewFlowLayoutProps {
-  companyName: string;
+  companyName?: string; // Optional: no longer shown at top; kept for future use if needed
   children: React.ReactNode;
   style?: React.CSSProperties;
 }
 
-export function ReviewFlowLayout({ companyName, children, style }: ReviewFlowLayoutProps) {
+export function ReviewFlowLayout({ children, style }: ReviewFlowLayoutProps) {
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col" style={style}>
-      {/* Header — company name only */}
-      <header className="flex-shrink-0 pt-6 sm:pt-8 pb-3 sm:pb-4 px-4 text-center">
-        <span className="text-sm font-medium opacity-90">
-          {companyName}
-        </span>
-      </header>
-
-      <div className="flex-shrink-0">
+      {/* No business name at top — starts with "Review us on Google" + stars */}
+      <div className="flex-shrink-0 pt-6 sm:pt-8 pb-3 sm:pb-4">
         <ReviewUsOnGoogle />
       </div>
 

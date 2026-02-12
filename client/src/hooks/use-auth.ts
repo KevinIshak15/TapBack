@@ -31,10 +31,11 @@ export function useLogin() {
       });
       
       if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
         if (res.status === 401) {
-          throw new Error("Invalid username or password");
+          throw new Error(body.message || "Incorrect password or username.");
         }
-        throw new Error("Login failed");
+        throw new Error(body.message || "Login failed.");
       }
       return api.auth.login.responses[200].parse(await res.json());
     },

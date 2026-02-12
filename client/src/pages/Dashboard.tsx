@@ -4,7 +4,7 @@ import { useUser } from "@/hooks/use-auth";
 import { useBusinesses } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Building2, MessageSquare, BarChart, Settings, QrCode, ChevronRight, TrendingUp } from "lucide-react";
+import { Plus, Building2, MessageSquare, BarChart, Settings, QrCode, ChevronRight, TrendingUp, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppShell } from "@/components/app/AppShell";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -26,7 +26,8 @@ export default function Dashboard() {
       <AppShell>
         <div className="space-y-6">
           <Skeleton className="h-9 w-48" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton className="h-24 rounded-xl" />
             <Skeleton className="h-24 rounded-xl" />
             <Skeleton className="h-24 rounded-xl" />
             <Skeleton className="h-24 rounded-xl" />
@@ -86,10 +87,11 @@ export default function Dashboard() {
 
 function DashboardInsights({ businesses }: { businesses: any[] | undefined }) {
   const totalReviews = businesses?.reduce((sum, b) => sum + (b.totalReviews ?? 0), 0) ?? 0;
+  const totalConcerns = businesses?.reduce((sum, b) => sum + (b.totalConcerns ?? 0), 0) ?? 0;
   const totalBusinesses = businesses?.length ?? 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       <Card className="app-card">
         <CardContent className="py-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
@@ -97,7 +99,18 @@ function DashboardInsights({ businesses }: { businesses: any[] | undefined }) {
           </div>
           <div>
             <p className="text-xl font-bold text-slate-900">{totalReviews}</p>
-            <p className="text-xs text-slate-600">Total reviews</p>
+            <p className="text-xs text-slate-600">Reviews</p>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="app-card">
+        <CardContent className="py-3 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-xl font-bold text-slate-900">{totalConcerns}</p>
+            <p className="text-xs text-slate-600">Complaints</p>
           </div>
         </CardContent>
       </Card>
@@ -119,7 +132,7 @@ function DashboardInsights({ businesses }: { businesses: any[] | undefined }) {
           </div>
           <div>
             <p className="text-xl font-bold text-slate-900">—</p>
-            <p className="text-xs text-slate-600">Reviews this month (coming soon)</p>
+            <p className="text-xs text-slate-600">This month (coming soon)</p>
           </div>
         </CardContent>
       </Card>
@@ -184,6 +197,7 @@ function BusinessList({ businesses }: { businesses: any[] | undefined }) {
 
 function BusinessCard({ business }: { business: any }) {
   const totalReviews = business.totalReviews ?? 0;
+  const totalConcerns = business.totalConcerns ?? 0;
 
   return (
     <Link href={`/business/${business.slug}`}>
@@ -211,11 +225,11 @@ function BusinessCard({ business }: { business: any }) {
                 <p className="text-[11px] text-slate-500">Reviews</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1.5">
-              <BarChart className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+            <div className="flex items-center gap-1.5 rounded-md bg-amber-50/80 px-2 py-1.5">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
               <div>
-                <p className="text-base font-semibold text-slate-900 leading-tight">—</p>
-                <p className="text-[11px] text-slate-500">This month</p>
+                <p className="text-base font-semibold text-slate-900 leading-tight">{totalConcerns}</p>
+                <p className="text-[11px] text-slate-500">Complaints</p>
               </div>
             </div>
           </div>
