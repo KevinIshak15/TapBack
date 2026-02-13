@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import {
@@ -16,6 +17,8 @@ import {
 } from "lucide-react";
 import "@/styles/landing-tokens.css";
 import { LaptopMockup } from "@/components/LaptopMockup";
+import { PricingCard } from "@/components/PricingCard";
+import { LandingFooter } from "@/components/LandingFooter";
 import { homeCopy } from "@/content/homeCopy";
 
 const containerVariants = {
@@ -34,7 +37,17 @@ const itemVariants = {
 const featureIcons = [FileImage, Sparkles, Shield, LayoutDashboard];
 
 export default function Home() {
-  const { hero, howItWorks, features, insights, testimonials, finalCta, footer } = homeCopy;
+  const { hero, howItWorks, features, insights, testimonials, pricing, bookDemo, finalCta } = homeCopy;
+  const [isAnnual, setIsAnnual] = useState(false);
+
+  // Scroll to hash on mount (e.g. after nav from /pricing to /#pricing)
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   return (
     <div className="landing-page min-h-screen" style={{ background: "var(--landing-bg)" }}>
@@ -200,7 +213,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 md:py-24 px-6 scroll-mt-20">
+      <section id="testimonials" className="py-16 md:py-24 px-6 scroll-mt-20">
         <div className="max-w-6xl mx-auto">
           <p className="text-sm font-semibold text-[var(--landing-accent)] uppercase tracking-wide text-center mb-2">
             {testimonials.eyebrow}
@@ -227,6 +240,88 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id={pricing.id} className="py-16 md:py-24 px-6 scroll-mt-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-[var(--landing-text-primary)] text-center mb-3">
+            {pricing.title}
+          </h2>
+          <p className="text-[var(--landing-text-secondary)] text-center max-w-xl mx-auto mb-8">
+            {pricing.subtitle}
+          </p>
+          <div className="inline-flex items-center gap-3 p-1 rounded-lg bg-[var(--landing-surface)] border border-[var(--landing-border)] mx-auto mb-12 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setIsAnnual(false)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                !isAnnual
+                  ? "text-white bg-[var(--landing-accent)]"
+                  : "text-[var(--landing-text-secondary)] hover:text-[var(--landing-text-primary)]"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAnnual(true)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                isAnnual
+                  ? "text-white bg-[var(--landing-accent)]"
+                  : "text-[var(--landing-text-secondary)] hover:text-[var(--landing-text-primary)]"
+              }`}
+            >
+              Annual (save 2 months)
+            </button>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-8">
+            <PricingCard
+              name={pricing.basic.name}
+              price={isAnnual ? pricing.basic.priceAnnual : pricing.basic.price}
+              subtext={isAnnual ? pricing.basic.subtextAnnual : pricing.basic.subtext}
+              description={pricing.basic.description}
+              features={pricing.basic.features}
+              ctaLabel={pricing.basic.ctaLabel}
+              ctaHref={pricing.basic.ctaHref}
+            />
+            <PricingCard
+              name={pricing.pro.name}
+              price={isAnnual ? pricing.pro.priceAnnual : pricing.pro.price}
+              subtext={isAnnual ? pricing.pro.subtextAnnual : pricing.pro.subtext}
+              description={pricing.pro.description}
+              features={pricing.pro.features}
+              ctaLabel={pricing.pro.ctaLabel}
+              ctaHref={pricing.pro.ctaHref}
+              highlight
+              badge={pricing.pro.badge}
+            />
+          </div>
+          <div className="h-px bg-[var(--landing-border-strong)] mb-6" />
+          <p className="text-center text-sm text-[var(--landing-text-muted)] max-w-2xl mx-auto">
+            {pricing.comparisonNote}
+          </p>
+        </div>
+      </section>
+
+      {/* Book a demo */}
+      <section id={bookDemo.id} className="py-16 md:py-24 px-6 scroll-mt-20">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-[var(--landing-text-primary)] mb-3">
+            {bookDemo.title}
+          </h2>
+          <p className="text-[var(--landing-text-secondary)] max-w-xl mx-auto mb-8">
+            {bookDemo.subtitle}
+          </p>
+          <a
+            href={bookDemo.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex font-semibold rounded-lg px-6 py-3 text-sm bg-[var(--landing-accent)] text-white hover:bg-[var(--landing-accent-hover)] transition-colors no-underline"
+          >
+            {bookDemo.ctaLabel}
+          </a>
         </div>
       </section>
 
@@ -268,33 +363,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-[var(--landing-border-strong)]">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
-            {footer.columns.map((col, i) => (
-              <div key={i}>
-                <h3 className="font-semibold text-[var(--landing-text-primary)] text-sm mb-3">{col.title}</h3>
-                <ul className="space-y-2 list-none p-0 m-0">
-                  {col.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-[var(--landing-text-muted)] hover:text-[var(--landing-text-secondary)] no-underline"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <p className="text-sm text-[var(--landing-text-muted)] text-center pt-6 border-t border-[var(--landing-border)]">
-            {footer.bottomLine}
-          </p>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

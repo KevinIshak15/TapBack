@@ -7,10 +7,12 @@ export const homeCopy = {
 
   nav: {
     links: [
+      { label: "How it works", href: "/how-it-works" },
+      { label: "Features", href: "/features" },
+      { label: "Insights", href: "/insights" },
+      { label: "Testimonials", href: "/#testimonials" },
       { label: "Pricing", href: "/pricing" },
-      { label: "How it works", href: "#how-it-works" },
-      { label: "Features", href: "#features" },
-      { label: "Insights", href: "#insights" },
+      { label: "Book a demo", href: "/#book-demo" },
     ],
     ctas: {
       primary: { label: "Get Started", href: "/signup" },
@@ -24,7 +26,7 @@ export const homeCopy = {
       "RevsBoost makes it effortless for real customers to leave Google reviews. Custom QR templates, an AI-assisted draft (always editable), and a dashboard that shows what's working.",
     ctas: {
       primary: { label: "Get Started Free", href: "/signup" },
-      secondary: { label: "Watch Demo", href: "#demo" },
+      secondary: { label: "Book a demo", href: "/#book-demo" },
     },
     trustLine: "No fake reviews. No auto-posting. Customers stay in control.",
     microPoints: [
@@ -47,7 +49,7 @@ export const homeCopy = {
       },
       {
         title: "Download QR templates",
-        body: "Pick a theme and print a poster, counter card, or sticker—ready to use.",
+        body: "Pick a theme and print a poster, counter card, or sticker, ready to use.",
       },
       {
         title: "Collect reviews faster",
@@ -59,11 +61,11 @@ export const homeCopy = {
   features: {
     id: "features",
     eyebrow: "Built for real businesses",
-    title: "Everything you need to collect better reviews—without the risk.",
+    title: "Everything you need to collect better reviews without the risk.",
     items: [
       {
         title: "Custom QR Templates",
-        body: "Modern, print-ready designs that look like real marketing—not a QR on white.",
+        body: "Modern, print-ready designs that look like real marketing, not a QR on white.",
       },
       {
         title: "AI Review Assistant",
@@ -71,11 +73,11 @@ export const homeCopy = {
       },
       {
         title: "Concern Handling",
-        body: "Let customers share concerns privately—while still allowing a public Google review if they choose.",
+        body: "Let customers share concerns privately, while still allowing a public Google review if they choose.",
       },
       {
         title: "Insights Dashboard",
-        body: "Track scans, drafts generated, Google redirects, and concern trends—so you know it's working.",
+        body: "Track scans, drafts generated, Google redirects, and concern trends, so you know it's working.",
       },
     ],
     complianceNote:
@@ -95,11 +97,11 @@ export const homeCopy = {
       },
       {
         title: "Real-time engagement metrics",
-        body: "Understand how customers move through your review flow—from scan to redirect.",
+        body: "Understand how customers move through your review flow, from scan to redirect.",
       },
       {
         title: "AI responses (coming soon)",
-        body: "Draft professional replies for your reviews—fast and consistent.",
+        body: "Draft professional replies for your reviews, fast and consistent.",
       },
       {
         title: "Smart alerts (coming soon)",
@@ -135,12 +137,64 @@ export const homeCopy = {
     ],
   },
 
+  pricing: {
+    id: "pricing",
+    title: "Simple pricing. No surprises.",
+    subtitle: "Choose the plan that fits your business. Upgrade anytime.",
+    basic: {
+      name: "Basic",
+      price: "100",
+      priceAnnual: "1,000",
+      subtext: "per location / month",
+      subtextAnnual: "per location / year (save 2 months)",
+      description: "Everything you need to collect and manage Google reviews.",
+      features: [
+        "Custom QR templates (poster, counter card, sticker)",
+        '"Great / Concern" review flow',
+        "AI-assisted review draft (3 regenerations max)",
+        "Real-time scan and redirect analytics",
+        "Email alerts for customer concerns",
+        "Unlimited review redirects",
+      ],
+      ctaLabel: "Get Started with Basic",
+      ctaHref: "/signup",
+    },
+    pro: {
+      name: "Pro",
+      price: "150",
+      priceAnnual: "1,500",
+      subtext: "per location / month",
+      subtextAnnual: "per location / year (save 2 months)",
+      description: "For businesses that want automated review engagement.",
+      features: [
+        "Everything in Basic",
+        "Automatic AI-generated review replies",
+        "Priority support",
+      ],
+      ctaLabel: "Upgrade to Pro",
+      ctaHref: "/signup",
+      badge: "Most Popular",
+    },
+    comparisonNote:
+      "Both plans include: Unlimited QR template downloads · Customers remain in control of posting · No contracts · Cancel anytime",
+  },
+
+  bookDemo: {
+    id: "book-demo",
+    title: "Book a demo",
+    subtitle:
+      "Pick a time that works for you. We'll walk you through RevsBoost and answer your questions.",
+    ctaLabel: "Choose a time",
+    /** Replace with your Cal.com booking link (e.g. cal.com/your-username/demo) */
+    bookingUrl: "https://cal.com/revsboost/demo",
+  },
+
   finalCta: {
     title: "Start collecting better reviews today.",
     subtitle:
       "Generate your first QR template and start turning real customer experiences into real social proof.",
     primary: { label: "Get Started Free", href: "/signup" },
-    secondary: { label: "See Pricing", href: "/pricing" },
+    secondary: { label: "See Pricing", href: "/#pricing" },
   },
 
   footer: {
@@ -148,9 +202,9 @@ export const homeCopy = {
       {
         title: "Product",
         links: [
-          { label: "How it works", href: "#how-it-works" },
-          { label: "Features", href: "#features" },
-          { label: "Insights", href: "#insights" },
+          { label: "How it works", href: "/how-it-works" },
+          { label: "Features", href: "/features" },
+          { label: "Insights", href: "/insights" },
           { label: "Pricing", href: "/pricing" },
         ],
       },

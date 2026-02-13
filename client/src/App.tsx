@@ -8,7 +8,16 @@ import AdminRoute from "@/components/AdminRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 
 import Home from "@/pages/Home";
+import HowItWorks from "@/pages/HowItWorks";
+import Features from "@/pages/Features";
+import Insights from "@/pages/Insights";
 import Pricing from "@/pages/Pricing";
+import About from "@/pages/About";
+import Articles from "@/pages/Articles";
+import ArticleDetail from "@/pages/ArticleDetail";
+import Contact from "@/pages/Contact";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import AuthPage from "@/pages/Auth";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -56,12 +65,31 @@ function RedirectToReviewSlug({ path }: { path: string }) {
   return null;
 }
 
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  return null;
+}
+
 function Router() {
   return (
-    <Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
       {/* Public Marketing Routes */}
       <Route path="/" component={Home} />
+      <Route path="/how-it-works" component={HowItWorks} />
+      <Route path="/features" component={Features} />
+      <Route path="/insights" component={Insights} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/about" component={About} />
+      <Route path="/articles" component={Articles} />
+      <Route path="/articles/:slug" component={ArticleDetail} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
       <Route path="/login" component={() => <AuthPage mode="login" />} />
       <Route path="/signup" component={() => <AuthPage mode="signup" />} />
       <Route path="/forgot-password" component={ForgotPassword} />
@@ -168,6 +196,7 @@ function Router() {
       {/* Fallback */}
       <Route component={NotFound} />
     </Switch>
+    </>
   );
 }
 

@@ -196,12 +196,24 @@ function BusinessList({ businesses }: { businesses: any[] | undefined }) {
 }
 
 function BusinessCard({ business }: { business: any }) {
+  const [, setLocation] = useLocation();
   const totalReviews = business.totalReviews ?? 0;
   const totalConcerns = business.totalConcerns ?? 0;
 
   return (
-    <Link href={`/business/${business.slug}`}>
-      <Card className="app-card h-full transition-colors hover:border-primary/40 cursor-pointer">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setLocation(`/business/${business.slug}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setLocation(`/business/${business.slug}`);
+        }
+      }}
+      className="cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded-[14px]"
+    >
+      <Card className="app-card h-full transition-colors hover:border-primary/40">
         <CardHeader className="pb-2 pt-4 px-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
@@ -233,22 +245,22 @@ function BusinessCard({ business }: { business: any }) {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-1.5 pt-0">
-            <Link href={`/business/${business.slug}`} onClick={(e) => e.stopPropagation()}>
-              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs">
+          <div className="flex flex-wrap gap-1.5 pt-0" onClick={(e) => e.stopPropagation()}>
+            <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" asChild>
+              <Link href={`/business/${business.slug}`}>
                 <Settings className="h-3 w-3" />
                 Settings
-              </Button>
-            </Link>
-            <Link href={`/business/${business.slug}/qr`} onClick={(e) => e.stopPropagation()}>
-              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs">
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" asChild>
+              <Link href={`/business/${business.slug}/qr`}>
                 <QrCode className="h-3 w-3" />
                 QR Code
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 }

@@ -127,11 +127,8 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId) {
-      console.warn("⚠️ VITE_GOOGLE_CLIENT_ID not set. Google Sign-In will not be available.");
       return;
     }
-
-    console.log("🔧 Initializing Google Identity Services with Client ID:", clientId.substring(0, 20) + "...");
 
     // Wait for Google Identity Services script to load
     const initGoogleSignIn = () => {
@@ -158,14 +155,11 @@ export default function AuthPage({ mode = "login" }: { mode?: "login" | "signup"
           width: 300,
           text: isLogin ? "signin_with" : "signup_with", // Different text for login vs signup
         });
-        
-        console.log("✅ Google Sign-In button rendered successfully");
       } catch (error) {
-        console.error("❌ Error initializing Google Sign-In:", error);
-        console.error("💡 Make sure:");
-        console.error("   1. You've saved the settings in Google Cloud Console");
-        console.error("   2. http://localhost:5000 is added to 'Authorized JavaScript origins'");
-        console.error("   3. Wait a few minutes for changes to propagate");
+        console.warn(
+          "Google Sign-In: Add your current origin to Google Cloud Console → Credentials → OAuth 2.0 Client → Authorized JavaScript origins. " +
+          "For local dev, add http://localhost:5000 and http://localhost:5173 (and http://127.0.0.1:* if you use that)."
+        );
       }
     };
 
@@ -326,18 +320,19 @@ src="/revsboost-logo.png"
                         id="emailOrUsername"
                         placeholder="Enter your email address or username"
                         className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all"
-                        {...form.register("emailOrUsername")}
-                        onChange={(e) => {
-                          setLoginError(null);
-                          const value = e.target.value;
-                          if (value.includes("@")) {
-                            form.setValue("email", value);
-                            form.setValue("username", "");
-                          } else {
-                            form.setValue("username", value);
-                            form.setValue("email", "");
-                          }
-                        }}
+                        {...form.register("emailOrUsername", {
+                          onChange: (e) => {
+                            setLoginError(null);
+                            const value = e.target.value;
+                            if (value.includes("@")) {
+                              form.setValue("email", value);
+                              form.setValue("username", "");
+                            } else {
+                              form.setValue("username", value);
+                              form.setValue("email", "");
+                            }
+                          },
+                        })}
                       />
                       {form.formState.errors.emailOrUsername && (
                         <p className="text-sm text-red-500">
@@ -356,8 +351,9 @@ src="/revsboost-logo.png"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
                           className="h-12 rounded-xl border-slate-200 bg-white focus:border-[hsl(var(--ring))] focus:ring-[hsl(var(--ring))]/20 transition-all pr-12"
-                          {...form.register("password")}
-                          onChange={() => setLoginError(null)}
+                          {...form.register("password", {
+                            onChange: () => setLoginError(null),
+                          })}
                         />
                         <button
                           type="button"

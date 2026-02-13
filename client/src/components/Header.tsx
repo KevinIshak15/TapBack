@@ -33,7 +33,19 @@ export default function Header() {
     window.location.href = "/";
   };
 
-  const isLanding = location === "/" || location === "/pricing";
+  const isMarketing =
+    location === "/" ||
+    location === "/pricing" ||
+    location === "/how-it-works" ||
+    location === "/features" ||
+    location === "/insights" ||
+    location === "/about" ||
+    location === "/articles" ||
+    location.startsWith("/articles/") ||
+    location === "/contact" ||
+    location === "/privacy" ||
+    location === "/terms";
+  const isLanding = isMarketing;
   const isAppRoute = /^\/(dashboard|admin|business|settings)/.test(location);
   const { brand, nav } = homeCopy;
 
@@ -71,12 +83,29 @@ export default function Header() {
 
         {/* Center nav — landing only */}
         {showCenterNav && (
-          <nav className="hidden sm:flex flex-1 justify-center items-center gap-8">
-            {nav.links.map((link) => (
-              <Link key={link.href} href={link.href} className={navLinkClass}>
-                {link.label}
-              </Link>
-            ))}
+          <nav className="hidden sm:flex flex-1 justify-center items-center gap-6 lg:gap-8">
+            {nav.links.map((link) => {
+              const match = link.href.match(/#(.+)$/);
+              const sectionId = match ? match[1] : null;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => {
+                    if (location === "/" && sectionId) {
+                      e.preventDefault();
+                      document.getElementById(sectionId)?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }
+                  }}
+                  className={navLinkClass}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         )}
 

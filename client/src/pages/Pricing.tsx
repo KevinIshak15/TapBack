@@ -4,46 +4,43 @@ import { ArrowRight } from "lucide-react";
 import "@/styles/landing-tokens.css";
 import { PricingCard } from "@/components/PricingCard";
 import { PricingFAQ } from "@/components/PricingFAQ";
+import { LandingFooter } from "@/components/LandingFooter";
 
 const basicFeatures = [
-  "Custom QR templates (poster, counter card, sticker)",
-  '"Great / Concern" review flow',
-  "AI-assisted review draft (3 regenerations max)",
-  "Real-time scan and redirect analytics",
-  "Email alerts for customer concerns",
+  "QR code review system (posters, counter cards, stickers)",
+  "AI review draft generation (3 regenerate limit)",
+  "Insights dashboard with real-time analytics",
+  "Negative feedback routing with email alerts",
   "Unlimited review redirects",
+  "Multi-location support (charged per location)",
 ];
 
 const proFeatures = [
   "Everything in Basic",
-  "Automatic AI-generated review replies",
+  "Automatic AI-powered Google review replies",
   "Priority support",
 ];
 
 const faqItems = [
   {
-    question: "Does RevsBoost post reviews automatically?",
+    question: "Can I manage multiple locations?",
     answer:
-      "No. Customers always review, edit, and submit their review directly on Google.",
+      "Yes. RevsBoost supports multi-business management. Each location is charged separately. You can manage all locations from a single dashboard.",
   },
   {
-    question: "What's the difference between Basic and Pro?",
+    question: "Can I cancel anytime?",
     answer:
-      "Pro includes automatic AI-generated review replies. Basic does not.",
+      "Yes. No long-term contracts. You can cancel your subscription at any time. Your data remains accessible during the billing period.",
   },
   {
-    question: "Can I upgrade later?",
-    answer: "Yes. You can switch plans anytime.",
+    question: "Does this integrate with Google Business Profile?",
+    answer:
+      "RevsBoost directs customers to your Google review link. Customers post reviews directly on Google. We do not post on your behalf, ensuring full compliance with Google's policies.",
   },
   {
-    question: "What happens if a customer selects \"Concern\"?",
+    question: "Is pricing charged per business location?",
     answer:
-      "They can submit private feedback and still leave a Google review if they choose.",
-  },
-  {
-    question: "Is this compliant with Google policies?",
-    answer:
-      "Yes. RevsBoost assists with drafting but never posts on behalf of customers.",
+      "Yes. Pricing is charged per business location. Basic is $100/month per location, Pro is $150/month per location. Add as many locations as you need.",
   },
 ];
 
@@ -58,10 +55,12 @@ export default function Pricing() {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--landing-text-primary)] mb-4">
             Simple pricing. No surprises.
           </h1>
-          <p className="text-lg text-[var(--landing-text-secondary)] max-w-xl mx-auto mb-8">
+          <p className="text-lg text-[var(--landing-text-secondary)] max-w-xl mx-auto mb-2">
             Choose the plan that fits your business. Upgrade anytime.
           </p>
-          {/* Toggle - UI only */}
+          <p className="text-sm text-[var(--landing-text-muted)] mb-8">
+            Charged per business location.
+          </p>
           <div className="inline-flex items-center gap-3 p-1 rounded-lg bg-[var(--landing-surface)] border border-[var(--landing-border)]">
             <button
               type="button"
@@ -92,8 +91,8 @@ export default function Pricing() {
         <section className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-16">
           <PricingCard
             name="Basic"
-            price="100"
-            subtext="per location / month"
+            price={isAnnual ? "1,000" : "100"}
+            subtext={isAnnual ? "per location / year (save 2 months)" : "per location / month"}
             description="Everything you need to collect and manage Google reviews."
             features={basicFeatures}
             ctaLabel="Get Started with Basic"
@@ -101,8 +100,8 @@ export default function Pricing() {
           />
           <PricingCard
             name="Pro"
-            price="150"
-            subtext="per location / month"
+            price={isAnnual ? "1,500" : "150"}
+            subtext={isAnnual ? "per location / year (save 2 months)" : "per location / month"}
             description="For businesses that want automated review engagement."
             features={proFeatures}
             ctaLabel="Upgrade to Pro"
@@ -163,6 +162,7 @@ export default function Pricing() {
           </div>
         </section>
       </div>
+      <LandingFooter />
     </div>
   );
 }
