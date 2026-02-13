@@ -8,6 +8,7 @@ import AdminRoute from "@/components/AdminRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 
 import Home from "@/pages/Home";
+import Pricing from "@/pages/Pricing";
 import AuthPage from "@/pages/Auth";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -60,6 +61,7 @@ function Router() {
     <Switch>
       {/* Public Marketing Routes */}
       <Route path="/" component={Home} />
+      <Route path="/pricing" component={Pricing} />
       <Route path="/login" component={() => <AuthPage mode="login" />} />
       <Route path="/signup" component={() => <AuthPage mode="signup" />} />
       <Route path="/forgot-password" component={ForgotPassword} />

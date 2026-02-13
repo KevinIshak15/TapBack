@@ -33,7 +33,7 @@ export default function Header() {
     window.location.href = "/";
   };
 
-  const isLanding = location === "/";
+  const isLanding = location === "/" || location === "/pricing";
   const isAppRoute = /^\/(dashboard|admin|business|settings)/.test(location);
   const { brand, nav } = homeCopy;
 
