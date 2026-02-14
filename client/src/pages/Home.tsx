@@ -85,14 +85,6 @@ export default function Home() {
               {hero.ctas.secondary.label}
             </Link>
           </motion.div>
-          <motion.p variants={itemVariants} className="text-sm text-[var(--landing-text-muted)]">
-            {hero.trustLine}
-          </motion.p>
-          <motion.ul variants={itemVariants} className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm text-[var(--landing-text-muted)] list-none p-0 m-0">
-            {hero.microPoints.map((point, i) => (
-              <li key={i}>{point}</li>
-            ))}
-          </motion.ul>
         </motion.div>
 
         <motion.div

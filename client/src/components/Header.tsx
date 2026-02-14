@@ -74,8 +74,18 @@ export default function Header() {
       style={headerStyle}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center h-14 sm:h-16">
-        {/* Logo — same spot everywhere */}
-        <Link href="/" className="flex items-center gap-2 shrink-0 no-underline group">
+        {/* Logo — same spot everywhere; on / only, scroll to top instead of navigating */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 shrink-0 no-underline group"
+          onClick={(e) => {
+            if (location === "/") {
+              e.preventDefault();
+              window.history.replaceState(null, "", "/");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+        >
           <img src="/revsboost-logo.png" alt="" className="h-9 w-auto object-contain" />
           <span className="font-bold text-lg text-slate-900">{brand.name}</span>
           <span className="w-1.5 h-4 rounded-sm shrink-0 bg-[#2EE8E6]" aria-hidden />
@@ -85,19 +95,24 @@ export default function Header() {
         {showCenterNav && (
           <nav className="hidden sm:flex flex-1 justify-center items-center gap-6 lg:gap-8">
             {nav.links.map((link) => {
-              const match = link.href.match(/#(.+)$/);
+              const match = link.href.match(/^\/?#(.+)$/);
               const sectionId = match ? match[1] : null;
+              const isHashLink = !!sectionId;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={(e) => {
-                    if (location === "/" && sectionId) {
-                      e.preventDefault();
-                      document.getElementById(sectionId)?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                      });
+                    if (isHashLink && sectionId) {
+                      if (location === "/") {
+                        e.preventDefault();
+                        const el = document.getElementById(sectionId);
+                        if (el) {
+                          window.history.replaceState(null, "", `/#${sectionId}`);
+                          el.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      }
+                      // If on another page, let the link navigate; Home will scroll on mount
                     }
                   }}
                   className={navLinkClass}

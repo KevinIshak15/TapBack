@@ -7,11 +7,11 @@ export const homeCopy = {
 
   nav: {
     links: [
-      { label: "How it works", href: "/how-it-works" },
-      { label: "Features", href: "/features" },
-      { label: "Insights", href: "/insights" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "Features", href: "/#features" },
+      { label: "Insights", href: "/#insights" },
       { label: "Testimonials", href: "/#testimonials" },
-      { label: "Pricing", href: "/pricing" },
+      { label: "Pricing", href: "/#pricing" },
       { label: "Book a demo", href: "/#book-demo" },
     ],
     ctas: {
@@ -21,19 +21,13 @@ export const homeCopy = {
   },
 
   hero: {
-    headline: "Turn customer feedback into reviews that drive growth.",
+    headline: "Real Customers. Real Reviews. Real Growth.",
     subheadline:
-      "RevsBoost makes it effortless for real customers to leave Google reviews. Custom QR templates, an AI-assisted draft (always editable), and a dashboard that shows what's working.",
+      "Make it effortless for customers to leave Google reviews while you track growth in one simple dashboard.",
     ctas: {
-      primary: { label: "Get Started Free", href: "/signup" },
+      primary: { label: "Get Started", href: "/signup" },
       secondary: { label: "Book a demo", href: "/#book-demo" },
     },
-    trustLine: "No fake reviews. No auto-posting. Customers stay in control.",
-    microPoints: [
-      "Print-ready QR templates",
-      "3 regenerations max",
-      "Concern flow still allows Google review",
-    ],
   },
 
   howItWorks: {
@@ -41,19 +35,19 @@ export const homeCopy = {
     eyebrow: "How it works",
     title: "Scan. Tap. Review.",
     subtitle:
-      "A simple flow that reduces friction and helps customers write clear, authentic reviews.",
+      "Designed to make leaving a Google review effortless while you track growth.",
     steps: [
       {
         title: "Add your business",
-        body: "Set your Google review link and choose what customers can mention.",
+        body: "Connect your Google review URL and tailor what customers can highlight.",
       },
       {
-        title: "Download QR templates",
+        title: "Customize QR campaigns",
         body: "Pick a theme and print a poster, counter card, or sticker, ready to use.",
       },
       {
         title: "Collect reviews faster",
-        body: "Customers scan, choose \"Great\" or \"Concern,\" and leave a review in minutes.",
+        body: "Make it effortless for customers to leave meaningful Google reviews in seconds.",
       },
     ],
   },
@@ -61,7 +55,7 @@ export const homeCopy = {
   features: {
     id: "features",
     eyebrow: "Built for real businesses",
-    title: "Everything you need to collect better reviews without the risk.",
+    title: "A complete review growth engine for modern businesses.",
     items: [
       {
         title: "Custom QR Templates",
@@ -69,19 +63,19 @@ export const homeCopy = {
       },
       {
         title: "AI Review Assistant",
-        body: "Helps customers draft a review from their input. Always editable, always their words.",
+        body: "Generates customers a draft review from their input. Always editable, always their words.",
       },
       {
-        title: "Concern Handling",
-        body: "Let customers share concerns privately, while still allowing a public Google review if they choose.",
+        title: "Smart Auto-Replies",
+        body: "Customize your tone, approve manually, or automate positive review replies.",
       },
       {
         title: "Insights Dashboard",
-        body: "Track scans, drafts generated, Google redirects, and concern trends, so you know it's working.",
+        body: "Track scans, published reviews and reply activity all in one place.",
       },
     ],
     complianceNote:
-      "RevsBoost suggests drafts based on customer input. Customers review, edit, and submit on Google themselves.",
+      "RevsBoost supports authentic reviews. Customers generate and publish on Google themselves.",
   },
 
   insights: {
