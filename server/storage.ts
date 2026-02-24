@@ -84,6 +84,7 @@ export interface IStorage {
   getBusiness(id: number): Promise<Business | undefined>;
   getBusinessBySlug(slug: string): Promise<Business | undefined>;
   updateBusiness(id: number, updates: Partial<InsertBusiness> & { focusAreas?: string[] }): Promise<Business>;
+  deleteBusiness(id: number): Promise<void>;
 
   createReview(review: InsertReview): Promise<Review>;
   getReviewsByBusiness(businessId: number): Promise<Review[]>;
@@ -344,9 +345,9 @@ export class FirebaseStorage implements IStorage {
 
   async getStats(businessId: number): Promise<{ scans: number; reviewsGenerated: number; redirects: number; concerns: number }> {
     const allReviews = await this.getReviewsByBusiness(businessId);
-    
+    // scans: placeholder heuristic until real scan/redirect tracking is implemented
     return {
-      scans: allReviews.length * 3 + Math.floor(Math.random() * 20), // Estimated
+      scans: allReviews.length * 3 + Math.floor(Math.random() * 20),
       reviewsGenerated: allReviews.filter((r) => r.isGenerated).length,
       redirects: allReviews.filter((r) => r.experienceType === "great").length,
       concerns: allReviews.filter((r) => r.experienceType === "concern").length,
@@ -458,6 +459,33 @@ export class FirebaseStorage implements IStorage {
       businessId,
       updatedAt: Timestamp.fromDate(new Date()),
     });
+  }
+
+  async deleteBusiness(id: number): Promise<void> {
+    const business = await this.getBusiness(id);
+    if (!business) throw new Error("Business not found");
+
+    const ownerId = business.ownerId;
+
+    // Delete all reviews for this business
+    const reviews = await this.getReviewsByBusiness(id);
+    for (const review of reviews) {
+      await db.collection(collections.reviews).doc(review.id.toString()).delete();
+    }
+
+    // Unlink any location links that pointed to this business (so user can re-add the location later)
+    const links = await this.getLocationLinksByUser(ownerId);
+    for (const link of links) {
+      if (link.businessId === id) {
+        await db.collection(collections.googleLocationLinks).doc(link.id.toString()).update({
+          businessId: null,
+          updatedAt: Timestamp.fromDate(new Date()),
+        });
+      }
+    }
+
+    // Delete the business document
+    await db.collection(collections.businesses).doc(id.toString()).delete();
   }
 
   async getPendingLocationLinks(userId: number): Promise<GoogleLocationLink[]> {

@@ -234,7 +234,7 @@ export default function CreateBusiness() {
                               >
                                 {locationsError?.toLowerCase().includes("quota") || locationsError?.toLowerCase().includes("request access")
                                   ? "Request GBP API access"
-                                  : "Enable My Business Account Management API"}
+                                  : "Enable My Business Business Information API"}
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             )}

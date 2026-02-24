@@ -121,7 +121,11 @@ export function registerIntegrationRoutes(app: Express) {
         activationUrl = urlMatch ? urlMatch[1] : undefined;
         const isQuota = msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED") || msg.includes("Quota exceeded") || msg.includes("quota_limit_value");
         if (msg.includes("SERVICE_DISABLED") || msg.includes("has not been used")) {
-          listError = "My Business Account Management API is not enabled for your Google Cloud project. Enable it in the link below.";
+          listError = "My Business Business Information API is not enabled for your Google Cloud project. Enable it in the link below.";
+          activationUrl = activationUrl || "https://console.cloud.google.com/apis/library/mybusinessbusinessinformation.googleapis.com";
+        } else if (msg.includes("404") || msg.includes("Not Found")) {
+          listError = "Locations API returned 404. Enable the My Business Business Information API for your project (link below).";
+          activationUrl = "https://console.cloud.google.com/apis/library/mybusinessbusinessinformation.googleapis.com";
         } else if (isQuota) {
           listError = "Google has not granted API quota for this project yet (0 requests allowed). You need to request access to the Google Business Profile API.";
           activationUrl = "https://developers.google.com/my-business/content/prereqs#request-access";
@@ -130,12 +134,17 @@ export function registerIntegrationRoutes(app: Express) {
         }
         all = [];
       }
-      const locations = all.map(({ accountName, location }) => ({
-        locationResourceName: location.name,
-        accountName,
-        locationName: location.title || location.locationName || location.name?.split("/").pop() || "Unnamed",
-        storeAddress: location.storeAddress || location.address?.formattedAddress,
-      }));
+      const locations = all.map(({ accountName, location }) => {
+        const rawName = location.name || "";
+        const fullResourceName =
+          rawName.startsWith("accounts/") ? rawName : `${accountName.replace(/\/$/, "")}/${rawName.replace(/^\//, "")}`;
+        return {
+          locationResourceName: fullResourceName,
+          accountName,
+          locationName: location.title || location.locationName || rawName.split("/").pop() || "Unnamed",
+          storeAddress: location.storeAddress || location.address?.formattedAddress,
+        };
+      });
       res.json({ locations, error: listError, activationUrl });
     })
   );

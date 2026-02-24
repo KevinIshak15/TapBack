@@ -1,9 +1,10 @@
 import type { Express } from "express";
 import { api } from "@shared/routes";
 import { storage } from "../storage";
-import { requireAuth, requireOwnership } from "../middleware/auth";
+import { requireAuth } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 import { serializeDates } from "../utils/serialize";
+import { listLocationReviews } from "../integrations/googleGbpClient";
 
 const PLACEHOLDER_GOOGLE_URL = "https://g.page/r/imported";
 
@@ -154,7 +155,7 @@ export function registerBusinessRoutes(app: Express) {
     })
   );
 
-  // List reviews for a business (owner only)
+  // List reviews for a business (owner only) — in-app reviews from your review link
   app.get(
     api.businesses.listReviews.path,
     requireAuth,
@@ -169,6 +170,61 @@ export function registerBusinessRoutes(app: Express) {
       }
       const reviews = await storage.getReviewsByBusiness(businessId);
       res.json(reviews.map((r) => serializeDates(r)));
+    })
+  );
+
+  // Delete a business (owner only)
+  app.delete(
+    "/api/businesses/:id",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const businessId = Number(req.params.id);
+      const business = await storage.getBusiness(businessId);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+      if (business.ownerId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to delete this business" });
+      }
+      await storage.deleteBusiness(businessId);
+      res.status(204).send();
+    })
+  );
+
+  // List Google Business Profile reviews for a business (owner only)
+  app.get(
+    "/api/businesses/:id/google-reviews",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const businessId = Number(req.params.id);
+      const business = await storage.getBusiness(businessId);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+      if (business.ownerId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to view this business's reviews" });
+      }
+      const locationResourceName = (business as { locationResourceName?: string }).locationResourceName;
+      if (!locationResourceName) {
+        return res.json({
+          reviews: [],
+          averageRating: 0,
+          totalReviewCount: 0,
+          message: "This business is not linked to a Google Business Profile location.",
+        });
+      }
+      try {
+        const result = await listLocationReviews(req.user!.id, locationResourceName);
+        res.json(result);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        res.status(502).json({
+          reviews: [],
+          averageRating: 0,
+          totalReviewCount: 0,
+          error: msg,
+        });
+      }
     })
   );
 }

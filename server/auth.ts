@@ -32,8 +32,15 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  const sessionSecret = process.env.SESSION_SECRET || "revues_secret_key";
+  if (app.get("env") === "production" && !process.env.SESSION_SECRET) {
+    console.warn("⚠️ SESSION_SECRET is not set; using default. Set SESSION_SECRET in production.");
+  }
+  if (app.get("env") === "production" && process.env.ADMIN_SIGNUP_CODE === undefined) {
+    console.warn("⚠️ ADMIN_SIGNUP_CODE is not set; default admin code is in use. Set it in production.");
+  }
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "revues_secret_key",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,

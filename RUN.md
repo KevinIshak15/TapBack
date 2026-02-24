@@ -43,6 +43,19 @@ If you see **"Google Business Profile OAuth credentials missing"**: add `GOOGLE_
 
 If you see **"INTEGRATION_ENCRYPTION_KEY must be set and at least 32 characters"**: add `INTEGRATION_ENCRYPTION_KEY` to `.env`. Run `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` to generate a 64-char hex value, then set `INTEGRATION_ENCRYPTION_KEY=<that value>` in `.env` and restart the server.
 
+### Google Cloud Console – APIs to enable for Google Business Profile
+
+In **APIs & Services** → **Library**, enable these for the project that owns your GBP OAuth client:
+
+| API | Purpose |
+|-----|---------|
+| **My Business Account Management API** | List accounts the user can manage. |
+| **My Business Business Information API** | List locations for an account (required for "Add Business" location list). |
+| **My Business API** | List and display **Google reviews** (stars, reviewer name, comment, reply). Needed for the Insights page and the Reviews & Concerns Google block. |
+
+If locations don’t load: enable **My Business Business Information API**.  
+If you get **404** or “API not enabled” on the Insights/Reviews tab: you need the **third** API — **My Business API** (search “My Business API” in the Library; service `mybusiness.googleapis.com`). It is separate from Account Management and Business Information. The API may not appear until you request access: use the GBP API contact form (support.google.com/business/contact/api_default), "Application for Basic API Access", with your Cloud project number; Business Profile must be verified 60+ days. After approval, enable "Google My Business API" in the Library (or open console.cloud.google.com/apis/library/mybusiness.googleapis.com), then refresh.
+
 ### Google Cloud Console – fix "redirect_uri_mismatch" (Error 400)
 
 You use **two OAuth clients**: one for sign-in, one for Google Business Profile. Add the redirect URI to the **correct** client.

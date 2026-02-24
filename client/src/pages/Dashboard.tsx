@@ -1,10 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/use-auth";
-import { useBusinesses } from "@/hooks/use-businesses";
+import { useBusinesses, useGoogleReviews } from "@/hooks/use-businesses";
+import type { Business } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Building2, MessageSquare, BarChart, Settings, QrCode, ChevronRight, TrendingUp, AlertCircle } from "lucide-react";
+import { Plus, Building2, MessageSquare, BarChart, Settings, QrCode, ChevronRight, TrendingUp, AlertCircle, Star, Trash2 } from "lucide-react";
+import { ConfirmDeleteBusinessDialog } from "@/components/ConfirmDeleteBusinessDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppShell } from "@/components/app/AppShell";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -85,7 +87,7 @@ export default function Dashboard() {
   );
 }
 
-function DashboardInsights({ businesses }: { businesses: any[] | undefined }) {
+function DashboardInsights({ businesses }: { businesses: Business[] | undefined }) {
   const totalReviews = businesses?.reduce((sum, b) => sum + (b.totalReviews ?? 0), 0) ?? 0;
   const totalConcerns = businesses?.reduce((sum, b) => sum + (b.totalConcerns ?? 0), 0) ?? 0;
   const totalBusinesses = businesses?.length ?? 0;
@@ -140,7 +142,9 @@ function DashboardInsights({ businesses }: { businesses: any[] | undefined }) {
   );
 }
 
-function BusinessList({ businesses }: { businesses: any[] | undefined }) {
+function BusinessList({ businesses }: { businesses: Business[] | undefined }) {
+  const [deleteBusiness, setDeleteBusiness] = useState<{ id: number; name: string } | null>(null);
+
   if (!businesses || businesses.length === 0) {
     return (
       <div className="space-y-6">
@@ -188,17 +192,26 @@ function BusinessList({ businesses }: { businesses: any[] | undefined }) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {businesses.map((business) => (
-          <BusinessCard key={business.id} business={business} />
+          <BusinessCard key={business.id} business={business} onDeleteClick={(b) => setDeleteBusiness({ id: b.id, name: b.name })} />
         ))}
       </div>
+      {deleteBusiness && (
+        <ConfirmDeleteBusinessDialog
+          open={!!deleteBusiness}
+          onOpenChange={(open) => !open && setDeleteBusiness(null)}
+          business={deleteBusiness}
+        />
+      )}
     </div>
   );
 }
 
-function BusinessCard({ business }: { business: any }) {
+function BusinessCard({ business, onDeleteClick }: { business: Business; onDeleteClick: (b: Business) => void }) {
   const [, setLocation] = useLocation();
   const totalReviews = business.totalReviews ?? 0;
   const totalConcerns = business.totalConcerns ?? 0;
+  const hasGbp = !!(business as Business & { locationResourceName?: string }).locationResourceName;
+  const { data: googleReviews } = useGoogleReviews(business.id, hasGbp);
 
   return (
     <div
@@ -245,6 +258,16 @@ function BusinessCard({ business }: { business: any }) {
               </div>
             </div>
           </div>
+          {hasGbp && googleReviews && (googleReviews.totalReviewCount > 0 || googleReviews.error) && (
+            <div className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-1.5">
+              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />
+              <p className="text-[11px] text-slate-600">
+                {googleReviews.error
+                  ? "Google reviews unavailable"
+                  : `${googleReviews.totalReviewCount} Google review${googleReviews.totalReviewCount !== 1 ? "s" : ""}${googleReviews.averageRating > 0 ? ` · ${googleReviews.averageRating.toFixed(1)}★` : ""}`}
+              </p>
+            </div>
+          )}
           <div className="flex flex-wrap gap-1.5 pt-0" onClick={(e) => e.stopPropagation()}>
             <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" asChild>
               <Link href={`/business/${business.slug}`}>
@@ -257,6 +280,18 @@ function BusinessCard({ business }: { business: any }) {
                 <QrCode className="h-3 w-3" />
                 QR Code
               </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1 h-7 text-xs text-destructive border-destructive/50 hover:bg-destructive/10 hover:border-destructive"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteClick(business);
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+              Delete
             </Button>
           </div>
         </CardContent>

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBusinessSchema, type InsertBusiness } from "@shared/schema";
 import { useUser } from "@/hooks/use-auth";
-import { useBusinessBySlug, useUpdateBusiness, useBusinessReviews } from "@/hooks/use-businesses";
+import { useBusinessBySlug, useUpdateBusiness, useBusinessReviews, useGoogleReviews } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar } from "lucide-react";
+import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar, Star, Trash2 } from "lucide-react";
 import {
   CATEGORIES,
   getDefaultTagsForCategory,
@@ -23,9 +23,11 @@ import {
   isOptionalBankTag,
 } from "@/lib/categoriesAndTags";
 import { makeLogoTransparent } from "@/lib/logoToTransparent";
+import { ConfirmDeleteBusinessDialog } from "@/components/ConfirmDeleteBusinessDialog";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { AppShell } from "@/components/app/AppShell";
 import { BusinessLayout } from "@/components/BusinessLayout";
@@ -119,6 +121,8 @@ export default function BusinessDetails() {
 // Business Settings View Component — Business Information only
 function BusinessSettingsView({ business }: { business: any }) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const updateMutation = useUpdateBusiness();
 
   const form = useForm<Partial<InsertBusiness>>({
@@ -161,6 +165,7 @@ function BusinessSettingsView({ business }: { business: any }) {
   };
 
   return (
+    <>
     <Card className="bg-white border border-slate-200 shadow-sm">
       <CardHeader className="pb-2 pt-4">
         <CardTitle className="text-xl font-display font-bold">Business Information</CardTitle>
@@ -342,8 +347,29 @@ function BusinessSettingsView({ business }: { business: any }) {
               </div>
             </form>
         </div>
+        <div className="mt-8 pt-6 border-t border-slate-200">
+          <h3 className="text-sm font-semibold text-slate-800 mb-1">Danger zone</h3>
+          <p className="text-xs text-slate-500 mb-3">Permanently remove this business and all its data.</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="text-destructive border-destructive/50 hover:bg-destructive/10 hover:border-destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete business
+          </Button>
+        </div>
       </CardContent>
     </Card>
+    <ConfirmDeleteBusinessDialog
+      open={deleteDialogOpen}
+      onOpenChange={setDeleteDialogOpen}
+      business={{ id: business.id, name: business.name }}
+      onDeleted={() => setLocation("/dashboard")}
+    />
+  </>
   );
 }
 
@@ -1326,23 +1352,203 @@ function ThemeCustomizationView({ business }: { business: any }) {
   );
 }
 
-// Insights View Component
+// Insights View — all reviews with stars, who wrote them, dates, and replies (Google Business Profile)
 function InsightsView({ business }: { business: any }) {
+  const hasGbp = !!(business.locationResourceName);
+  const {
+    data: googleData,
+    isLoading: googleLoading,
+    isError: googleError,
+    error: googleErrorDetail,
+  } = useGoogleReviews(business.id, hasGbp);
+
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
+
+  const reviews = googleData?.reviews ?? [];
+  const sortedReviews = (() => {
+    const list = [...reviews];
+    if (sortBy === "newest") list.sort((a, b) => new Date(b.updateTime || b.createTime).getTime() - new Date(a.updateTime || a.createTime).getTime());
+    else if (sortBy === "oldest") list.sort((a, b) => new Date(a.createTime).getTime() - new Date(b.createTime).getTime());
+    else if (sortBy === "highest") list.sort((a, b) => b.starRating - a.starRating);
+    else if (sortBy === "lowest") list.sort((a, b) => a.starRating - b.starRating);
+    return list;
+  })();
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr);
+    return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  };
+
+  // No GBP linked
+  if (!hasGbp) {
+    return (
+      <Card className="bg-white border border-slate-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
+          <CardDescription className="text-slate-600">Review analytics and all Google reviews in one place.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
+            <BarChart className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+            <p className="text-slate-700 font-medium">Connect Google Business Profile to see insights</p>
+            <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
+              Link this business to a Google Business Profile location to view all reviews, star ratings, who wrote them, and your replies here.
+            </p>
+            <Link href="/business/new">
+              <Button className="mt-4" variant="outline">Add or connect a location</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Loading
+  if (googleLoading) {
+    return (
+      <Card className="bg-white border border-slate-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
+          <CardDescription className="text-slate-600">Review analytics and all Google reviews.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span>Loading Google reviews…</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // API error (e.g. 403/404 = My Business API not enabled)
+  if (googleError && googleErrorDetail) {
+    const msg = googleErrorDetail.message ?? "";
+    const is404 = msg.includes("404");
+    const is403 = msg.includes("403") || msg.includes("has not been used") || msg.includes("is disabled");
+    return (
+      <Card className="bg-white border border-slate-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
+          <CardDescription className="text-slate-600">Review analytics and all Google reviews.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-amber-800">
+            <p className="font-medium">Could not load Google reviews</p>
+            <p className="text-sm mt-1">{msg}</p>
+            {(is404 || is403) ? (
+              <div className="text-xs mt-3 text-amber-700 space-y-2">
+                <p><strong>One-time fix (not per client):</strong> The project number in the error is <em>your app’s</em> Google Cloud project — the one that has your OAuth client (GOOGLE_GBP_CLIENT_ID). Enable the <strong>Google My Business API</strong> once in that project; then <em>all</em> clients who connect their Business Profile will get reviews. You do not enable anything per business profile.</p>
+                <p>In Google Cloud Console, open the project that owns your GBP OAuth credentials → <strong>APIs &amp; Services → Library</strong> → search for <strong>&quot;My Business API&quot;</strong> or <strong>&quot;Google My Business API&quot;</strong> → Enable. Or use the link from the error message above. Wait a few minutes, then refresh this page.</p>
+                <p>Direct link: <a href="https://console.cloud.google.com/apis/library/mybusiness.googleapis.com" target="_blank" rel="noopener noreferrer" className="underline break-all">console.cloud.google.com/apis/library/mybusiness.googleapis.com</a> (ensure the correct project is selected in the top bar).</p>
+              </div>
+            ) : (
+              <p className="text-xs mt-3 text-amber-700">
+                Enable the <strong>My Business API</strong> in your app’s Google Cloud project (APIs &amp; Services → Library).
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const averageRating = googleData?.averageRating ?? 0;
+  const totalCount = googleData?.totalReviewCount ?? 0;
+  const serverError = googleData?.error;
+  const serverMessage = googleData?.message;
+
   return (
-    <Card className="bg-white border border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
+    <Card className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <CardHeader className="border-b border-slate-100 bg-slate-50/30">
+        <CardTitle className="text-2xl font-display font-bold text-slate-900">Insights</CardTitle>
+        <CardDescription className="text-slate-600">
+          All Google reviews for this location — who wrote them, star ratings, and your replies.
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="text-center py-12">
-          <BarChart className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-          <p className="text-slate-600">Insights view coming soon...</p>
-          <Link href={`/business/${business.slug}/insights`}>
-            <Button className="mt-4" variant="outline">
-              View Full Insights Page
-            </Button>
-          </Link>
-        </div>
+      <CardContent className="p-0">
+        {serverError ? (
+          <div className="px-6 py-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">{serverError}</div>
+        ) : serverMessage && totalCount === 0 ? (
+          <div className="px-6 py-6 text-slate-500 text-sm">{serverMessage}</div>
+        ) : (
+          <>
+            {/* Summary + sort */}
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/30 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                  <span className="text-2xl font-bold text-slate-900">{averageRating > 0 ? averageRating.toFixed(1) : "—"}</span>
+                  <span className="text-slate-500 text-sm">average</span>
+                </div>
+                <div className="text-slate-600 text-sm">
+                  <span className="font-semibold text-slate-900">{totalCount}</span> review{totalCount !== 1 ? "s" : ""} on Google
+                </div>
+              </div>
+              <Select value={sortBy} onValueChange={(v: "newest" | "oldest" | "highest" | "lowest") => setSortBy(v)}>
+                <SelectTrigger className="w-[160px] h-9 rounded-lg border border-slate-200 bg-white text-slate-900">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="z-[100] min-w-[160px] rounded-xl border-slate-200 bg-white shadow-lg">
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                  <SelectItem value="highest">Highest rated</SelectItem>
+                  <SelectItem value="lowest">Lowest rated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Review list */}
+            <div className="px-6 py-5">
+              {sortedReviews.length === 0 ? (
+                <div className="text-center py-14 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
+                  <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-600 font-medium">No Google reviews yet</p>
+                  <p className="text-sm text-slate-500 mt-1">Reviews from your Google Business Profile will appear here.</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  {sortedReviews.map((r) => (
+                    <li key={r.reviewId} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9 shrink-0 rounded-full border border-slate-200">
+                            {r.reviewerProfilePhotoUrl ? (
+                              <AvatarImage src={r.reviewerProfilePhotoUrl} alt={r.reviewerDisplayName} className="object-cover" />
+                            ) : null}
+                            <AvatarFallback className="bg-slate-100 text-slate-600 text-sm font-medium">
+                              {r.reviewerDisplayName === "Anonymous" ? "?" : (r.reviewerDisplayName || "?").charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-slate-900">{r.reviewerDisplayName}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={cn("w-4 h-4", star <= r.starRating ? "text-amber-500 fill-amber-500" : "text-slate-200")}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <time className="text-xs text-slate-500 block mb-2" dateTime={r.createTime}>
+                        {formatDate(r.updateTime || r.createTime)}
+                      </time>
+                      {r.comment && <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{r.comment}</p>}
+                      {r.reviewReply ? (
+                        <div className="mt-3 pt-3 border-t border-slate-100">
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Your reply</p>
+                          <p className="text-sm text-slate-700 italic">{r.reviewReply}</p>
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -1363,6 +1569,8 @@ type ReviewItem = {
 // Reviews & Concerns View (merged) with filters, date range, sort
 function ReviewsAndConcernsView({ business }: { business: any }) {
   const { data: reviews = [], isLoading } = useBusinessReviews(business.id);
+  const hasGbpLocation = !!(business.locationResourceName);
+  const { data: googleReviewsData, isLoading: googleReviewsLoading, isError: googleReviewsError, error: googleReviewsErrorDetail } = useGoogleReviews(business.id, hasGbpLocation);
   const updateBusiness = useUpdateBusiness();
   const { toast } = useToast();
   const [filterType, setFilterType] = useState<"all" | "concern" | "great">("all");
@@ -1438,6 +1646,76 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
           </div>
         ) : (
           <>
+            {/* Google Business Profile reviews (when business is linked to GBP) */}
+            {hasGbpLocation && (
+              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/30">
+                <h3 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  Google reviews
+                </h3>
+                {googleReviewsLoading ? (
+                  <div className="flex items-center gap-2 text-slate-500 py-4">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Loading Google reviews…</span>
+                  </div>
+                ) : googleReviewsError && googleReviewsErrorDetail ? (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">{googleReviewsErrorDetail.message}</p>
+                ) : googleReviewsData?.error ? (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">{googleReviewsData.error}</p>
+                ) : googleReviewsData?.message ? (
+                  <p className="text-sm text-slate-500">{googleReviewsData.message}</p>
+                ) : googleReviewsData?.reviews?.length ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-500">
+                      {googleReviewsData.totalReviewCount} review{googleReviewsData.totalReviewCount !== 1 ? "s" : ""} on Google
+                      {googleReviewsData.averageRating > 0 && ` · ${googleReviewsData.averageRating.toFixed(1)}★ average`}
+                    </p>
+                    <ul className="space-y-3 max-h-80 overflow-y-auto">
+                      {googleReviewsData.reviews.map((r) => (
+                        <li key={r.reviewId} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9 shrink-0 rounded-full border border-slate-200">
+                                {r.reviewerProfilePhotoUrl ? (
+                                  <AvatarImage src={r.reviewerProfilePhotoUrl} alt={r.reviewerDisplayName} className="object-cover" />
+                                ) : null}
+                                <AvatarFallback className="bg-slate-100 text-slate-600 text-sm font-medium">
+                                  {r.reviewerDisplayName === "Anonymous" ? "?" : (r.reviewerDisplayName || "?").charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-slate-900">{r.reviewerDisplayName}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={cn("w-4 h-4", star <= r.starRating ? "text-amber-500 fill-amber-500" : "text-slate-200")}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {r.createTime && (
+                            <time className="text-xs text-slate-500 block mb-2" dateTime={r.createTime}>
+                              {new Date(r.createTime).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                            </time>
+                          )}
+                          {r.comment && <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{r.comment}</p>}
+                          {r.reviewReply ? (
+                            <div className="mt-3 pt-3 border-t border-slate-100">
+                              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Your reply</p>
+                              <p className="text-sm text-slate-700 italic">{r.reviewReply}</p>
+                            </div>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">No Google reviews yet for this location.</p>
+                )}
+              </div>
+            )}
+
             {/* Receive concerns at this email */}
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
               <Label className="text-sm font-medium text-slate-700">Receive concerns at</Label>

@@ -25,7 +25,7 @@ export function useBusiness(id: number) {
     queryKey: [api.businesses.get.path, id],
     queryFn: async () => {
       const url = buildUrl(api.businesses.get.path, { id });
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: "include" });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch business");
       return api.businesses.get.responses[200].parse(await res.json());
@@ -39,7 +39,7 @@ export function useBusinessBySlug(slug: string) {
     queryKey: [api.businesses.getBySlug.path, slug],
     queryFn: async () => {
       const url = buildUrl(api.businesses.getBySlug.path, { slug });
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: "include" });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch business");
       return api.businesses.getBySlug.responses[200].parse(await res.json());
@@ -72,6 +72,40 @@ export function useBusinessReviews(businessId: number) {
       return api.businesses.listReviews.responses[200].parse(await res.json());
     },
     enabled: !!businessId,
+  });
+}
+
+/** Response from GET /api/businesses/:id/google-reviews */
+export interface GoogleReviewsResponse {
+  reviews: Array<{
+    reviewId: string;
+    reviewerDisplayName: string;
+    reviewerProfilePhotoUrl?: string;
+    starRating: number;
+    comment: string;
+    createTime: string;
+    updateTime?: string;
+    reviewReply?: string;
+  }>;
+  averageRating: number;
+  totalReviewCount: number;
+  nextPageToken?: string;
+  error?: string;
+  message?: string;
+}
+
+/** Google Business Profile reviews for a business (only for businesses linked to GBP). */
+export function useGoogleReviews(businessId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ["/api/businesses/google-reviews", businessId],
+    queryFn: async (): Promise<GoogleReviewsResponse> => {
+      const res = await fetch(`/api/businesses/${businessId}/google-reviews`, { credentials: "include" });
+      if (res.status === 403 || res.status === 404) throw new Error("Not found");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || "Failed to fetch Google reviews");
+      return data;
+    },
+    enabled: !!businessId && enabled,
   });
 }
 
@@ -131,6 +165,30 @@ export function useUpdateBusiness() {
         }
       });
       queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
+    },
+  });
+}
+
+/** Delete a business (owner only). Removes the business and its reviews; unlinks the GBP location so it can be re-added. */
+export function useDeleteBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (businessId: number) => {
+      const url = buildUrl(api.businesses.get.path, { id: businessId }).replace(/\?.*$/, "");
+      const res = await fetch(`${url}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.status === 403) throw new Error("Not authorized to delete this business");
+      if (res.status === 404) throw new Error("Business not found");
+      if (!res.ok) throw new Error("Failed to delete business");
+    },
+    onSuccess: (_, businessId) => {
+      queryClient.removeQueries({ queryKey: [api.businesses.get.path, businessId] });
+      queryClient.removeQueries({ queryKey: ["/api/businesses/google-reviews", businessId] });
+      queryClient.removeQueries({ queryKey: [api.businesses.listReviews.path, businessId] });
+      queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
+      queryClient.invalidateQueries({ predicate: (q) => (q.queryKey[0]?.toString() ?? "").startsWith(api.businesses.getBySlug.path) });
     },
   });
 }
