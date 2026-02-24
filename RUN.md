@@ -56,6 +56,10 @@ In **APIs & Services** → **Library**, enable these for the project that owns y
 If locations don’t load: enable **My Business Business Information API**.  
 If you get **404** or “API not enabled” on the Insights/Reviews tab: you need the **third** API — **My Business API** (search “My Business API” in the Library; service `mybusiness.googleapis.com`). It is separate from Account Management and Business Information. The API may not appear until you request access: use the GBP API contact form (support.google.com/business/contact/api_default), "Application for Basic API Access", with your Cloud project number; Business Profile must be verified 60+ days. After approval, enable "Google My Business API" in the Library (or open console.cloud.google.com/apis/library/mybusiness.googleapis.com), then refresh.
 
+### Google review policy alignment
+
+The customer review flow is written to align with [Google Business Profile policies](https://support.google.com/business/answer/7400114): we do not offer incentives, we ask for genuine experiences, we do not influence rating or review content, and we do not discourage negative reviews. In the UI we say "Share your genuine experience — you post directly on Google," describe the AI step as a **suggested draft** that the customer edits and posts themselves, remind users they choose their star rating when they post on Google, and on the concern path offer "I still want to post a public review (any rating)." Avoid adding copy that promises rewards for reviews, asks only happy customers to review, or implies a specific star rating.
+
 ### Google Cloud Console – fix "redirect_uri_mismatch" (Error 400)
 
 You use **two OAuth clients**: one for sign-in, one for Google Business Profile. Add the redirect URI to the **correct** client.

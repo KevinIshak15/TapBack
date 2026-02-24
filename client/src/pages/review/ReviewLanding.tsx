@@ -19,7 +19,8 @@ import { ReviewFlowLayout } from "@/components/ReviewFlowLayout";
 const LOGO_DISPLAY_HEIGHT = 200;
 const LOGO_DISPLAY_MAX_WIDTH = 360;
 
-const SECTION_LABEL_CLASS = "text-xs font-semibold uppercase tracking-wide opacity-60";
+const SECTION_LABEL_CLASS =
+  "text-[11px] font-bold uppercase tracking-widest opacity-70 antialiased";
 
 const MAX_AI_REVIEWS = 3; // Total number of AI-generated reviews allowed (1 initial + 2 regenerations)
 
@@ -80,12 +81,12 @@ export default function ReviewLanding() {
   if (!business) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center p-6"
+        className="min-h-screen flex items-center justify-center p-8 animate-in"
         style={{ background: themeStyle.background, color: themeStyle.color }}
       >
-        <div className="text-center">
-          <p className="text-xl opacity-80">Business not found.</p>
-        </div>
+        <p className="text-lg font-medium opacity-90 text-center">
+          Business not found.
+        </p>
       </div>
     );
   }
@@ -124,7 +125,7 @@ export default function ReviewLanding() {
   const handleCopyAndContinue = () => {
     navigator.clipboard.writeText(editableReview.trim() || generatedReview);
     window.open(business.googleReviewUrl, "_blank");
-    toast({ title: "Copied!", description: "Paste your review on Google." });
+    toast({ title: "Copied!", description: "Paste on Google and choose your star rating." });
   };
 
   const handleConcernSubmit = async (e: React.FormEvent) => {
@@ -158,9 +159,8 @@ export default function ReviewLanding() {
 
   return (
     <ReviewFlowLayout companyName={business.name} style={themeStyle}>
-      {/* Same layout as Live Preview: one card, all sections stacked — responsive width to use space */}
       <div
-        className="w-full max-w-[min(100%,26rem)] sm:max-w-[30rem] md:max-w-[34rem] lg:max-w-[38rem] rounded-2xl overflow-hidden flex flex-col gap-6 p-5 sm:p-6 md:p-8"
+        className="w-full max-w-[min(100%,26rem)] sm:max-w-[30rem] md:max-w-[34rem] lg:max-w-[38rem] rounded-2xl overflow-hidden flex flex-col gap-6 p-5 sm:p-6 md:p-8 animate-in-delay transition-all duration-300 ease-out"
         style={{
           ...cardStyle,
           fontFamily: theme.fontFamily,
@@ -168,13 +168,19 @@ export default function ReviewLanding() {
         }}
       >
         {/* 1. Intro + logo */}
-        <div className="space-y-3">
-          <p className="text-xs font-semibold tracking-wide opacity-90" style={{ color: theme.text }}>
+        <div className="space-y-4">
+          <h1
+            className="text-lg sm:text-xl font-semibold tracking-tight text-balance leading-snug"
+            style={{ color: theme.text }}
+          >
             How was your experience at{" "}
-            <span className="font-bold" style={{ color: theme.text }}>
+            <span className="font-bold" style={{ color: theme.primary }}>
               {business.name}
             </span>
             ?
+          </h1>
+          <p className="text-xs text-center opacity-75" style={{ color: theme.text }}>
+            Your review helps others. You choose your rating when you post on Google.
           </p>
           {showLogo && (
             <div
@@ -202,15 +208,15 @@ export default function ReviewLanding() {
           )}
         </div>
 
-        {/* Great or concerns — no number (already asked above) */}
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
+        {/* Great or concerns */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setChoice("great")}
               className={cn(
-                "py-3 rounded-xl text-center text-xs font-semibold border-2 transition-opacity",
-                choice === "great" && "ring-2 ring-offset-2"
+                "py-3.5 rounded-xl text-center text-sm font-semibold border-2 transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98]",
+                choice === "great" && "ring-2 ring-offset-2 shadow-sm"
               )}
               style={
                 choice === "great"
@@ -233,8 +239,8 @@ export default function ReviewLanding() {
               type="button"
               onClick={() => setChoice("concern")}
               className={cn(
-                "py-3 rounded-xl text-center text-xs font-semibold border-2 transition-opacity opacity-90 hover:opacity-100",
-                choice === "concern" && "ring-2 ring-offset-2"
+                "py-3.5 rounded-2xl text-center text-sm font-semibold border-2 transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98] hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                choice === "concern" && "ring-2 ring-offset-2 shadow-sm"
               )}
               style={
                 choice === "concern"
@@ -248,6 +254,7 @@ export default function ReviewLanding() {
                       background: theme.backgroundAccent,
                       color: theme.secondary,
                       borderColor: theme.secondary + "50",
+                      opacity: 0.92,
                     }
               }
             >
@@ -258,12 +265,12 @@ export default function ReviewLanding() {
 
         {/* Concern path: replace sections 3+4 with concern form */}
         {choice === "concern" && (
-          <div ref={sectionConcernRef} className="space-y-4">
-            <p className="text-sm font-medium" style={{ color: theme.text }}>
-              We&apos;re sorry to hear that. Tell us what went wrong — this goes privately to management.
+          <div ref={sectionConcernRef} className="space-y-4 animate-in">
+            <p className="text-sm font-medium leading-relaxed" style={{ color: theme.text }}>
+              Tell us what went wrong — this goes privately to management.
             </p>
             <div
-              className="flex items-center gap-2 p-3 rounded-xl"
+              className="flex items-center gap-2 p-3 rounded-2xl transition-colors duration-200"
               style={{
                 background: theme.backgroundAccent,
                 border: `1px solid ${theme.primary}40`,
@@ -271,19 +278,19 @@ export default function ReviewLanding() {
             >
               <Shield className="w-4 h-4 flex-shrink-0" style={{ color: theme.primary }} />
               <p className="text-xs opacity-90" style={{ color: theme.text }}>
-                Your feedback is private and will not be posted publicly
+                Private — not posted publicly
               </p>
             </div>
-            <form onSubmit={handleConcernSubmit} className="space-y-3">
+            <form onSubmit={handleConcernSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium opacity-90 mb-1" style={{ color: theme.text }}>
+                <label className="block text-xs font-semibold uppercase tracking-wider opacity-90 mb-1.5" style={{ color: theme.text }}>
                   Name
                 </label>
                 <input
                   type="text"
                   placeholder="Your name"
                   required
-                  className="w-full rounded-xl px-4 py-3 text-sm border-2"
+                  className="w-full rounded-xl px-4 py-3 text-sm border-2 transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
                   style={{
                     borderColor: theme.backgroundAccent,
                     background: theme.cardBg,
@@ -294,13 +301,13 @@ export default function ReviewLanding() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium opacity-90 mb-1" style={{ color: theme.text }}>
+                <label className="block text-xs font-semibold uppercase tracking-wider opacity-90 mb-1.5" style={{ color: theme.text }}>
                   Phone number
                 </label>
                 <input
                   type="tel"
                   placeholder="Your phone number"
-                  className="w-full rounded-xl px-4 py-3 text-sm border-2"
+                  className="w-full rounded-xl px-4 py-3 text-sm border-2 transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
                   style={{
                     borderColor: theme.backgroundAccent,
                     background: theme.cardBg,
@@ -311,14 +318,14 @@ export default function ReviewLanding() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium opacity-90 mb-1" style={{ color: theme.text }}>
+                <label className="block text-xs font-semibold uppercase tracking-wider opacity-90 mb-1.5" style={{ color: theme.text }}>
                   Email
                 </label>
                 <input
                   type="email"
                   placeholder="Your email"
                   required
-                  className="w-full rounded-xl px-4 py-3 text-sm border-2"
+                  className="w-full rounded-xl px-4 py-3 text-sm border-2 transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
                   style={{
                     borderColor: theme.backgroundAccent,
                     background: theme.cardBg,
@@ -329,12 +336,12 @@ export default function ReviewLanding() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium opacity-90 mb-1" style={{ color: theme.text }}>
+                <label className="block text-xs font-semibold uppercase tracking-wider opacity-90 mb-1.5" style={{ color: theme.text }}>
                   Message
                 </label>
                 <textarea
-                  placeholder="Tell us about your concern..."
-                  className="w-full min-h-[100px] resize-none rounded-xl px-4 py-3 text-sm border-2"
+                  placeholder="What happened?"
+                  className="w-full min-h-[100px] resize-none rounded-xl px-4 py-3 text-sm border-2 transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
                   style={{
                     borderColor: theme.backgroundAccent,
                     background: theme.cardBg,
@@ -347,8 +354,11 @@ export default function ReviewLanding() {
               </div>
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2"
-                style={getPrimaryButtonStyle(theme)}
+                className="w-full py-3 rounded-2xl text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all duration-300 ease-out hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2"
+                style={{
+                  ...getPrimaryButtonStyle(theme),
+                  ...(theme.buttonVariant !== "outline" && { boxShadow: `0 2px 8px ${theme.primary}40` }),
+                }}
               >
                 <Send className="w-4 h-4" />
                 Send feedback
@@ -358,16 +368,20 @@ export default function ReviewLanding() {
               href={business.googleReviewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center text-xs opacity-80 hover:underline"
+              className="block text-center text-xs opacity-80 hover:opacity-100 transition-opacity duration-200 ease-out hover:underline"
               style={{ color: theme.text }}
             >
-              I still want to post a public review
+              Post a public review instead (any rating)
             </a>
             <button
               type="button"
               onClick={() => setChoice(null)}
-              className="text-xs opacity-70 hover:underline"
-              style={{ color: theme.text }}
+              className="w-full sm:w-auto min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-semibold border-2 transition-all duration-200 ease-out hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 mt-2"
+              style={{
+                color: theme.text,
+                borderColor: theme.backgroundAccent,
+                background: theme.cardBg ?? 'transparent',
+              }}
             >
               ← Back
             </button>
@@ -377,22 +391,22 @@ export default function ReviewLanding() {
         {/* 3. Choose tags — only when they chose "Great"; then after generate, show copy/paste */}
         {choice === "great" && (
           <>
-            <div ref={sectionTagsRef} className="space-y-2">
+            <div ref={sectionTagsRef} className="space-y-4 animate-in">
               <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
                 2. What stood out?
               </p>
-              <p className="text-base font-medium" style={{ color: theme.text }}>
-                Pick any that apply (optional).
+              <p className="text-sm font-medium opacity-90 tracking-tight" style={{ color: theme.text }}>
+                Help others know what you loved — pick any (optional).
               </p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {chipOptions.map((label) => (
                   <button
                     key={label}
                     type="button"
                     onClick={() => toggleChip(label)}
                     className={cn(
-                      "px-2.5 py-1.5 rounded-full text-[11px] font-medium border-2 whitespace-nowrap transition-all",
-                      selectedChips.includes(label) && "text-white border-transparent"
+                      "px-3 py-2 rounded-full text-xs font-semibold border-2 whitespace-nowrap transition-all duration-200 hover:scale-105 active:scale-[0.98]",
+                      selectedChips.includes(label) && "text-white border-transparent shadow-sm"
                     )}
                     style={
                       selectedChips.includes(label)
@@ -410,12 +424,12 @@ export default function ReviewLanding() {
                   </button>
                 ))}
               </div>
-              <label className="block text-xs font-medium uppercase tracking-wide opacity-70 mt-2 mb-1" style={{ color: theme.text }}>
+              <label className="block text-[11px] font-bold uppercase tracking-widest opacity-70 mt-3 mb-1" style={{ color: theme.text }}>
                 Anything else to add?
               </label>
               <textarea
                 placeholder="e.g. specific staff member, wait time..."
-                className="w-full min-h-[2.5rem] rounded-xl border-2 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-offset-1"
+                className="w-full min-h-[2.5rem] rounded-xl border-2 px-3 py-2 text-sm resize-y transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
                 style={{
                   borderColor: theme.primary + "60",
                   background: theme.cardBg ?? "#fff",
@@ -438,10 +452,10 @@ export default function ReviewLanding() {
                   type="button"
                   onClick={() => handleGenerate(false)}
                   disabled={selectedChips.length === 0 || isGenerating}
-                  className="w-full py-2.5 rounded-xl text-[11px] font-semibold disabled:opacity-50"
+                  className="w-full py-3 rounded-2xl text-sm font-semibold disabled:opacity-50 transition-all duration-300 ease-out hover:scale-[1.01] active:scale-[0.99] disabled:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2"
                   style={
                     selectedChips.length > 0 && !isGenerating
-                      ? getPrimaryButtonStyle(theme)
+                      ? { ...getPrimaryButtonStyle(theme), boxShadow: `0 2px 8px ${theme.primary}40` }
                       : {
                           background: theme.backgroundAccent,
                           color: theme.text,
@@ -449,14 +463,14 @@ export default function ReviewLanding() {
                         }
                   }
                 >
-                  {isGenerating ? "Generating..." : "Generate review"}
+                  {isGenerating ? "Creating draft…" : "Suggest a draft"}
                 </button>
               )}
               {isGenerating && (
                 <div className="flex items-center gap-2 py-4">
                   <Loader2 className="w-5 h-5 animate-spin" style={{ color: theme.primary }} />
                   <span className="text-[11px] opacity-80" style={{ color: theme.text }}>
-                    Writing your review...
+                    Creating a draft based on what you shared…
                   </span>
                 </div>
               )}
@@ -464,18 +478,18 @@ export default function ReviewLanding() {
 
             {/* 3. Copy & paste — only after they generate */}
             {generatedReview && (
-              <div ref={sectionCopyPasteRef} className="space-y-2">
+              <div ref={sectionCopyPasteRef} className="space-y-4 animate-in">
                 <p className={SECTION_LABEL_CLASS} style={{ color: theme.text }}>
                   3. Copy & post to Google
                 </p>
-                <p className="text-base font-semibold" style={{ color: theme.text }}>
-                  Your review is ready
+                <p className="text-lg font-semibold tracking-tight" style={{ color: theme.text }}>
+                  Here’s a suggested draft
                 </p>
-                <p className="text-xs opacity-80" style={{ color: theme.text }}>
-                  Edit if you’d like, then copy and paste it to Google.
+                <p className="text-sm opacity-80" style={{ color: theme.text }}>
+                  Your review helps others. Edit with your own words and post on Google — you choose your rating.
                 </p>
                 <textarea
-                  className="w-full min-h-[120px] rounded-lg p-3 text-[11px] leading-relaxed resize-y"
+                  className="w-full min-h-[120px] rounded-xl p-3 text-sm leading-relaxed resize-y transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
                   style={{
                     background: theme.backgroundAccent,
                     color: theme.text,
@@ -483,25 +497,25 @@ export default function ReviewLanding() {
                   }}
                   value={editableReview}
                   onChange={(e) => setEditableReview(e.target.value)}
-                  placeholder="Your review..."
+                  placeholder="Your words — edit the draft and post on Google"
                 />
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3">
                   <button
                     type="button"
                     onClick={handleCopyAndContinue}
-                    className="w-full py-2.5 rounded-xl text-[11px] font-semibold text-white inline-flex items-center justify-center gap-1.5"
+                    className="w-full py-3 rounded-2xl text-sm font-semibold text-white inline-flex items-center justify-center gap-2 transition-all duration-300 ease-out hover:scale-[1.01] active:scale-[0.99] shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
                     style={{
                       background: `linear-gradient(90deg, ${theme.primary}, ${theme.secondary})`,
                     }}
                   >
-                    <Copy className="w-3.5 h-3.5" />
+                    <Copy className="w-4 h-4" />
                     Copy & Post on Google
                   </button>
                   <button
                     type="button"
                     onClick={() => handleGenerate(true)}
                     disabled={generateMutation.isPending || generationCount >= MAX_AI_REVIEWS}
-                    className="w-full py-2.5 rounded-xl text-[11px] font-semibold border-2 disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
+                    className="w-full py-3 rounded-2xl text-sm font-semibold border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2 transition-all duration-300 ease-out hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2"
                     style={getSecondaryButtonStyle(theme)}
                   >
                     {generateMutation.isPending ? (
@@ -512,7 +526,7 @@ export default function ReviewLanding() {
                     ) : (
                       <>
                         <RefreshCw className="w-3.5 h-3.5" />
-                        Regenerate review {generationCount < MAX_AI_REVIEWS ? `(${MAX_AI_REVIEWS - generationCount} left)` : ""}
+                        Suggest a different draft {generationCount < MAX_AI_REVIEWS ? `(${MAX_AI_REVIEWS - generationCount} left)` : ""}
                       </>
                     )}
                   </button>
@@ -522,13 +536,16 @@ export default function ReviewLanding() {
           </>
         )}
 
-        <p className="text-[10px] opacity-50 pt-1" style={{ color: theme.text }}>
+        <p
+          className="text-[11px] font-medium opacity-60 pt-2 tracking-wide"
+          style={{ color: theme.text }}
+        >
           Powered by{" "}
           <a
             href="https://revsboost.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:opacity-80"
+            className="underline hover:opacity-90 transition-opacity"
             style={{ color: theme.text }}
           >
             RevsBoost

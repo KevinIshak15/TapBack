@@ -1,8 +1,11 @@
 /**
  * Themes for the customer-facing review flow (/r/:slug).
  * Each theme is visually distinct: different palettes, surfaces, shadows, and button treatments.
- * References: modern SaaS palettes, calm oceanic/earthy tones, premium dark, editorial minimal.
+ * Uses Plus Jakarta Sans for consistent, modern typography across all themes.
  */
+
+/** Single font stack for the review flow — modern, readable, already loaded in index.html */
+export const REVIEW_FLOW_FONT = "'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
 
 export type ReviewThemeId =
   | "classic"
@@ -27,7 +30,7 @@ export interface ReviewTheme {
   text: string;
   /** Card surface (e.g. white or dark) */
   cardBg: string;
-  /** CSS box-shadow for the main card */
+  /** CSS box-shadow for the main card — modern, slightly elevated */
   cardShadow: string;
   /** Card border, e.g. "1px solid rgba(0,0,0,0.06)" */
   cardBorder: string;
@@ -49,10 +52,10 @@ export const REVIEW_THEMES: Record<ReviewThemeId, ReviewTheme> = {
     backgroundAccent: "#e0e7ff",
     text: "#0f172a",
     cardBg: "#ffffff",
-    cardShadow: "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 10px 20px -5px rgba(15, 23, 42, 0.06)",
+    cardShadow: "0 8px 30px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.04)",
     cardBorder: "1px solid rgba(15, 23, 42, 0.06)",
-    cardRadius: 16,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    cardRadius: 20,
+    fontFamily: REVIEW_FLOW_FONT,
     buttonVariant: "gradient",
   },
   "modern-bold": {
@@ -66,10 +69,10 @@ export const REVIEW_THEMES: Record<ReviewThemeId, ReviewTheme> = {
     backgroundAccent: "#ede9fe",
     text: "#1e1b4b",
     cardBg: "#ffffff",
-    cardShadow: "0 25px 50px -12px rgba(91, 33, 182, 0.15), 0 0 0 1px rgba(139, 92, 246, 0.08)",
+    cardShadow: "0 25px 50px -12px rgba(91, 33, 182, 0.2), 0 0 0 1px rgba(139, 92, 246, 0.1)",
     cardBorder: "1px solid rgba(139, 92, 246, 0.12)",
-    cardRadius: 20,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    cardRadius: 24,
+    fontFamily: REVIEW_FLOW_FONT,
     buttonVariant: "gradient",
   },
   "fresh-minimal": {
@@ -83,10 +86,10 @@ export const REVIEW_THEMES: Record<ReviewThemeId, ReviewTheme> = {
     backgroundAccent: "#f0fdfa",
     text: "#134e4a",
     cardBg: "#ffffff",
-    cardShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.04)",
+    cardShadow: "0 4px 24px -4px rgba(13, 148, 136, 0.12), 0 0 0 1px rgba(13, 148, 136, 0.08)",
     cardBorder: "1px solid rgba(13, 148, 136, 0.12)",
-    cardRadius: 8,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    cardRadius: 16,
+    fontFamily: REVIEW_FLOW_FONT,
     buttonVariant: "outline",
   },
   "warm-friendly": {
@@ -100,10 +103,10 @@ export const REVIEW_THEMES: Record<ReviewThemeId, ReviewTheme> = {
     backgroundAccent: "#e2e8f0",
     text: "#1e293b",
     cardBg: "#ffffff",
-    cardShadow: "0 4px 14px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(71, 85, 105, 0.08)",
+    cardShadow: "0 8px 30px -8px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(71, 85, 105, 0.06)",
     cardBorder: "1px solid rgba(71, 85, 105, 0.12)",
-    cardRadius: 16,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    cardRadius: 20,
+    fontFamily: REVIEW_FLOW_FONT,
     buttonVariant: "solid",
   },
   "dark-luxe": {
@@ -117,10 +120,10 @@ export const REVIEW_THEMES: Record<ReviewThemeId, ReviewTheme> = {
     backgroundAccent: "#1e293b",
     text: "#f8fafc",
     cardBg: "#1e293b",
-    cardShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(248, 250, 252, 0.06)",
+    cardShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(248, 250, 252, 0.08)",
     cardBorder: "1px solid rgba(248, 250, 252, 0.08)",
-    cardRadius: 16,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    cardRadius: 20,
+    fontFamily: REVIEW_FLOW_FONT,
     buttonVariant: "solid",
   },
   "clean-clinic": {
@@ -134,10 +137,10 @@ export const REVIEW_THEMES: Record<ReviewThemeId, ReviewTheme> = {
     backgroundAccent: "#ccfbf1",
     text: "#134e4a",
     cardBg: "#ffffff",
-    cardShadow: "0 1px 3px 0 rgba(4, 120, 87, 0.06), 0 4px 12px -2px rgba(4, 120, 87, 0.08)",
+    cardShadow: "0 8px 30px -8px rgba(4, 120, 87, 0.15), 0 0 0 1px rgba(6, 95, 70, 0.08)",
     cardBorder: "1px solid rgba(6, 95, 70, 0.1)",
-    cardRadius: 12,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    cardRadius: 16,
+    fontFamily: REVIEW_FLOW_FONT,
     buttonVariant: "solid",
   },
 };

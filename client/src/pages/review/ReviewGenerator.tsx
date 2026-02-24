@@ -77,7 +77,7 @@ export default function ReviewGenerator() {
               What stood out to you?
             </h2>
             <p className="text-sm text-center opacity-80" style={{ color: theme.text }}>
-              We&apos;ll write a review for you. Press &apos;Generate&apos; when you&apos;re done.
+              We&apos;ll suggest a draft based on what you share. Edit it and post your review on Google.
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               {chipOptions.map((label) => (

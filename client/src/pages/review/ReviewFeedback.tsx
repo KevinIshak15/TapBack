@@ -110,7 +110,7 @@ export default function ReviewFeedback() {
               className="opacity-80 hover:underline"
               style={{ color: theme.text }}
             >
-              I still want to post a public review
+              Post a public review instead (any rating)
             </a>
           </div>
         </form>
