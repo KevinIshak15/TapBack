@@ -123,6 +123,21 @@ export default function ReviewLanding() {
   };
 
   const handleCopyAndContinue = () => {
+    // Save which keywords they selected so Insights can show "best performing" (fire-and-forget; don't block UX)
+    createReviewMutation.mutate(
+      {
+        businessId: business.id,
+        experienceType: "great",
+        selectedTags: selectedChips,
+        content: (editableReview.trim() || generatedReview).slice(0, 2000) || undefined,
+        isGenerated: true,
+      },
+      {
+        onError: () => {
+          // Optional: toast on failure; user still gets copy + open
+        },
+      }
+    );
     navigator.clipboard.writeText(editableReview.trim() || generatedReview);
     window.open(business.googleReviewUrl, "_blank");
     toast({ title: "Copied!", description: "Paste on Google and choose your star rating." });

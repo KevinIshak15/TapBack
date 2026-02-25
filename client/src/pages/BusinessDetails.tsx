@@ -32,15 +32,19 @@ import { useToast } from "@/hooks/use-toast";
 import { AppShell } from "@/components/app/AppShell";
 import { BusinessLayout } from "@/components/BusinessLayout";
 import { PostersView } from "@/pages/BusinessPosters";
+import { InsightsPage } from "@/pages/business/InsightsPage";
+import { ReviewsPage } from "@/pages/business/ReviewsPage";
+import { ConcernsPage } from "@/pages/business/ConcernsPage";
 import { REVIEW_THEMES, getReviewTheme, type ReviewThemeId } from "@/lib/reviewThemes";
 
-type TabType = "settings" | "review-options" | "qr" | "posters" | "insights" | "feedback";
+type TabType = "settings" | "review-options" | "qr" | "posters" | "insights" | "reviews" | "concerns";
 
-const PATH_TABS: TabType[] = ["review-options", "posters", "insights", "feedback"];
+const PATH_TABS: TabType[] = ["review-options", "posters", "insights", "reviews", "concerns"];
 
 function getTabFromPath(pathname: string): TabType {
   if (typeof window === "undefined") return "settings";
   const segment = pathname.split("/").filter(Boolean)[2]; // business, slug, tab
+  if (segment === "feedback") return "reviews"; // legacy redirect
   return PATH_TABS.includes(segment as TabType) ? (segment as TabType) : "settings";
 }
 
@@ -76,6 +80,13 @@ export default function BusinessDetails() {
     }
   }, [business, businessLoading, user, setLocation]);
 
+  // Legacy: redirect /business/:slug/feedback to /business/:slug/reviews
+  useEffect(() => {
+    if (pathname.endsWith("/feedback")) {
+      setLocation(`/business/${slug}/reviews`, { replace: true });
+    }
+  }, [pathname, slug, setLocation]);
+
   if (userLoading || businessLoading) {
     return (
       <AppShell>
@@ -107,11 +118,14 @@ export default function BusinessDetails() {
           <TabsContent value="posters" className="mt-4">
             <PostersView business={business} />
           </TabsContent>
-          <TabsContent value="insights" className="mt-4">
-            <InsightsView business={business} />
+          <TabsContent value="insights" className="mt-1">
+            <InsightsPage business={business} />
           </TabsContent>
-          <TabsContent value="feedback" className="mt-4">
-            <ReviewsAndConcernsView business={business} />
+          <TabsContent value="reviews" className="mt-4">
+            <ReviewsPage business={business} />
+          </TabsContent>
+          <TabsContent value="concerns" className="mt-4">
+            <ConcernsPage business={business} />
           </TabsContent>
         </Tabs>
     </BusinessLayout>
