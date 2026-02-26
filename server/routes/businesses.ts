@@ -4,9 +4,19 @@ import { storage } from "../storage";
 import { requireAuth } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 import { serializeDates } from "../utils/serialize";
-import { listLocationReviews } from "../integrations/googleGbpClient";
+import { listLocationReviews, getLocationReviewUrl } from "../integrations/googleGbpClient";
 
 const PLACEHOLDER_GOOGLE_URL = "https://g.page/r/imported";
+
+/** Must match shared schema: valid URL containing google.com or g.page. */
+function isValidGoogleReviewUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return /google\.com|g\.page/i.test(url);
+  } catch {
+    return false;
+  }
+}
 
 export function registerBusinessRoutes(app: Express) {
   // Create business (must be from Google Business Profile: connect Google, select locations, then create)
@@ -47,7 +57,14 @@ export function registerBusinessRoutes(app: Express) {
             locationResourceName: link.locationResourceName,
           });
           await storage.setLocationLinkBusinessId(link.id, business.id);
-          created.push(serializeDates(business));
+          // Auto-set Google review URL from GBP (v4 metadata.newReviewUrl) when available
+          const fetchedUrl = await getLocationReviewUrl(userId, link.locationResourceName);
+          if (fetchedUrl && isValidGoogleReviewUrl(fetchedUrl)) {
+            await storage.updateBusiness(business.id, { googleReviewUrl: fetchedUrl });
+            created.push(serializeDates({ ...business, googleReviewUrl: fetchedUrl }));
+          } else {
+            created.push(serializeDates(business));
+          }
         }
         return res.status(201).json(created.length === 1 ? created[0] : created);
       }
@@ -88,7 +105,14 @@ export function registerBusinessRoutes(app: Express) {
           locationResourceName,
         });
         if (link) await storage.setLocationLinkBusinessId(link.id, business.id);
-        created.push(serializeDates(business));
+        // Auto-set Google review URL from GBP (v4 metadata.newReviewUrl) when available
+        const fetchedUrl = await getLocationReviewUrl(userId, locationResourceName);
+        if (fetchedUrl && isValidGoogleReviewUrl(fetchedUrl)) {
+          await storage.updateBusiness(business.id, { googleReviewUrl: fetchedUrl });
+          created.push(serializeDates({ ...business, googleReviewUrl: fetchedUrl }));
+        } else {
+          created.push(serializeDates(business));
+        }
       }
       res.status(201).json(created.length === 1 ? created[0] : created);
     })
@@ -216,6 +240,39 @@ export function registerBusinessRoutes(app: Express) {
       }
       const updated = await storage.updateBusiness(business.id, req.body);
       res.json(serializeDates(updated));
+    })
+  );
+
+  // Refresh Google Review URL from Google Business Profile (for businesses already linked to GBP)
+  app.post(
+    "/api/businesses/:id/refresh-google-review-url",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+      const businessId = Number(req.params.id);
+      const business = await storage.getBusiness(businessId);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+      if (business.ownerId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      const locationResourceName = (business as { locationResourceName?: string }).locationResourceName;
+      if (!locationResourceName) {
+        return res.status(400).json({
+          message: "This business is not linked to a Google Business Profile location.",
+        });
+      }
+      const fetchedUrl = await getLocationReviewUrl(req.user!.id, locationResourceName);
+      if (!fetchedUrl || !isValidGoogleReviewUrl(fetchedUrl)) {
+        return res.status(200).json({
+          updated: false,
+          business: serializeDates(business),
+          message:
+            "Google did not return a review link for this location. You can paste your review URL from Google Maps or Search. In Google Cloud Console, ensure “My Business Business Information API” is enabled (and optionally “My Business API” for v4).",
+        });
+      }
+      const updated = await storage.updateBusiness(businessId, { googleReviewUrl: fetchedUrl });
+      res.json({ updated: true, business: serializeDates(updated) });
     })
   );
 

@@ -257,6 +257,39 @@ export function useUpdateBusiness() {
   });
 }
 
+/** URL we set when creating from GBP before we have a Place ID. Used to detect when to auto-refresh. */
+export const PLACEHOLDER_GOOGLE_URL = "https://g.page/r/imported";
+
+/** Response from refresh-google-review-url: { updated, business, message? }. */
+export type RefreshGoogleReviewUrlResponse = {
+  updated: boolean;
+  business: Record<string, unknown>;
+  message?: string;
+};
+
+/** Refresh Google Review URL from Google Business Profile. Use when business has GBP linked but URL is still placeholder. */
+export function useRefreshGoogleReviewUrl(slug: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (businessId: number): Promise<RefreshGoogleReviewUrlResponse> => {
+      const res = await fetch(`/api/businesses/${businessId}/refresh-google-review-url`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Failed to refresh Google Review URL");
+      }
+      return res.json();
+    },
+    onSuccess: (data, businessId) => {
+      queryClient.invalidateQueries({ queryKey: [api.businesses.get.path, businessId] });
+      queryClient.invalidateQueries({ queryKey: [api.businesses.getBySlug.path, slug] });
+      queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
+    },
+  });
+}
+
 /** Delete a business (owner only). Removes the business and its reviews; unlinks the GBP location so it can be re-added. */
 export function useDeleteBusiness() {
   const queryClient = useQueryClient();

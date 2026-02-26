@@ -211,6 +211,63 @@ async function resolveFullLocationName(userId: number, locationResourceName: str
 }
 
 /**
+ * Fetch the Google "write a review" URL for a GBP location.
+ * Tries My Business API v4 first (metadata.newReviewUrl), then Business Information API v1
+ * (metadata.newReviewUri) as fallback — v4 often returns 404 for many projects.
+ * locationResourceName must be full form: accounts/{accountId}/locations/{locationId}.
+ * Returns null if not available or on error (caller can keep placeholder URL).
+ */
+export async function getLocationReviewUrl(
+  userId: number,
+  locationResourceName: string
+): Promise<string | null> {
+  const tokenResult = await getValidAccessToken(userId);
+  if (!tokenResult.ok) return null;
+  const fullName =
+    locationResourceName.startsWith("accounts/") && locationResourceName.includes("/locations/")
+      ? locationResourceName
+      : await resolveFullLocationName(userId, locationResourceName);
+
+  // 1) Try My Business API v4: GET .../v4/accounts/{accountId}/locations/{locationId}
+  const v4Url = `${MYBUSINESS_V4_BASE}/${fullName}`;
+  try {
+    const res = await fetch(v4Url, {
+      headers: { Authorization: `Bearer ${tokenResult.accessToken}` },
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { metadata?: { newReviewUrl?: string } };
+      const reviewUrl = data?.metadata?.newReviewUrl?.trim();
+      if (reviewUrl && reviewUrl.startsWith("http")) return reviewUrl;
+    } else {
+      console.warn("[GBP] v4 location GET failed:", res.status, fullName);
+    }
+  } catch (e) {
+    console.warn("[GBP] v4 location GET error:", (e as Error)?.message, fullName);
+  }
+
+  // 2) Fallback: Business Information API v1 — metadata.newReviewUri (same scope, often works when v4 404s)
+  // v1 path: GET .../v1/accounts/{accountId}/locations/{locationId}?readMask=metadata
+  const v1Url = `${BUSINESS_INFO_BASE}/${fullName}?readMask=${encodeURIComponent("metadata")}`;
+  try {
+    const res = await fetch(v1Url, {
+      headers: { Authorization: `Bearer ${tokenResult.accessToken}` },
+    });
+    if (!res.ok) {
+      console.warn("[GBP] v1 location GET (metadata) failed:", res.status, fullName);
+      return null;
+    }
+    const data = (await res.json()) as {
+      metadata?: { newReviewUri?: string; newReviewUrl?: string };
+    };
+    const uri = data?.metadata?.newReviewUri?.trim() || data?.metadata?.newReviewUrl?.trim();
+    if (uri && uri.startsWith("http")) return uri;
+  } catch (e) {
+    console.warn("[GBP] v1 location GET (metadata) error:", (e as Error)?.message, fullName);
+  }
+  return null;
+}
+
+/**
  * List reviews for a single GBP location (My Business API v4).
  * locationResourceName must be of the form accounts/{accountId}/locations/{locationId}.
  * Requires business.manage scope (same as other GBP calls).

@@ -139,9 +139,17 @@ export function registerPosterRoutes(app: Express) {
       const data = buildPosterData(business, origin);
       data.qrDataUrl = await generateQrDataUrl(data.qrUrl);
       const html = renderTemplate(templateId, data, { size, variant });
-      const pngBuffer = await renderToPng(html, size);
-      res.setHeader("Content-Type", "image/png");
-      res.send(pngBuffer);
+      try {
+        const pngBuffer = await renderToPng(html, size);
+        res.setHeader("Content-Type", "image/png");
+        res.send(pngBuffer);
+      } catch (err: any) {
+        console.error("[posters] Preview render failed:", err?.message || err);
+        res.status(503).json({
+          message: "Preview generation failed",
+          detail: err?.message || "Playwright may not be installed. Run: npx playwright install chromium",
+        });
+      }
     })
   );
 

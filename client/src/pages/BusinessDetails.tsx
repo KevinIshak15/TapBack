@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBusinessSchema, type InsertBusiness } from "@shared/schema";
 import { useUser } from "@/hooks/use-auth";
-import { useBusinessBySlug, useUpdateBusiness, useBusinessReviews, useGoogleReviews } from "@/hooks/use-businesses";
+import { useBusinessBySlug, useUpdateBusiness, useRefreshGoogleReviewUrl, PLACEHOLDER_GOOGLE_URL, useBusinessReviews, useGoogleReviews } from "@/hooks/use-businesses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar, Star, Trash2, Clock } from "lucide-react";
+import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar, Star, Trash2, Clock, RefreshCw } from "lucide-react";
 import {
   CATEGORIES,
   getDefaultTagsForCategory,
@@ -138,6 +138,8 @@ function BusinessSettingsView({ business }: { business: any }) {
   const [, setLocation] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const updateMutation = useUpdateBusiness();
+  const refreshUrlMutation = useRefreshGoogleReviewUrl(business?.slug ?? "");
+  const hasTriedRefresh = useRef(false);
 
   const form = useForm<Partial<InsertBusiness>>({
     resolver: zodResolver(insertBusinessSchema.partial()),
@@ -158,6 +160,43 @@ function BusinessSettingsView({ business }: { business: any }) {
       logo: business.logo ?? "",
     });
   }, [business, form]);
+
+  // Auto-refresh Google Review URL when business is linked to GBP but still has placeholder URL
+  useEffect(() => {
+    const locationResourceName = business?.locationResourceName;
+    const url = business?.googleReviewUrl;
+    if (
+      !locationResourceName ||
+      !url ||
+      url !== PLACEHOLDER_GOOGLE_URL ||
+      hasTriedRefresh.current
+    ) {
+      return;
+    }
+    hasTriedRefresh.current = true;
+    refreshUrlMutation.mutate(business.id, {
+      onSuccess: (data) => {
+        if (data?.updated) {
+          toast({
+            title: "Google Review URL updated",
+            description: "Filled from your Google Business Profile.",
+          });
+        } else {
+          toast({
+            title: "Could not get URL from Google",
+            description: data?.message ?? "Paste your review link from Google Maps manually.",
+          });
+        }
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "Could not refresh URL",
+          description: "Paste your Google review link manually.",
+        });
+      },
+    });
+  }, [business?.id, business?.locationResourceName, business?.googleReviewUrl, business?.slug]);
 
   const handleSaveBusinessInfo = async (data: Partial<InsertBusiness>) => {
     try {
@@ -255,13 +294,58 @@ function BusinessSettingsView({ business }: { business: any }) {
               </div>
               <Separator />
               <div>
-                <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-slate-700">Google Review URL *</Label>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-slate-700">Google Review URL *</Label>
+                  {business?.locationResourceName && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      disabled={refreshUrlMutation.isPending}
+                      onClick={() => {
+                        refreshUrlMutation.mutate(business.id, {
+                          onSuccess: (data) => {
+                            if (data?.updated) {
+                              toast({
+                                title: "Google Review URL updated",
+                                description: "The field has been filled from your Google Business Profile.",
+                              });
+                            } else {
+                              toast({
+                                title: "Could not get URL from Google",
+                                description: data?.message ?? "Paste your review link from Google Maps or Search manually.",
+                              });
+                            }
+                          },
+                          onError: (err: Error) => {
+                            toast({
+                              variant: "destructive",
+                              title: "Refresh failed",
+                              description: err.message ?? "Could not fetch URL from Google. Paste it manually.",
+                            });
+                          },
+                        });
+                      }}
+                    >
+                      {refreshUrlMutation.isPending ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      )}
+                      <span className="ml-1.5">{refreshUrlMutation.isPending ? "Refreshing…" : "Refresh from Google"}</span>
+                    </Button>
+                  )}
+                </div>
                 <Input
                   id="googleReviewUrl"
                   {...form.register("googleReviewUrl")}
                   className="mt-1"
                   placeholder="https://www.google.com/..."
                 />
+                {business?.locationResourceName && (
+                  <p className="text-xs text-slate-500 mt-1">Linked to Google Business Profile. Use the button above to fill this from Google.</p>
+                )}
                 {form.formState.errors.googleReviewUrl && (
                   <p className="text-sm text-red-500 mt-1">{form.formState.errors.googleReviewUrl.message}</p>
                 )}

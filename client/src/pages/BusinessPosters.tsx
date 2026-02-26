@@ -76,29 +76,79 @@ function PosterCard({
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const previewSrc = previewUrl(apiBase, template.id, size, variant);
+
+  // Fetch preview with credentials so auth works (required when API is on a different origin, e.g. dev)
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+    setBlobUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    let cancelled = false;
+    fetch(previewSrc, { credentials: "include" })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          let detail = res.statusText;
+          try {
+            const json = JSON.parse(text) as { message?: string; detail?: string };
+            if (json.detail) detail = json.detail;
+            else if (json.message) detail = json.message;
+          } catch {
+            if (text.length < 200) detail = text;
+          }
+          throw new Error(detail);
+        }
+        return res.blob();
+      })
+      .then((blob) => {
+        if (!cancelled && blob.type.startsWith("image/")) {
+          setBlobUrl(URL.createObjectURL(blob));
+        } else if (!cancelled) {
+          setImageError(true);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error("[PosterCard] Preview fetch failed:", err?.message || err);
+          setImageError(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [previewSrc]);
 
   return (
     <Card className="border border-slate-200 bg-white overflow-hidden flex flex-col">
       <div className="aspect-[8.5/11] bg-slate-100 relative overflow-hidden rounded-t-lg flex items-center justify-center min-h-[200px]">
-        {!imageLoaded && !imageError && (
+        {!imageError && (!blobUrl || !imageLoaded) && (
           <div className="absolute inset-0 flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
           </div>
         )}
         {imageError && (
-          <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm p-4 text-center">
-            Preview unavailable. Use Preview button
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 text-sm p-4 text-center gap-1">
+            <span>Preview unavailable. Use Preview button</span>
+            <span className="text-xs text-slate-400">If it never loads, run: npx playwright install chromium</span>
           </div>
         )}
-        <img
-          src={previewSrc}
-          alt={`Preview: ${template.name}`}
-          className={`absolute inset-0 w-full h-full object-contain ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-          loading="lazy"
-          onLoad={() => setImageLoaded(true)}
-          onError={() => setImageError(true)}
-        />
+        {blobUrl && (
+          <img
+            src={blobUrl}
+            alt={`Preview: ${template.name}`}
+            className={`absolute inset-0 w-full h-full object-contain ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+          />
+        )}
       </div>
       <CardHeader className="flex-1">
         <CardTitle className="text-lg">{template.name}</CardTitle>

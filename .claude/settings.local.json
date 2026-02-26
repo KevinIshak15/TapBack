@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head:*)",
+      "Bash(grep InsightsPage:*)",
+      "Bash(cd /c/Users/ahmad/Desktop/TapBack && npm run dev 2>&1)",
+      "Bash(taskkill:*)"
+    ]
+  }
+}
