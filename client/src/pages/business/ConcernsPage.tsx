@@ -193,6 +193,11 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-4">
+      {/* Title + description (consistent with other tabs) */}
+      <div className="pb-4 mb-2 border-b border-slate-200 shrink-0">
+        <h1 className="text-lg font-display font-bold text-slate-900">Concerns</h1>
+        <p className="text-sm text-slate-500 mt-1">Customer concerns inbox: forward to your email and manage responses.</p>
+      </div>
       {/* Forward concerns to */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shrink-0">
         <div className="flex items-center gap-3">

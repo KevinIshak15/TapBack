@@ -4,7 +4,7 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "modern-cafe",
   name: "Modern Restaurant / Café",
-  description: "Bold headline, warm neutrals — perfect for restaurants and cafés.",
+  description: "Bold headline, warm neutrals: perfect for restaurants and cafés.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };

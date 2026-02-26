@@ -4,7 +4,7 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "minimal-professional",
   name: "Minimal Professional",
-  description: "Clean & professional — ideal for clinics and offices.",
+  description: "Clean & professional: ideal for clinics and offices.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: true,
 };

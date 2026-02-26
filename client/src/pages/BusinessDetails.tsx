@@ -15,7 +15,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar, Star, Trash2 } from "lucide-react";
+import { QrCode, BarChart, Settings, Store, Loader2, MessageSquare, AlertTriangle, Download, Printer, ExternalLink, CheckCircle2, X, Plus, ZoomIn, ZoomOut, Eye, Palette, ChevronDown, Filter, ArrowUpDown, Calendar, Star, Trash2, Clock } from "lucide-react";
 import {
   CATEGORIES,
   getDefaultTagsForCategory,
@@ -181,11 +181,13 @@ function BusinessSettingsView({ business }: { business: any }) {
   return (
     <>
     <div className="flex-1 min-h-0 overflow-auto">
+    <div className="pb-4 mb-4 border-b border-slate-200">
+      <h2 className="text-lg font-display font-bold text-slate-900">Settings</h2>
+      <p className="text-sm text-slate-500 mt-1">Manage your business details and profile.</p>
+    </div>
+    <div className="mt-6">
     <Card className="bg-white border border-slate-200 shadow-sm">
-      <CardHeader className="pb-1 pt-3 px-4">
-        <CardTitle className="text-lg font-display font-bold">Business Information</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 px-4 pb-4">
+      <CardContent className="pt-4 px-4 pb-4">
         <div className="max-w-2xl">
           <h3 className="text-xs font-semibold text-slate-800 mb-2">Business Information</h3>
             <form onSubmit={form.handleSubmit(handleSaveBusinessInfo)} className="space-y-2">
@@ -379,6 +381,7 @@ function BusinessSettingsView({ business }: { business: any }) {
       </CardContent>
     </Card>
     </div>
+    </div>
     <ConfirmDeleteBusinessDialog
       open={deleteDialogOpen}
       onOpenChange={setDeleteDialogOpen}
@@ -483,136 +486,146 @@ function ReviewOptionsView({ business }: { business: any }) {
   const selectedTheme = getReviewTheme(selectedThemeId);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-    <Card className="bg-white border border-slate-200 shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
-      <CardHeader className="pb-1 pt-3 px-4">
-        <CardTitle className="text-lg font-display font-bold">Review Options</CardTitle>
-        <CardDescription className="text-xs">
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
+    <Card className="bg-white border-0 shadow-none flex-1 min-h-0 flex flex-col overflow-hidden">
+      <CardHeader className="pb-4 pt-3 px-0 border-b border-slate-200">
+        <CardTitle className="text-lg font-display font-bold text-slate-900">Review Options</CardTitle>
+        <CardDescription className="text-sm text-slate-500 mt-1">
           Focus areas, review page theme, and how the customer review flow will look.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0 overflow-auto px-4 pb-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-        <div className="space-y-4">
-          <h3 className="text-xs font-semibold text-slate-800 flex items-center gap-2">
-            <Palette className="w-3.5 h-3.5 text-slate-600" />
-            Focus Areas (Tags)
-          </h3>
-          <p className="text-[11px] text-slate-500 mb-2">5 tags by category (best for Google). Add up to 2 more or one of your own.</p>
-          <div className="space-y-1.5 mb-3">
-            {defaultTags.map((tag) => (
-              <div key={`default-${tag}`} className="flex items-center gap-2 py-2 px-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="flex-1 font-medium text-slate-900 text-xs">{tag}</span>
-                <span className="text-[10px] text-slate-400 px-1.5 py-0.5 bg-slate-100 rounded">Best for Google</span>
-              </div>
-            ))}
-            {customTags.map((tag, index) => {
-              const displayIndex = defaultTags.length + index;
-              return (
-                <div
-                  key={`extra-${index}`}
-                  className="flex items-center gap-2 py-2 px-2.5 bg-primary/5 rounded-lg border border-primary/20 text-xs"
-                >
-                  <span className="flex-1 font-medium text-slate-900">{tag}</span>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveTag(displayIndex)} className="h-6 w-6 p-0 text-slate-400 hover:text-red-600">
-                    <X className="w-3.5 h-3.5" />
+      <CardContent className="flex-1 min-h-0 overflow-auto px-0 pt-6 pb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="space-y-6 lg:min-w-0 border border-slate-200 rounded-xl p-6 bg-white">
+          {/* Focus Areas */}
+          <section>
+            <h3 className="text-sm font-bold text-slate-900">Focus Areas (Tags)</h3>
+            <p className="text-sm text-slate-500 mt-1 mb-4">5 tags are set by category (best for Google). Add up to 2 more from the options below or one of your own.</p>
+            <div className="space-y-2 mb-4">
+              {defaultTags.map((tag) => (
+                <div key={`default-${tag}`} className="flex items-center gap-3 py-2.5 px-3 bg-slate-100/80 rounded-lg border border-slate-200/80">
+                  <span className="flex-1 font-medium text-slate-900 text-sm">{tag}</span>
+                  <span className="text-[11px] text-slate-400 font-normal">Best for Google</span>
+                </div>
+              ))}
+              {customTags.map((tag, index) => {
+                const displayIndex = defaultTags.length + index;
+                return (
+                  <div
+                    key={`extra-${index}`}
+                    className="flex items-center gap-2 py-2.5 px-3 bg-primary/5 rounded-lg border border-primary/20 text-sm"
+                  >
+                    <span className="flex-1 font-medium text-slate-900">{tag}</span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveTag(displayIndex)} className="h-6 w-6 p-0 text-slate-400 hover:text-red-600">
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+            {customTags.length < 2 && (
+              <div>
+                <p className="text-sm text-slate-500 mb-2">Add from options (max 2 total) or your own (max 1 custom).</p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {OPTIONAL_TAG_BANK.map((tag) => {
+                    const isSelected = customTags.includes(tag);
+                    return (
+                      <Button
+                        key={tag}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-9 text-sm rounded-lg transition-colors",
+                          isSelected
+                            ? "bg-primary text-white border-primary hover:bg-primary/90"
+                            : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                        )}
+                        disabled={!canAddFromBank || isSelected}
+                        onClick={() => handleAddFromBank(tag)}
+                      >
+                        {tag}
+                        <Plus className="w-3.5 h-3.5 ml-1 opacity-80" />
+                      </Button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCustomTag(); } }}
+                    placeholder="Your own tag (max 1)"
+                    className="flex-1 h-9 text-sm rounded-lg border-slate-200"
+                    disabled={!canAddCustom}
+                  />
+                  <Button type="button" size="sm" onClick={handleAddCustomTag} disabled={!canAddCustom || !newTag.trim() || allTags.includes(newTag.trim())} className="h-9 px-4 shrink-0">
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-              );
-            })}
-          </div>
-          {customTags.length < 2 && (
-            <>
-              <p className="text-[11px] text-slate-500 mb-1.5">Add from options (max 2 total) or your own (max 1 custom):</p>
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {OPTIONAL_TAG_BANK.map((tag) => (
-                  <Button
-                    key={tag}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs"
-                    disabled={!canAddFromBank || customTags.includes(tag)}
-                    onClick={() => handleAddFromBank(tag)}
-                  >
-                    {tag}
-                    <Plus className="w-3 h-3 ml-1 opacity-70" />
-                  </Button>
-                ))}
               </div>
-              <div className="flex gap-1.5">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCustomTag(); } }}
-                  placeholder="Your own tag (max 1)"
-                  className="flex-1 h-8 text-xs"
-                  disabled={!canAddCustom}
-                />
-                <Button type="button" size="sm" onClick={handleAddCustomTag} disabled={!canAddCustom || !newTag.trim() || allTags.includes(newTag.trim())}>
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </>
-          )}
-          <Button type="button" size="sm" variant="outline" onClick={handleSaveTags} disabled={updateMutation.isPending} className="mt-2">
-            {updateMutation.isPending ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-3 h-3 mr-1.5" />}
-            Save Tags
-          </Button>
-        </div>
+            )}
+            <Button type="button" size="sm" onClick={handleSaveTags} disabled={updateMutation.isPending} className="mt-4 h-9 px-4 bg-primary text-white hover:bg-primary/90 rounded-lg">
+              {updateMutation.isPending ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Clock className="w-3.5 h-3.5 mr-2" />}
+              Save Tags
+            </Button>
+          </section>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
+          {/* Review page theme */}
+          <section>
             <div>
-              <Label className="text-xs font-semibold text-slate-800">Review page theme</Label>
-              <p className="text-[11px] text-slate-500 mt-0.5">Used on the customer review flow.</p>
+              <h3 className="text-sm font-bold text-slate-900">Review page theme</h3>
+              <p className="text-sm text-slate-500 mt-1">Used on the customer review flow (experience, tags, AI step).</p>
             </div>
-            <Button type="button" size="sm" onClick={handleSaveTheme} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <CheckCircle2 className="w-3 h-3 mr-1.5" />}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4 w-full">
+              {Object.values(REVIEW_THEMES).map((theme) => (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => setSelectedThemeId(theme.id)}
+                  className={cn(
+                    "rounded-xl border-2 p-4 text-left transition-all w-full min-w-0 flex flex-col gap-3",
+                    selectedThemeId === theme.id
+                      ? "border-primary shadow-md bg-primary/5"
+                      : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                  )}
+                >
+                  <div
+                    className="h-14 rounded-lg overflow-hidden flex flex-col gap-1.5 p-2"
+                    style={{ background: theme.pageBackground ?? theme.background }}
+                  >
+                    <div
+                      className="flex-1 min-h-0 rounded-md border"
+                      style={{ background: theme.cardBg, borderColor: theme.backgroundAccent }}
+                    />
+                    <div
+                      className="h-4 rounded text-[9px] font-medium flex items-center justify-center text-white truncate"
+                      style={{ background: theme.primary }}
+                    >
+                      Button
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 text-sm">{theme.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{theme.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <Button type="button" size="sm" onClick={handleSaveTheme} disabled={updateMutation.isPending} className="mt-4 h-9 px-4 bg-primary text-white hover:bg-primary/90 rounded-lg shrink-0">
+              {updateMutation.isPending ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Clock className="w-3.5 h-3.5 mr-2" />}
               Save theme
             </Button>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 w-full">
-            {Object.values(REVIEW_THEMES).map((theme) => (
-              <button
-                key={theme.id}
-                type="button"
-                onClick={() => setSelectedThemeId(theme.id)}
-                className={`rounded-xl border-2 p-4 text-left transition-all w-full min-w-0 flex flex-col gap-3 ${
-                  selectedThemeId === theme.id ? "border-primary ring-2 ring-primary/30 shadow-lg scale-[1.02]" : "border-slate-200 hover:border-slate-300 hover:shadow-md"
-                }`}
-              >
-                <div
-                  className="h-14 rounded-lg overflow-hidden flex flex-col gap-1.5 p-2"
-                  style={{ background: theme.pageBackground ?? theme.background }}
-                >
-                  <div
-                    className="flex-1 min-h-0 rounded-md border"
-                    style={{ background: theme.cardBg, borderColor: theme.backgroundAccent }}
-                  />
-                  <div
-                    className="h-4 rounded text-[9px] font-medium flex items-center justify-center text-white truncate"
-                    style={{ background: theme.primary }}
-                  >
-                    Button
-                  </div>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-900 text-sm">{theme.name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{theme.description}</p>
-                </div>
-              </button>
-            ))}
-          </div>
+          </section>
         </div>
-      </div>
 
-        <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100 p-4">
-          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
-            Live Preview — all steps on phone
+        {/* Live Preview */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm">
+          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">
+            LIVE PREVIEW
           </p>
           <div className="flex justify-center">
-            <div className="w-full max-w-[375px] rounded-[2rem] border-[10px] border-slate-800 bg-slate-800 shadow-2xl overflow-hidden">
+            <div className="w-full max-w-[375px] rounded-[2rem] border-[10px] border-slate-800 bg-slate-800 shadow-xl overflow-hidden">
               <div className="rounded-[1.25rem] overflow-hidden bg-white min-h-[720px] flex flex-col">
                 <div
                   className="p-4 flex flex-col gap-6"
@@ -717,6 +730,7 @@ function ReviewOptionsView({ business }: { business: any }) {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </CardContent>
     </Card>
@@ -1395,9 +1409,9 @@ function InsightsView({ business }: { business: any }) {
   })();
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return "—";
+    if (!dateStr) return "-";
     const d = new Date(dateStr);
-    return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   };
 
   // No GBP linked
@@ -1459,7 +1473,7 @@ function InsightsView({ business }: { business: any }) {
             <p className="text-sm mt-1">{msg}</p>
             {(is404 || is403) ? (
               <div className="text-xs mt-3 text-amber-700 space-y-2">
-                <p><strong>One-time fix (not per client):</strong> The project number in the error is <em>your app’s</em> Google Cloud project — the one that has your OAuth client (GOOGLE_GBP_CLIENT_ID). Enable the <strong>Google My Business API</strong> once in that project; then <em>all</em> clients who connect their Business Profile will get reviews. You do not enable anything per business profile.</p>
+                <p><strong>One-time fix (not per client):</strong> The project number in the error is <em>your app’s</em> Google Cloud project (the one that has your OAuth client) (GOOGLE_GBP_CLIENT_ID). Enable the <strong>Google My Business API</strong> once in that project; then <em>all</em> clients who connect their Business Profile will get reviews. You do not enable anything per business profile.</p>
                 <p>In Google Cloud Console, open the project that owns your GBP OAuth credentials → <strong>APIs &amp; Services → Library</strong> → search for <strong>&quot;My Business API&quot;</strong> or <strong>&quot;Google My Business API&quot;</strong> → Enable. Or use the link from the error message above. Wait a few minutes, then refresh this page.</p>
                 <p>Direct link: <a href="https://console.cloud.google.com/apis/library/mybusiness.googleapis.com" target="_blank" rel="noopener noreferrer" className="underline break-all">console.cloud.google.com/apis/library/mybusiness.googleapis.com</a> (ensure the correct project is selected in the top bar).</p>
               </div>
@@ -1484,7 +1498,7 @@ function InsightsView({ business }: { business: any }) {
       <CardHeader className="border-b border-slate-100 bg-slate-50/30">
         <CardTitle className="text-2xl font-display font-bold text-slate-900">Insights</CardTitle>
         <CardDescription className="text-slate-600">
-          All Google reviews for this location — who wrote them, star ratings, and your replies.
+          All Google reviews for this location: who wrote them, star ratings, and your replies.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -1499,7 +1513,7 @@ function InsightsView({ business }: { business: any }) {
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                  <span className="text-2xl font-bold text-slate-900">{averageRating > 0 ? averageRating.toFixed(1) : "—"}</span>
+                  <span className="text-2xl font-bold text-slate-900">{averageRating > 0 ? averageRating.toFixed(1) : "-"}</span>
                   <span className="text-slate-500 text-sm">average</span>
                 </div>
                 <div className="text-slate-600 text-sm">
@@ -2005,11 +2019,12 @@ function QRView({ business }: { business: any }) {
   };
 
   return (
-    <Card className="bg-white border border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-display font-bold">QR Code</CardTitle>
-        <CardDescription>
-          Generate and download your QR code for customer reviews
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
+    <Card className="bg-white border-0 shadow-none flex-1 min-h-0 flex flex-col overflow-hidden">
+      <CardHeader className="pb-4 pt-3 px-0 border-b border-slate-200">
+        <CardTitle className="text-lg font-display font-bold text-slate-900">QR Code</CardTitle>
+        <CardDescription className="text-sm text-slate-500 mt-1">
+          Generate and download your QR code for customer reviews.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -2066,5 +2081,6 @@ function QRView({ business }: { business: any }) {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }

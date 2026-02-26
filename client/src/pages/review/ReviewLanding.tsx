@@ -282,7 +282,7 @@ export default function ReviewLanding() {
         {choice === "concern" && (
           <div ref={sectionConcernRef} className="space-y-4 animate-in">
             <p className="text-sm font-medium leading-relaxed" style={{ color: theme.text }}>
-              Tell us what went wrong — this goes privately to management.
+              Tell us what went wrong. This goes privately to management.
             </p>
             <div
               className="flex items-center gap-2 p-3 rounded-2xl transition-colors duration-200"
@@ -293,7 +293,7 @@ export default function ReviewLanding() {
             >
               <Shield className="w-4 h-4 flex-shrink-0" style={{ color: theme.primary }} />
               <p className="text-xs opacity-90" style={{ color: theme.text }}>
-                Private — not posted publicly
+                Private: not posted publicly
               </p>
             </div>
             <form onSubmit={handleConcernSubmit} className="space-y-4">
@@ -411,7 +411,7 @@ export default function ReviewLanding() {
                 2. What stood out?
               </p>
               <p className="text-sm font-medium opacity-90 tracking-tight" style={{ color: theme.text }}>
-                Help others know what you loved — pick any (optional).
+                Help others know what you loved. Pick any (optional).
               </p>
               <div className="flex flex-wrap gap-2">
                 {chipOptions.map((label) => (
@@ -501,7 +501,7 @@ export default function ReviewLanding() {
                   Here’s a suggested draft
                 </p>
                 <p className="text-sm opacity-80" style={{ color: theme.text }}>
-                  Your review helps others. Edit with your own words and post on Google — you choose your rating.
+                  Your review helps others. Edit with your own words and post on Google. You choose your rating.
                 </p>
                 <textarea
                   className="w-full min-h-[120px] rounded-xl p-3 text-sm leading-relaxed resize-y transition-colors duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-1"
@@ -512,7 +512,7 @@ export default function ReviewLanding() {
                   }}
                   value={editableReview}
                   onChange={(e) => setEditableReview(e.target.value)}
-                  placeholder="Your words — edit the draft and post on Google"
+                  placeholder="Your words: edit the draft and post on Google"
                 />
                 <div className="flex flex-col gap-3">
                   <button

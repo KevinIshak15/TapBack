@@ -88,7 +88,7 @@ function PosterCard({
         )}
         {imageError && (
           <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm p-4 text-center">
-            Preview unavailable — use Preview button
+            Preview unavailable. Use Preview button
           </div>
         )}
         <img
@@ -286,13 +286,13 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
   return (
     <>
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 mb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-display font-bold text-slate-900">
-            QR Marketing Materials
+          <h1 className="text-lg font-display font-bold text-slate-900">
+            QR Marketing
           </h1>
-          <p className="text-slate-600 mt-1">
-            Professionally designed posters — ready to print.
+          <p className="text-sm text-slate-500 mt-1">
+            Professionally designed posters: ready to print.
           </p>
         </div>
           <div className="flex flex-wrap items-center gap-4">

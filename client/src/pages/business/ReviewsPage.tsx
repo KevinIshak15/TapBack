@@ -15,6 +15,7 @@ import {
   AlertCircle,
   CheckCircle2,
   TrendingUp,
+  TrendingDown,
   ChevronDown,
   ChevronUp,
   CornerDownRight,
@@ -22,12 +23,14 @@ import {
 } from "lucide-react";
 import { useGoogleReviews, type GoogleReviewsResponse } from "@/hooks/use-businesses";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Review = GoogleReviewsResponse["reviews"][number];
 type TabId = "all" | "unreplied" | "critical";
+type DateRangePreset = "7d" | "30d" | "since-revsboost" | "all-time" | "custom";
 
 const MOCK_AI_APOLOGY =
-  "Thank you for taking the time to share your feedback. We're sorry your experience didn't meet your expectations. We'd like to make this right—please reach out to us directly so we can address your concerns. We value your feedback and are committed to improving.";
+  "Thank you for taking the time to share your feedback. We're sorry your experience didn't meet your expectations. We'd like to make this right. Please reach out to us directly so we can address your concerns. We value your feedback and are committed to improving.";
 
 const MOCK_AI_THANKS =
   "Thank you so much for the kind words and the 5-star review! We're glad you had a great experience and we look forward to seeing you again.";
@@ -97,6 +100,7 @@ function MetricCard({
   icon,
   isAlert,
   subtext,
+  trendSubtext,
 }: {
   label: string;
   value: string;
@@ -104,6 +108,7 @@ function MetricCard({
   icon: React.ReactNode;
   isAlert?: boolean;
   subtext?: string;
+  trendSubtext?: string;
 }) {
   return (
     <div
@@ -138,13 +143,25 @@ function MetricCard({
       <div className="flex items-center gap-2 mt-auto flex-wrap">
         {subtext ? (
           <span className="text-xs font-medium text-red-500">{subtext}</span>
-        ) : trend != null ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-            <TrendingUp size={10} /> {trend}
+        ) : trend != null && trend !== "-" ? (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border",
+              trend.startsWith("-")
+                ? "bg-red-50 text-red-700 border-red-100"
+                : "bg-emerald-50 text-emerald-700 border-emerald-100"
+            )}
+          >
+            {trend.startsWith("-") ? (
+              <TrendingDown size={10} />
+            ) : (
+              <TrendingUp size={10} />
+            )}{" "}
+            {trend}
           </span>
         ) : null}
-        {!isAlert && trend != null && (
-          <span className="text-[10px] text-slate-400">vs last 30 days</span>
+        {!isAlert && trendSubtext != null && (
+          <span className="text-[10px] text-slate-400">{trendSubtext}</span>
         )}
       </div>
     </div>
@@ -205,6 +222,8 @@ function ReviewRow({
   draftText,
   onDraftChange,
   onGenerateDraft,
+  onEditDraft,
+  isDraftEditable,
   isGenerating,
 }: {
   review: Review;
@@ -214,6 +233,8 @@ function ReviewRow({
   draftText: string;
   onDraftChange: (text: string) => void;
   onGenerateDraft: () => void;
+  onEditDraft: () => void;
+  isDraftEditable: boolean;
   isGenerating: boolean;
 }) {
   const isCritical = review.starRating <= 2;
@@ -369,14 +390,17 @@ function ReviewRow({
                     </p>
                     <textarea
                       className={cn(
-                        "w-full text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none",
+                        "w-full text-sm text-slate-700 border border-slate-200 rounded-lg p-3 outline-none transition-all resize-none",
+                        isDraftEditable
+                          ? "bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                          : "bg-slate-50 cursor-default",
                         isGenerating && "opacity-70 pointer-events-none"
                       )}
                       rows={4}
                       value={isGenerating ? "Generating reply…" : draftText}
                       onChange={(e) => onDraftChange(e.target.value)}
-                      placeholder="Click “Generate AI reply” or edit below…"
-                      readOnly={isGenerating}
+                      placeholder={isDraftEditable ? "Edit the draft above, then Post Reply when ready." : "Click “Edit Draft” to modify."}
+                      readOnly={isGenerating || !isDraftEditable}
                     />
                     <div className="flex justify-between items-center pt-1 flex-wrap gap-2">
                       <div className="flex gap-2">
@@ -409,9 +433,15 @@ function ReviewRow({
                         </button>
                         <button
                           type="button"
-                          className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50"
+                          onClick={onEditDraft}
+                          className={cn(
+                            "px-4 py-2 border text-xs font-semibold rounded-lg",
+                            isDraftEditable
+                              ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                          )}
                         >
-                          Edit Draft
+                          {isDraftEditable ? "Done editing" : "Edit Draft"}
                         </button>
                         <button
                           type="button"
@@ -433,7 +463,7 @@ function ReviewRow({
 }
 
 interface ReviewsPageProps {
-  business: { id: number; name?: string; locationResourceName?: string };
+  business: { id: number; name?: string; locationResourceName?: string; createdAt?: string };
 }
 
 export function ReviewsPage({ business }: ReviewsPageProps) {
@@ -441,24 +471,180 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
   const { data, isLoading, isError } = useGoogleReviews(business.id, hasGbp);
   const [activeTab, setActiveTab] = useState<TabId>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>("since-revsboost");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
   const [draftText, setDraftText] = useState<Record<string, string>>({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 
-  const reviews = data?.reviews ?? [];
-  const totalCount = data?.totalReviewCount ?? reviews.length;
-  const averageRating =
-    data?.averageRating ??
-    (reviews.length ? reviews.reduce((s, r) => s + r.starRating, 0) / reviews.length : 0);
-  const repliedCount = reviews.filter((r) => r.reviewReply).length;
-  const responseRate = totalCount > 0 ? Math.round((repliedCount / totalCount) * 100) : 0;
-  const unrepliedCount = reviews.filter((r) => !r.reviewReply).length;
-  const criticalCount = reviews.filter((r) => r.starRating <= 2 && !r.reviewReply).length;
+  const reviews = Array.isArray(data?.reviews) ? data.reviews : [];
+
+  const dateFilterBounds = useMemo((): { start: Date | null; end: Date | null } => {
+    const now = new Date();
+    if (dateRangePreset === "7d") {
+      const start = new Date(now);
+      start.setDate(start.getDate() - 7);
+      start.setHours(0, 0, 0, 0);
+      return { start, end: now };
+    }
+    if (dateRangePreset === "30d") {
+      const start = new Date(now);
+      start.setDate(start.getDate() - 30);
+      start.setHours(0, 0, 0, 0);
+      return { start, end: now };
+    }
+    if (dateRangePreset === "since-revsboost") {
+      const joinedAt = business.createdAt ? new Date(business.createdAt) : null;
+      if (joinedAt && !Number.isNaN(joinedAt.getTime())) {
+        joinedAt.setHours(0, 0, 0, 0);
+        return { start: joinedAt, end: now };
+      }
+      return { start: null, end: null };
+    }
+    if (dateRangePreset === "all-time") return { start: null, end: null };
+    if (dateRangePreset === "custom" && dateFrom && dateTo) {
+      const start = new Date(dateFrom);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(dateTo);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+    return { start: null, end: null };
+  }, [dateRangePreset, dateFrom, dateTo, business.createdAt]);
+
+  const reviewsInRange = useMemo(() => {
+    const { start, end } = dateFilterBounds;
+    if (start == null || end == null) return reviews;
+    const startMs = start.getTime();
+    const endMs = end.getTime();
+    return reviews.filter((r) => {
+      const t = r.createTime ? new Date(r.createTime).getTime() : 0;
+      return !Number.isNaN(t) && t >= startMs && t <= endMs;
+    });
+  }, [reviews, dateFilterBounds]);
+
+  const totalCountInRange = reviewsInRange.length;
+  const totalReviewsAllTime = data?.totalReviewCount ?? reviews.length;
+  const totalReviewsPercentInPeriod =
+    totalReviewsAllTime > 0
+      ? Math.round((totalCountInRange / totalReviewsAllTime) * 100)
+      : 0;
+  const totalReviewsPeriodSubtext =
+    dateRangePreset === "7d"
+      ? "in last 7 days"
+      : dateRangePreset === "30d"
+        ? "in last 30 days"
+        : dateRangePreset === "since-revsboost"
+          ? "since joining RevsBoost"
+          : dateRangePreset === "all-time"
+            ? "all time"
+            : dateRangePreset === "custom" && (dateFrom || dateTo)
+              ? "in selected period"
+              : "of all reviews";
+  const averageRatingInRange =
+    totalCountInRange > 0
+      ? reviewsInRange.reduce((s, r) => s + r.starRating, 0) / totalCountInRange
+      : 0;
+  const repliedInRange = reviewsInRange.filter((r) => r.reviewReply).length;
+  const responseRateInRange =
+    totalCountInRange > 0 ? Math.round((repliedInRange / totalCountInRange) * 100) : 0;
+  const unrepliedCountInRange = reviewsInRange.filter((r) => !r.reviewReply).length;
+  const criticalCountInRange = reviewsInRange.filter(
+    (r) => (r.starRating === 1 || r.starRating === 2) && !r.reviewReply
+  ).length;
+
+  const metricTrends = useMemo(() => {
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    let currentStart: number;
+    let currentEnd: number;
+    let prevStart: number;
+    let prevEnd: number;
+    let trendSubtext = "vs previous period";
+
+    if (dateRangePreset === "7d") {
+      const ms7 = 7 * dayMs;
+      currentEnd = now;
+      currentStart = now - ms7;
+      prevEnd = currentStart - 1;
+      prevStart = prevEnd - ms7;
+      trendSubtext = "vs previous 7 days";
+    } else if (dateRangePreset === "30d") {
+      const ms30 = 30 * dayMs;
+      currentEnd = now;
+      currentStart = now - ms30;
+      prevEnd = currentStart - 1;
+      prevStart = prevEnd - ms30;
+      trendSubtext = "vs previous 30 days";
+    } else if (dateRangePreset === "custom" && dateFrom && dateTo) {
+      const start = new Date(dateFrom).getTime();
+      const end = new Date(dateTo).getTime();
+      const span = end - start;
+      currentStart = start;
+      currentEnd = end;
+      prevEnd = start - 1;
+      prevStart = prevEnd - span;
+      trendSubtext = "vs previous period";
+    } else {
+      const ms30 = 30 * dayMs;
+      currentEnd = now;
+      currentStart = now - ms30;
+      prevEnd = currentStart - 1;
+      prevStart = prevEnd - ms30;
+      trendSubtext =
+        dateRangePreset === "all-time" ? "all time" : "since joining RevsBoost";
+    }
+
+    const currentPeriod = reviews.filter((r) => {
+      const t = r.createTime ? new Date(r.createTime).getTime() : 0;
+      return !Number.isNaN(t) && t >= currentStart && t <= currentEnd;
+    });
+    const prevPeriod = reviews.filter((r) => {
+      const t = r.createTime ? new Date(r.createTime).getTime() : 0;
+      return !Number.isNaN(t) && t >= prevStart && t <= prevEnd;
+    });
+
+    let totalTrend: string | null = null;
+    if (prevPeriod.length > 0) {
+      const pct = ((currentPeriod.length - prevPeriod.length) / prevPeriod.length) * 100;
+      totalTrend = pct >= 0 ? `+${Math.round(pct)}%` : `${Math.round(pct)}%`;
+    } else if (currentPeriod.length > 0) {
+      totalTrend = "New";
+    }
+
+    let avgTrend: string | null = null;
+    if (currentPeriod.length > 0 && prevPeriod.length > 0) {
+      const avgCur = currentPeriod.reduce((s, r) => s + r.starRating, 0) / currentPeriod.length;
+      const avgPrev = prevPeriod.reduce((s, r) => s + r.starRating, 0) / prevPeriod.length;
+      const diff = avgCur - avgPrev;
+      avgTrend = diff >= 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+    } else if (currentPeriod.length > 0 && prevPeriod.length === 0) {
+      avgTrend = "-";
+    }
+
+    let responseTrend: string | null = null;
+    if (currentPeriod.length > 0 && prevPeriod.length > 0) {
+      const repliedCur = currentPeriod.filter((r) => r.reviewReply).length;
+      const repliedPrev = prevPeriod.filter((r) => r.reviewReply).length;
+      const rateCur = (repliedCur / currentPeriod.length) * 100;
+      const ratePrev = (repliedPrev / prevPeriod.length) * 100;
+      const diff = rateCur - ratePrev;
+      responseTrend = diff >= 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
+    } else if (currentPeriod.length > 0 && prevPeriod.length === 0) {
+      responseTrend = "-";
+    }
+
+    return { totalTrend, avgTrend, responseTrend, trendSubtext };
+  }, [reviews, dateRangePreset, dateFrom, dateTo]);
 
   const filteredReviews = useMemo(() => {
     let list = reviews;
     if (activeTab === "critical") {
-      list = list.filter((r) => r.starRating <= 2 && !r.reviewReply);
+      list = list.filter((r) => (r.starRating === 1 || r.starRating === 2) && !r.reviewReply);
     } else if (activeTab === "unreplied") {
       list = list.filter((r) => !r.reviewReply);
     }
@@ -470,11 +656,21 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
           (r.reviewerDisplayName || "").toLowerCase().includes(q)
       );
     }
+    const { start, end } = dateFilterBounds;
+    if (start != null && end != null) {
+      const startMs = start.getTime();
+      const endMs = end.getTime();
+      list = list.filter((r) => {
+        const t = r.createTime ? new Date(r.createTime).getTime() : 0;
+        return !Number.isNaN(t) && t >= startMs && t <= endMs;
+      });
+    }
     return list;
-  }, [reviews, activeTab, searchQuery]);
+  }, [reviews, activeTab, searchQuery, dateFilterBounds]);
 
   const toggleExpand = (id: string, starRating: number) => {
     setExpandedId((prev) => (prev === id ? null : id));
+    setEditingDraftId(null);
     if (!draftText[id]) setDraftText((t) => ({ ...t, [id]: getDefaultDraft(starRating) }));
   };
   const onDraftChange = (id: string, text: string) =>
@@ -523,29 +719,15 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-[#F8FAFC] font-sans text-slate-800 -m-4 md:-m-6 p-3 md:p-4 lg:p-5">
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden min-w-0 bg-[#F8FAFC] font-sans text-slate-800 p-3 md:p-4">
       {/* Header (match Insights) */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pb-4 mb-4 border-b border-slate-200 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Review Management</h1>
-          <p className="text-slate-500 mt-1">
+          <h1 className="text-lg font-display font-bold text-slate-900">Reviews</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Real-time feedback monitoring for{" "}
             <span className="font-semibold text-slate-900">{business.name ?? "this location"}</span>.
           </p>
-        </div>
-        <div className="flex gap-3">
-          <a
-            href="../review-options"
-            className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            Review Options
-          </a>
-          <button
-            type="button"
-            className="bg-[#0F172A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
-          >
-            Export Report
-          </button>
         </div>
       </div>
 
@@ -553,25 +735,28 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 shrink-0">
         <MetricCard
           label="Total Reviews"
-          value={totalCount.toLocaleString()}
-          trend="+12%"
+          value={totalCountInRange.toLocaleString()}
+          trend={totalReviewsAllTime > 0 ? `${totalReviewsPercentInPeriod}%` : undefined}
+          trendSubtext={totalReviewsPeriodSubtext}
           icon={<MessageSquare size={18} className="text-slate-400" />}
         />
         <MetricCard
           label="Avg Rating"
-          value={totalCount > 0 ? averageRating.toFixed(1) : "—"}
-          trend="+0.2"
+          value={totalCountInRange > 0 ? averageRatingInRange.toFixed(1) : "-"}
+          trend={metricTrends?.avgTrend ?? undefined}
+          trendSubtext={metricTrends?.trendSubtext}
           icon={<Star size={18} className="text-slate-400" />}
         />
         <MetricCard
           label="Response Rate"
-          value={`${responseRate}%`}
-          trend="+2.4%"
+          value={`${responseRateInRange}%`}
+          trend={metricTrends?.responseTrend ?? undefined}
+          trendSubtext={metricTrends?.trendSubtext}
           icon={<Zap size={18} className="text-slate-400" />}
         />
         <MetricCard
           label="Critical Pending"
-          value={String(criticalCount)}
+          value={String(criticalCountInRange)}
           isAlert
           subtext="Requires attention"
           icon={<AlertCircle size={18} className="text-red-400" />}
@@ -585,22 +770,22 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
           <div className="flex bg-slate-100/80 p-1 rounded-lg">
             <TabButtonInner
               text="All Reviews"
-              count={reviews.length}
+              count={totalCountInRange}
               active={activeTab === "all"}
               onClick={() => setActiveTab("all")}
             />
             <TabButtonInner
               text="Unreplied"
-              count={unrepliedCount}
+              count={unrepliedCountInRange}
               active={activeTab === "unreplied"}
               onClick={() => setActiveTab("unreplied")}
             />
             <TabButtonInner
               text="Critical"
-              count={criticalCount}
+              count={criticalCountInRange}
               active={activeTab === "critical"}
               isAlert
-              showAlertDot={criticalCount > 0}
+              showAlertDot={criticalCountInRange > 0}
               onClick={() => setActiveTab("critical")}
             />
           </div>
@@ -618,12 +803,106 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                 className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-full md:w-64"
               />
             </div>
-            <button
-              type="button"
-              className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 bg-white"
-            >
-              <Filter size={16} /> Filter
-            </button>
+            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium bg-white",
+                    (dateRangePreset !== "since-revsboost" && dateRangePreset !== "all-time") || dateFrom || dateTo
+                      ? "border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                  )}
+                >
+                  <Filter size={16} />
+                  {dateRangePreset === "7d" && "7d"}
+                  {dateRangePreset === "30d" && "30d"}
+                  {dateRangePreset === "since-revsboost" && !dateFrom && !dateTo && "Since RevsBoost"}
+                  {dateRangePreset === "all-time" && !dateFrom && !dateTo && "All time"}
+                  {dateRangePreset === "custom" && (dateFrom && dateTo ? `${dateFrom} → ${dateTo}` : "Custom")}
+                  <ChevronDown size={14} className="opacity-70" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-72 p-0 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden"
+                align="end"
+              >
+                <div className="p-2 border-b border-slate-100 bg-white">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date range</span>
+                </div>
+                <div className="p-2 space-y-0.5 bg-white">
+                  <button
+                    type="button"
+                    onClick={() => { setDateRangePreset("7d"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      dateRangePreset === "7d" ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                    )}
+                  >
+                    Last 7 days
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDateRangePreset("30d"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      dateRangePreset === "30d" ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                    )}
+                  >
+                    Last 30 days
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDateRangePreset("since-revsboost"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      dateRangePreset === "since-revsboost" && !dateFrom && !dateTo ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                    )}
+                  >
+                    Since RevsBoost
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setDateRangePreset("all-time"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      dateRangePreset === "all-time" && !dateFrom && !dateTo ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                    )}
+                  >
+                    All time
+                  </button>
+                  <div className="pt-1 mt-1 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setDateRangePreset("custom")}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        dateRangePreset === "custom" ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                      )}
+                    >
+                      Custom range
+                    </button>
+                    {dateRangePreset === "custom" && (
+                      <div className="px-3 pb-3 pt-1 flex gap-2 items-center">
+                        <input
+                          type="date"
+                          value={dateFrom}
+                          onChange={(e) => setDateFrom(e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                        />
+                        <span className="text-slate-400 text-sm">to</span>
+                        <input
+                          type="date"
+                          value={dateTo}
+                          onChange={(e) => setDateTo(e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -644,21 +923,14 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                 draftText={draftText[review.reviewId] ?? getDefaultDraft(review.starRating)}
                 onDraftChange={(text) => onDraftChange(review.reviewId, text)}
                 onGenerateDraft={() => handleGenerateDraft(review)}
+                onEditDraft={() => setEditingDraftId((prev) => (prev === review.reviewId ? null : review.reviewId))}
+                isDraftEditable={editingDraftId === review.reviewId}
                 isGenerating={generatingId === review.reviewId}
               />
             ))
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-center shrink-0">
-          <button
-            type="button"
-            className="text-xs text-slate-500 font-medium hover:text-slate-800"
-          >
-            View All Reviews
-          </button>
-        </div>
       </div>
     </div>
   );

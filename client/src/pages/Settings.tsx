@@ -271,7 +271,7 @@ export default function Settings() {
                       {resetLinkSending ? (
                         <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending…</>
                       ) : resetLinkSent ? (
-                        "Reset link sent — check your email"
+                        "Reset link sent. Check your email"
                       ) : (
                         "Send password reset link"
                       )}

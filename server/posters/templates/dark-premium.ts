@@ -12,7 +12,7 @@ import {
 export const metadata: TemplateMetadata = {
   id: "dark-premium",
   name: "Dark Premium",
-  description: "Dark background, light card — premium look.",
+  description: "Dark background, light card: premium look.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };

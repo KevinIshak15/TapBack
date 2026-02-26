@@ -11,7 +11,7 @@ const features = [
     benefits: [
       "Reduces friction for customers who struggle to write reviews",
       "Up to 3 regenerations per session for the perfect draft",
-      "Compliant with Google guidelines—customers post themselves",
+      "Compliant with Google guidelines; customers post themselves",
       "Increases completion rates and helps you get more Google reviews",
     ],
   },

@@ -4,7 +4,7 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "structured-steps",
   name: "Structured Steps",
-  description: "Clear 1-2-3 steps — great for any business.",
+  description: "Clear 1-2-3 steps: great for any business.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };

@@ -12,7 +12,7 @@ import {
 export const metadata: TemplateMetadata = {
   id: "friendly-blobs",
   name: "Friendly Blobs",
-  description: "Organic shapes at edges — approachable and modern.",
+  description: "Organic shapes at edges: approachable and modern.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };

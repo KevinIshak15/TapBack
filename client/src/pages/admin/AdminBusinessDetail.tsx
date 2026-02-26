@@ -153,7 +153,7 @@ export default function AdminBusinessDetail() {
               <CardDescription>N/A until reviews enabled</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-slate-500 text-sm">—</p>
+              <p className="text-slate-500 text-sm">-</p>
             </CardContent>
           </Card>
           <Card className="app-card">

@@ -157,7 +157,7 @@ export default function Landing() {
               {
                 icon: <QrCode className="w-8 h-8" />,
                 title: "One-Click QR Codes",
-                desc: "Generate beautiful QR codes instantly. No apps, no friction—just scan and review.",
+                desc: "Generate beautiful QR codes instantly. No apps, no friction. Just scan and review.",
                 gradient: `from-[hsl(var(--revsboost-light-blue))] to-[hsl(var(--revsboost-teal))]`,
               },
               {

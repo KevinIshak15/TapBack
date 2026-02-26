@@ -4,7 +4,7 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "teal-steps",
   name: "Teal Steps",
-  description: "Clear 1-2-3 band & strong CTA — professional and scannable.",
+  description: "Clear 1-2-3 band & strong CTA: professional and scannable.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };
@@ -154,7 +154,7 @@ export function render(data: PosterData, options: PosterRenderOptions): string {
     </div>
     <div class="step">
       <span class="step-num">3</span>
-      <span class="step-text">Smile — your input makes our day!</span>
+      <span class="step-text">Smile! Your input makes our day!</span>
     </div>
   </div>
   <div class="footer"><strong>${name}</strong></div>

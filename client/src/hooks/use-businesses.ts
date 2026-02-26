@@ -25,7 +25,7 @@ export function usePortfolioAlertCount(): number {
   const { user } = useUser();
   const { data: businesses } = useBusinesses();
   const fallbackCount = businesses?.reduce((sum, b) => sum + (b.totalConcerns ?? 0), 0) ?? 0;
-  const { data } = useQuery({
+  const { data, isFetched } = useQuery({
     queryKey: ["/api/portfolio/alerts"],
     queryFn: async () => {
       const res = await fetch("/api/portfolio/alerts", { credentials: "include" });
@@ -37,6 +37,8 @@ export function usePortfolioAlertCount(): number {
     refetchOnWindowFocus: true,
     staleTime: 60 * 1000, // 1 minute so we don't hammer Google API on every focus
   });
+  // Don't show fallback until we've fetched: avoids flash of "1" on first sign-in when businesses list has a different count than the alerts API
+  if (!isFetched) return 0;
   return data?.count ?? fallbackCount;
 }
 

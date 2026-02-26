@@ -4,7 +4,7 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "google-corners",
   name: "Review Us on Google",
-  description: "Google colors, diagonal corners & multicolor text — bold and recognizable.",
+  description: "Google colors, diagonal corners & multicolor text: bold and recognizable.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };

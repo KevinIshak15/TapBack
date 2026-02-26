@@ -10,30 +10,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MessageSquare, AlertCircle, CheckCircle2, ArrowRight, Star, MapPin, MoreVertical, Settings, QrCode, Trash2, Building2 } from "lucide-react";
+import { Plus, AlertCircle, CheckCircle2, ArrowRight, MapPin, MoreVertical, Settings, QrCode, Trash2, Building2 } from "lucide-react";
 import { ConfirmDeleteBusinessDialog } from "@/components/ConfirmDeleteBusinessDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppShell } from "@/components/app/AppShell";
 import { EmptyState } from "@/components/app/EmptyState";
 
-// Palette for business card accent (first letter avatar)
-const CARD_COLORS = ["bg-indigo-600", "bg-emerald-500", "bg-orange-500", "bg-violet-500", "bg-rose-500", "bg-sky-500"];
 
 function getPortfolioStats(businesses: Business[] | undefined) {
   const list = businesses ?? [];
-  const totalLocations = list.length;
-  const totalReviews = list.reduce((sum, b) => sum + (b.totalReviews ?? 0), 0);
-  let globalRating = 0;
-  let totalWeight = 0;
-  list.forEach((b) => {
-    const n = b.totalReviews ?? 0;
-    if (n > 0 && b.averageRating != null) {
-      globalRating += b.averageRating * n;
-      totalWeight += n;
-    }
-  });
-  const avgRating = totalWeight > 0 ? globalRating / totalWeight : 0;
-  return { totalLocations, totalReviews, globalRating: Math.round(avgRating * 10) / 10 };
+  return { totalLocations: list.length };
 }
 
 export default function Dashboard() {
@@ -88,31 +74,12 @@ export default function Dashboard() {
           <div className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h1>
-              <p className="text-slate-500 mt-1 md:mt-2 text-sm">Overview of your businesses and reputation.</p>
+              <p className="text-slate-500 mt-1 md:mt-2 text-sm">Overview of your businesses.</p>
             </div>
             <div className="flex gap-4 sm:gap-6 bg-white px-4 sm:px-6 py-3 rounded-xl border border-slate-200 shadow-sm flex-shrink-0">
               <div className="text-center min-w-0">
                 <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide">Locations</p>
                 <p className="text-lg sm:text-xl font-bold text-slate-900">{stats.totalLocations}</p>
-              </div>
-              <div className="w-px bg-slate-100 self-stretch hidden sm:block" />
-              <div className="text-center min-w-0" title="Total reviews across all businesses">
-                <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide">Reviews</p>
-                <p className="text-lg sm:text-xl font-bold text-slate-900">{stats.totalReviews}</p>
-              </div>
-              <div className="w-px bg-slate-100 self-stretch hidden sm:block" />
-              <div className="text-center min-w-0">
-                <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide">Avg Rating</p>
-                <p className="text-lg sm:text-xl font-bold text-slate-900 flex items-center justify-center gap-0.5 sm:gap-1">
-                  {stats.globalRating > 0 ? (
-                    <>
-                      {stats.globalRating}
-                      <Star size={14} className="fill-amber-400 text-amber-400 shrink-0" />
-                    </>
-                  ) : (
-                    "—"
-                  )}
-                </p>
               </div>
             </div>
           </div>
@@ -122,7 +89,7 @@ export default function Dashboard() {
             <EmptyState
               icon={Building2}
               title="No businesses yet"
-              description="Add your first business to start collecting reviews and analyzing feedback."
+              description="Add your first business to get started."
               primaryAction={
                 <Link href="/business/new">
                   <Button className="font-medium">
@@ -135,11 +102,10 @@ export default function Dashboard() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {businesses.map((business, index) => (
+              {businesses.map((business) => (
                 <DashboardBusinessCard
                   key={business.id}
                   business={business}
-                  imageColor={CARD_COLORS[index % CARD_COLORS.length]}
                 />
               ))}
               <AddBusinessCard />
@@ -151,12 +117,10 @@ export default function Dashboard() {
   );
 }
 
-function DashboardBusinessCard({ business, imageColor }: { business: Business; imageColor: string }) {
+function DashboardBusinessCard({ business }: { business: Business }) {
   const [, setLocation] = useLocation();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const totalReviews = business.totalReviews ?? 0;
-  const rating = business.averageRating ?? 0;
   const pendingConcerns = business.pendingConcernsCount ?? business.totalConcerns ?? 0;
   const isActionNeeded = pendingConcerns > 0;
   const notifications = pendingConcerns;
@@ -235,7 +199,9 @@ function DashboardBusinessCard({ business, imageColor }: { business: Business; i
         {/* Card body */}
         <div className="px-6 pb-6 relative">
           <div
-            className={`-mt-10 w-16 h-16 rounded-xl ${imageColor} text-white flex items-center justify-center text-2xl font-bold shadow-md border-4 border-white mb-3`}
+            className={`-mt-10 w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shadow-md border-4 border-white mb-3 ${
+              business.logo ? "bg-slate-50" : "bg-slate-200 text-slate-600"
+            }`}
           >
             {business.logo ? (
               <img src={business.logo} alt="" className="w-full h-full object-contain rounded-lg" />
@@ -256,22 +222,6 @@ function DashboardBusinessCard({ business, imageColor }: { business: Business; i
               )}
               {locationDisplay && business.category && <span>•</span>}
               <span>{business.category}</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-              <p className="text-xs font-medium text-slate-500 mb-1">Rating</p>
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg font-bold text-slate-900">{rating > 0 ? rating.toFixed(1) : "—"}</span>
-                {rating > 0 && <Star size={14} className="fill-amber-400 text-amber-400" />}
-              </div>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-              <p className="text-xs font-medium text-slate-500 mb-1">Total Reviews</p>
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg font-bold text-slate-900">{totalReviews}</span>
-                <MessageSquare size={14} className="text-slate-400" />
-              </div>
             </div>
           </div>
           <div className="flex items-center justify-between pt-4 border-t border-slate-50">

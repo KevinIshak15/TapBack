@@ -277,10 +277,10 @@ export function InsightsPage({ business }: InsightsPageProps) {
   return (
     <div className="p-3 md:p-4 flex-1 min-h-0 bg-slate-50 font-sans text-slate-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-3 shrink-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-4 border-b border-slate-200 gap-3 shrink-0">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">Insights</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h1 className="text-lg font-display font-bold text-slate-900">Insights</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Real-time performance metrics for{" "}
             <span className="font-semibold text-slate-700">{business.name ?? "this location"}</span>.
           </p>

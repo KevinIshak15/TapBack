@@ -87,6 +87,10 @@ export default function BusinessQR() {
   return (
     <BusinessLayout business={business} slug={slug}>
       <div className="max-w-4xl space-y-4">
+        <div className="pb-4 mb-4 border-b border-slate-200">
+          <h2 className="text-lg font-display font-bold text-slate-900">QR Code</h2>
+          <p className="text-sm text-slate-500 mt-1">Generate and download your QR code for customer reviews.</p>
+        </div>
         <div className="grid md:grid-cols-2 gap-4">
           <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
             <CardHeader className="text-center pb-2 pt-4">

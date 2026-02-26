@@ -12,12 +12,12 @@ import {
 export const metadata: TemplateMetadata = {
   id: "elegant-pastel",
   name: "Elegant Pastel",
-  description: "Soft pink, script accent — for salons and boutiques.",
+  description: "Soft pink, script accent: for salons and boutiques.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };
 
-const DEFAULT_CTA = "We'd love to hear from you — scan to leave a review!";
+const DEFAULT_CTA = "We'd love to hear from you. Scan to leave a review!";
 
 export function render(data: PosterData, options: PosterRenderOptions): string {
   const dims = getDimensions(options.size);

@@ -4,7 +4,7 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "elegant-boutique",
   name: "Elegant Boutique",
-  description: "Soft pastel, serif accent — for salons and boutiques.",
+  description: "Soft pastel, serif accent: for salons and boutiques.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };

@@ -4,12 +4,12 @@ import { escapeHtml, truncateName } from "../types";
 export const metadata: TemplateMetadata = {
   id: "friendly-casual",
   name: "Friendly Casual",
-  description: "Rounded, approachable — clean and modern.",
+  description: "Rounded, approachable: clean and modern.",
   supportedSizes: ["LETTER", "A4"],
   supportsVariant: false,
 };
 
-const DEFAULT_CTA = "Scan to leave us a review — it only takes a minute!";
+const DEFAULT_CTA = "Scan to leave us a review. It only takes a minute!";
 
 function getDimensions(size: PosterRenderOptions["size"]) {
   if (size === "A4") {
@@ -121,7 +121,7 @@ export function render(data: PosterData, options: PosterRenderOptions): string {
   <div class="blob blob-2" aria-hidden="true"></div>
   <div class="content">
     <p class="headline">${name}</p>
-    <p class="sub">Thanks for visiting — we'd love to hear from you.</p>
+    <p class="sub">Thanks for visiting. We'd love to hear from you.</p>
     <p class="google-line">Share your experience on <span>Google</span></p>
     <div class="qr-wrap">
       <img src="${data.qrDataUrl}" alt="QR Code" width="400" height="400"/>

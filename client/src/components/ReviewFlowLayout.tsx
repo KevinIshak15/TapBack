@@ -34,7 +34,7 @@ function ReviewUsOnGoogle() {
           </span>
         </p>
         <p className="text-xs sm:text-sm text-slate-500 font-medium text-center max-w-[280px]">
-          Love your experience? Share it on Google — you post directly.
+          Love your experience? Share it on Google. You post directly.
         </p>
         <span
           className="flex items-center gap-1 sm:gap-1.5 text-amber-500 [filter:drop-shadow(0_1px_2px_rgba(251,191,36,0.3))]"

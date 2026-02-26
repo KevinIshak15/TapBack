@@ -103,7 +103,7 @@ export default function AdminSystemErrors() {
                     </TableCell>
                     <TableCell className="text-sm">{row.message}</TableCell>
                     <TableCell className="text-slate-600 text-sm">
-                      {row.businessName ?? "—"}
+                      {row.businessName ?? "-"}
                     </TableCell>
                   </TableRow>
                 ))
