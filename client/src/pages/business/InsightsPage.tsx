@@ -90,8 +90,8 @@ const SectionHeader = ({
   title: string;
   action?: boolean;
 }) => (
-  <div className="flex justify-between items-center mb-4 px-1">
-    <h3 className="text-sm font-bold text-slate-900">{title}</h3>
+  <div className="flex justify-between items-center mb-2 px-1">
+    <h3 className="text-xs font-bold text-slate-900">{title}</h3>
     {action && (
       <button
         type="button"
@@ -275,12 +275,12 @@ export function InsightsPage({ business }: InsightsPageProps) {
   }
 
   return (
-    <div className="p-4 md:p-6 min-h-0 bg-slate-50 font-sans text-slate-900 flex flex-col">
+    <div className="p-3 md:p-4 flex-1 min-h-0 bg-slate-50 font-sans text-slate-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 shrink-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-3 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Insights</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Insights</h1>
+          <p className="text-xs text-slate-500 mt-0.5">
             Real-time performance metrics for{" "}
             <span className="font-semibold text-slate-700">{business.name ?? "this location"}</span>.
           </p>
@@ -314,7 +314,7 @@ export function InsightsPage({ business }: InsightsPageProps) {
       </div>
 
       {/* Unified Stat Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden shrink-0">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-3 overflow-hidden shrink-0">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-100">
           <StatItem
             label="Total Reviews"
@@ -359,10 +359,10 @@ export function InsightsPage({ business }: InsightsPageProps) {
       </div>
 
       {/* Charts: 2/3 + 1/3 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 min-h-0 flex-1">
-        <div className="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col min-h-[280px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3 min-h-0 flex-1">
+        <div className="lg:col-span-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col min-h-0">
           <SectionHeader title="Review Velocity" action />
-          <div className="h-[280px] w-full flex-1 min-h-0">
+          <div className="h-[160px] sm:h-[180px] w-full flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={thisMonthData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
@@ -403,9 +403,9 @@ export function InsightsPage({ business }: InsightsPageProps) {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col min-h-0">
           <SectionHeader title="Rating Distribution" />
-          <div className="flex-1 flex flex-col justify-center gap-4">
+          <div className="flex-1 flex flex-col justify-center gap-2 min-h-0">
             {starCounts.map((item) => (
               <div key={item.stars} className="flex items-center text-xs group">
                 <div className="flex items-center gap-1 w-12 text-slate-600 font-medium shrink-0">
@@ -430,8 +430,8 @@ export function InsightsPage({ business }: InsightsPageProps) {
       </div>
 
       {/* Bottom: Sentiment Pills + AI Adoption */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 shrink-0">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <SectionHeader title="Sentiment Drivers" />
           <div className="flex flex-wrap gap-2">
             {sentimentPills
@@ -457,7 +457,7 @@ export function InsightsPage({ business }: InsightsPageProps) {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm text-white flex justify-between items-center relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm text-white flex justify-between items-center relative overflow-hidden">
           <div className="relative z-10">
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider mb-1">
               AI Draft Adoption

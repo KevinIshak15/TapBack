@@ -54,8 +54,8 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
 
   return (
     <AppShell>
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
+      <div className="h-full flex flex-col min-h-0 space-y-1.5">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Store className="h-4 w-4 text-primary" />
           </div>
@@ -69,7 +69,7 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
           </div>
         </div>
 
-        <div className="flex justify-center w-full">
+        <div className="flex justify-center w-full shrink-0">
           <nav
             className="bg-white border border-slate-200 p-0.5 rounded-lg h-8 shadow-sm inline-flex flex-wrap gap-0.5 justify-center"
             aria-label="Business sections"
@@ -96,8 +96,8 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
           </nav>
         </div>
 
-        {/* Slightly zoomed-out content so more fits without scrolling */}
-        <div className="business-page-content">
+        {/* Tab content: fills remaining height, no page scroll (except QR Marketing) */}
+        <div className="business-page-content flex-1 min-h-0 overflow-hidden flex flex-col">
           {children}
         </div>
       </div>

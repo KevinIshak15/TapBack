@@ -12,6 +12,7 @@ import {
   QrCode,
   BarChart,
   MessageSquare,
+  AlertTriangle,
   Palette,
   FileImage,
 } from "lucide-react";
@@ -56,7 +57,8 @@ export function AppShell({ children }: AppShellProps) {
     { label: "QR Code", href: (s: string) => `/business/${s}/qr`, icon: QrCode, active: businessTabSegment === "qr" },
     { label: "QR Marketing", href: (s: string) => `/business/${s}/posters`, icon: FileImage, active: businessTabSegment === "posters" },
     { label: "Insights", href: (s: string) => `/business/${s}/insights`, icon: BarChart, active: businessTabSegment === "insights" },
-    { label: "Reviews & Concerns", href: (s: string) => `/business/${s}/feedback`, icon: MessageSquare, active: businessTabSegment === "feedback" },
+    { label: "Reviews", href: (s: string) => `/business/${s}/reviews`, icon: MessageSquare, active: businessTabSegment === "reviews" },
+    { label: "Concerns", href: (s: string) => `/business/${s}/concerns`, icon: AlertTriangle, active: businessTabSegment === "concerns" },
   ];
 
   return (
@@ -139,11 +141,11 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div
-        className="flex flex-1 flex-col min-h-screen"
+        className="flex flex-1 flex-col min-h-0 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)]"
         style={{ marginLeft: SIDEBAR_WIDTH }}
       >
-        <main className="flex-1 p-6 bg-[hsl(var(--app-surface))]">
-          <div className="mx-auto max-w-5xl">{children}</div>
+        <main className="flex-1 min-h-0 overflow-hidden p-6 bg-[hsl(var(--app-surface))]">
+          <div className="mx-auto max-w-5xl h-full min-h-0 flex flex-col overflow-hidden">{children}</div>
         </main>
       </div>
     </div>
