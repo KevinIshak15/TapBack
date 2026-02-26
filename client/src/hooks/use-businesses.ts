@@ -223,6 +223,7 @@ export function useUpdateConcernStatus() {
       queryClient.invalidateQueries({ queryKey: ["/api/businesses/concerns-count", businessId] });
       queryClient.invalidateQueries({ queryKey: [api.businesses.listReviews.path, businessId] });
       queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolio/alerts"] });
     },
   });
 }
