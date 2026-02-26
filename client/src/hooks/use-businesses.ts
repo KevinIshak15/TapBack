@@ -20,6 +20,57 @@ export function useBusinesses() {
   });
 }
 
+/** Total count of items needing attention: concerns + unreplied 1–2 star Google reviews. Used for top bar and sidebar notification badge. */
+export function usePortfolioAlertCount(): number {
+  const { user } = useUser();
+  const { data: businesses } = useBusinesses();
+  const fallbackCount = businesses?.reduce((sum, b) => sum + (b.totalConcerns ?? 0), 0) ?? 0;
+  const { data } = useQuery({
+    queryKey: ["/api/portfolio/alerts"],
+    queryFn: async () => {
+      const res = await fetch("/api/portfolio/alerts", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch alert count");
+      const json = await res.json();
+      return json as { count: number };
+    },
+    enabled: !!user,
+    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000, // 1 minute so we don't hammer Google API on every focus
+  });
+  return data?.count ?? fallbackCount;
+}
+
+const CONCERNS_LAST_VIEWED_KEY = (businessId: number) => `concernsLastViewed_${businessId}`;
+
+/** Timestamp when the user last viewed the Concerns tab for this business (so we can show "new since then" count). */
+export function getConcernsLastViewed(businessId: number): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(CONCERNS_LAST_VIEWED_KEY(businessId));
+}
+
+/** Call when the user opens the Concerns tab so the "new concerns" badge resets after they've seen the list. */
+export function setConcernsLastViewed(businessId: number): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CONCERNS_LAST_VIEWED_KEY(businessId), new Date().toISOString());
+}
+
+/** Count of pending concerns (not yet marked Contacted). Used for red badge on Concerns tab/sidebar; goes down when user marks as Contacted. */
+export function useNewConcernsCount(businessId: number | undefined): number {
+  const { data } = useQuery({
+    queryKey: ["/api/businesses/concerns-count", businessId],
+    queryFn: async () => {
+      if (!businessId) return { count: 0 };
+      const res = await fetch(`/api/businesses/${businessId}/concerns-count`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch concerns count");
+      const json = await res.json();
+      return json as { count: number };
+    },
+    enabled: !!businessId,
+    refetchOnWindowFocus: true,
+  });
+  return data?.count ?? 0;
+}
+
 export function useBusiness(id: number) {
   return useQuery({
     queryKey: [api.businesses.get.path, id],
@@ -61,7 +112,10 @@ export function useBusinessStats(id: number) {
   });
 }
 
-export function useBusinessReviews(businessId: number) {
+export function useBusinessReviews(
+  businessId: number,
+  options?: { refetchOnWindowFocus?: boolean }
+) {
   return useQuery({
     queryKey: [api.businesses.listReviews.path, businessId],
     queryFn: async () => {
@@ -72,6 +126,7 @@ export function useBusinessReviews(businessId: number) {
       return api.businesses.listReviews.responses[200].parse(await res.json());
     },
     enabled: !!businessId,
+    refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
   });
 }
 
@@ -138,6 +193,36 @@ export function useCreateBusiness() {
           return [...(Array.isArray(old) ? old : [old]), ...newBusinesses];
         }
       );
+    },
+  });
+}
+
+/** Update a concern's status (pending | contacted). Badge count excludes contacted. */
+export function useUpdateConcernStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      businessId,
+      reviewId,
+      concernStatus,
+    }: {
+      businessId: number;
+      reviewId: number;
+      concernStatus: "pending" | "contacted";
+    }) => {
+      const res = await fetch(`/api/businesses/${businessId}/concerns/${reviewId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ concernStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update concern status");
+      return res.json();
+    },
+    onSuccess: (_data, { businessId }) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/businesses/concerns-count", businessId] });
+      queryClient.invalidateQueries({ queryKey: [api.businesses.listReviews.path, businessId] });
+      queryClient.invalidateQueries({ queryKey: [api.businesses.list.path] });
     },
   });
 }

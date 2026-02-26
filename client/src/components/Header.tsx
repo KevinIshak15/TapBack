@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser, useLogout } from "@/hooks/use-auth";
+import { usePortfolioAlertCount } from "@/hooks/use-businesses";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
 import {
@@ -52,6 +53,7 @@ export default function Header() {
   const showCenterNav = isLanding;
   const userInitials = user?.username?.charAt(0).toUpperCase() ?? "U";
   const isAdmin = user?.role === "admin";
+  const alertCount = usePortfolioAlertCount();
 
   const headerStyle =
     isLanding && !scrolled
@@ -131,10 +133,18 @@ export default function Header() {
               {isAppRoute && (
                 <Link
                   href="/dashboard"
-                  className="text-sm font-normal text-slate-600 hover:text-slate-900 px-3 py-2.5 rounded-lg hover:bg-slate-100/80 transition-colors hidden sm:inline-flex items-center gap-2 no-underline"
+                  className="relative text-sm font-normal text-slate-600 hover:text-slate-900 px-3 py-2.5 rounded-lg hover:bg-slate-100/80 transition-colors hidden sm:inline-flex items-center gap-2 no-underline"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
+                  {alertCount > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold border-2 border-white"
+                      aria-label={`${alertCount} alerts needing attention`}
+                    >
+                      {alertCount > 99 ? "99+" : alertCount}
+                    </span>
+                  )}
                 </Link>
               )}
               {isAdmin && (

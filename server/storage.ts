@@ -88,6 +88,8 @@ export interface IStorage {
 
   createReview(review: InsertReview): Promise<Review>;
   getReviewsByBusiness(businessId: number): Promise<Review[]>;
+  /** Count concerns for a business, optionally only those created after `since`. */
+  getConcernsCount(businessId: number, since?: Date): Promise<number>;
   getStats(businessId: number): Promise<{ scans: number; reviewsGenerated: number; redirects: number; concerns: number }>;
 
   getGoogleIntegration(userId: number): Promise<GoogleIntegration | undefined>;
@@ -341,6 +343,26 @@ export class FirebaseStorage implements IStorage {
     const reviews = snapshot.docs.map((doc) => docToData<Review>(doc)!).filter(Boolean);
     reviews.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     return reviews;
+  }
+
+  async getConcernsCount(businessId: number, since?: Date): Promise<number> {
+    const reviews = await this.getReviewsByBusiness(businessId);
+    const concerns = reviews.filter((r) => r.experienceType === "concern");
+    const pending = concerns.filter((r) => (r as { concernStatus?: string }).concernStatus !== "contacted");
+    if (!since) return pending.length;
+    const sinceTime = since.getTime();
+    return pending.filter((r) => r.createdAt.getTime() > sinceTime).length;
+  }
+
+  async updateReviewConcernStatus(businessId: number, reviewId: number, concernStatus: "pending" | "contacted"): Promise<Review | undefined> {
+    const docRef = db.collection(collections.reviews).doc(reviewId.toString());
+    const doc = await docRef.get();
+    if (!doc.exists) return undefined;
+    const data = doc.data()!;
+    if (Number(data.businessId) !== businessId || data.experienceType !== "concern") return undefined;
+    await docRef.update({ concernStatus });
+    const updated = await docRef.get();
+    return docToData<Review>(updated);
   }
 
   async getStats(businessId: number): Promise<{ scans: number; reviewsGenerated: number; redirects: number; concerns: number }> {

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-auth";
-import { useBusinesses } from "@/hooks/use-businesses";
+import { useBusinesses, usePortfolioAlertCount, useNewConcernsCount } from "@/hooks/use-businesses";
 import {
   LayoutDashboard,
   Building2,
@@ -40,9 +40,12 @@ export function AppShell({ children }: AppShellProps) {
 
   const pathname = location.split("?")[0];
   const pathParts = pathname.split("/").filter(Boolean);
+  const alertCount = usePortfolioAlertCount();
   const currentBusinessSlug = pathname.startsWith("/business/") && pathname !== "/business/new"
     ? pathParts[1]
     : null;
+  const currentBusiness = businesses?.find((b) => b.slug === currentBusinessSlug);
+  const newConcernsCount = useNewConcernsCount(currentBusiness?.id);
   const businessTabSegment = pathParts[2]; // undefined | 'qr' | 'review-options' | 'insights' | ...
 
   const search = typeof window !== "undefined" ? window.location.search : "";
@@ -73,7 +76,15 @@ export function AppShell({ children }: AppShellProps) {
             </p>
             <Link href="/dashboard" className={navLinkClass(isDashboardBusinesses)}>
               <LayoutDashboard className="h-5 w-5 shrink-0" />
-              Dashboard
+              <span className="truncate">Dashboard</span>
+              {alertCount > 0 && (
+                <span
+                  className="ml-auto min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold border-2 border-[hsl(var(--sidebar))] shrink-0"
+                  aria-label={`${alertCount} alerts needing attention`}
+                >
+                  {alertCount > 99 ? "99+" : alertCount}
+                </span>
+              )}
             </Link>
           </div>
           <div className="space-y-0.5">
@@ -100,7 +111,15 @@ export function AppShell({ children }: AppShellProps) {
                           className={cn("flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors", item.active ? "bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))] font-bold" : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] hover:font-bold")}
                         >
                           <item.icon className="h-4 w-4 shrink-0" />
-                          {item.label}
+                          <span className="truncate">{item.label}</span>
+                          {item.label === "Concerns" && newConcernsCount > 0 && (
+                            <span
+                              className="ml-auto min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold border-2 border-[hsl(var(--sidebar))] shrink-0"
+                              aria-label={`${newConcernsCount} new concerns`}
+                            >
+                              {newConcernsCount > 99 ? "99+" : newConcernsCount}
+                            </span>
+                          )}
                         </Link>
                       ))}
                     </div>

@@ -77,6 +77,7 @@ const businessSchemaInternal = insertBusinessSchema.extend({
   totalReviews: z.number().default(0).optional(),
   totalConcerns: z.number().default(0).optional(),
   averageRating: z.number().min(0).max(5).optional(),
+  pendingConcernsCount: z.number().min(0).optional(), // Set on list API response only
 });
 
 // API response schema (for JSON) - dates are always strings in JSON
@@ -92,6 +93,8 @@ export const businessSchema = insertBusinessSchema.extend({
   totalReviews: z.number().default(0).optional(),
   totalConcerns: z.number().default(0).optional(),
   averageRating: z.number().min(0).max(5).optional(),
+  /** Pending concerns (not yet Contacted). List API includes this for dashboard/action-needed. */
+  pendingConcernsCount: z.number().min(0).optional(),
 });
 
 export type Business = z.infer<typeof businessSchemaInternal>; // Use internal schema for types
@@ -123,11 +126,16 @@ export const insertReviewSchema = z.object({
   ),
 });
 
+// Status for concerns inbox: only "pending" counts toward notification badge
+export const concernStatusSchema = z.enum(["pending", "contacted"]);
+export type ConcernStatus = z.infer<typeof concernStatusSchema>;
+
 // Internal schema (for database/storage) - uses Date objects
 const reviewSchemaInternal = insertReviewSchema.extend({
   id: z.number(),
   regenerationCount: z.number().default(0),
   createdAt: z.date(),
+  concernStatus: concernStatusSchema.optional(), // For experienceType === 'concern': pending (default) | contacted
   // Analytics metadata
   ipAddress: z.string().optional(), // For rate limiting (hashed)
   userAgent: z.string().optional(), // Device info
@@ -138,6 +146,7 @@ export const reviewSchema = insertReviewSchema.extend({
   id: z.number(),
   regenerationCount: z.number().default(0),
   createdAt: z.string(), // JSON always serializes dates as strings
+  concernStatus: concernStatusSchema.optional(),
   // Analytics metadata
   ipAddress: z.string().optional(), // For rate limiting (hashed)
   userAgent: z.string().optional(), // Device info

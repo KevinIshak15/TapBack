@@ -157,9 +157,9 @@ function DashboardBusinessCard({ business, imageColor }: { business: Business; i
 
   const totalReviews = business.totalReviews ?? 0;
   const rating = business.averageRating ?? 0;
-  const totalConcerns = business.totalConcerns ?? 0;
-  const isActionNeeded = totalConcerns > 0;
-  const notifications = totalConcerns;
+  const pendingConcerns = business.pendingConcernsCount ?? business.totalConcerns ?? 0;
+  const isActionNeeded = pendingConcerns > 0;
+  const notifications = pendingConcerns;
 
   const locationDisplay = business.address
     ? business.address.split(",").map((s) => s.trim()).slice(0, 2).join(", ")

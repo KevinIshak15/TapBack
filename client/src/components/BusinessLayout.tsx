@@ -4,6 +4,7 @@
  */
 import { Link, useLocation } from "wouter";
 import { AppShell } from "@/components/app/AppShell";
+import { useNewConcernsCount } from "@/hooks/use-businesses";
 import { Store, Settings, QrCode, BarChart, MessageSquare, AlertTriangle, Palette, FileImage } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,7 @@ function getActiveTab(pathname: string): TabId {
 }
 
 interface BusinessLayoutProps {
-  business: { name: string; category: string };
+  business: { id: number; name: string; category: string };
   slug: string;
   children: React.ReactNode;
 }
@@ -41,6 +42,7 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
   const [location] = useLocation();
   const pathname = location.split("?")[0];
   const activeTab = getActiveTab(pathname);
+  const newConcernsCount = useNewConcernsCount(business.id);
 
   const tabHref = (tab: TabId) => {
     if (tab === "qr") return `/business/${slug}/qr`;
@@ -77,12 +79,13 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
           {TAB_ITEMS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+            const showConcernsBadge = tab.id === "concerns" && newConcernsCount > 0;
             return (
               <Link
                 key={tab.id}
                 href={tabHref(tab.id)}
                 className={cn(
-                  "inline-flex items-center justify-center rounded-md px-2 gap-0.5 h-6 text-[11px] font-medium transition-colors",
+                  "relative inline-flex items-center justify-center rounded-md px-2 gap-0.5 h-6 text-[11px] font-medium transition-colors",
                   isActive
                     ? "bg-[hsl(var(--app-surface))] text-slate-900 shadow-sm"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -90,6 +93,14 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
               >
                 <Icon className="h-3 w-3 shrink-0" />
                 {tab.label}
+                {showConcernsBadge && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-white"
+                    aria-label={`${newConcernsCount} new concerns`}
+                  >
+                    {newConcernsCount > 99 ? "99+" : newConcernsCount}
+                  </span>
+                )}
               </Link>
             );
           })}
