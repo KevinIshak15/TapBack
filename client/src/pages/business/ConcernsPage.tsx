@@ -177,7 +177,7 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-10 h-10 animate-spin text-slate-400" />
+        <Loader2 className="w-10 h-10 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -192,21 +192,22 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-4">
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden w-full bg-background">
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4 flex-1 flex flex-col min-h-0 space-y-4">
       {/* Title + description (consistent with other tabs) */}
-      <div className="pb-4 mb-2 border-b border-slate-200 shrink-0">
-        <h1 className="text-lg font-display font-bold text-slate-900">Concerns</h1>
-        <p className="text-sm text-slate-500 mt-1">Customer concerns inbox: forward to your email and manage responses.</p>
+      <div className="pb-4 mb-2 border-b border-border shrink-0">
+        <h1 className="text-lg font-display font-bold text-foreground">Concerns</h1>
+        <p className="text-sm text-muted-foreground mt-1">Customer concerns inbox: forward to your email and manage responses.</p>
       </div>
       {/* Forward concerns to */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shrink-0">
+      <div className="bg-background rounded-xl border border-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+          <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
             <Mail size={20} />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Forward all concerns to</h2>
-            <p className="text-xs text-slate-500">We'll email you when a form is submitted.</p>
+            <h2 className="text-sm font-bold text-foreground">Forward all concerns to</h2>
+            <p className="text-xs text-muted-foreground">We'll email you when a form is submitted.</p>
           </div>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -215,13 +216,13 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
             value={forwardEmail}
             onChange={(e) => setForwardEmail(e.target.value)}
             placeholder="email@example.com"
-            className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-4 py-2 w-full sm:w-64 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+            className="bg-muted border border-border text-foreground text-sm rounded-lg px-4 py-2 w-full sm:w-64 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
           />
           <button
             type="button"
             onClick={handleSaveForwardEmail}
             disabled={updateBusiness.isPending || forwardEmail === savedForwardEmail}
-            className="text-sm font-medium text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+            className="text-sm font-medium text-primary hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
           >
             {updateBusiness.isPending ? "Saving…" : "Save"}
           </button>
@@ -229,15 +230,15 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
       </div>
 
       {/* List + Detail */}
-      <div className="flex flex-col md:flex-row flex-1 min-h-0 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 bg-background rounded-2xl border border-border shadow-sm overflow-hidden">
         {/* Left: list */}
-        <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col bg-slate-50/50 min-h-0">
-          <div className="p-4 border-b border-slate-200 bg-white shrink-0">
-            <h3 className="font-bold text-slate-800">Inbox</h3>
+        <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-border flex flex-col bg-muted/50 min-h-0">
+          <div className="p-4 border-b border-border bg-background shrink-0">
+            <h3 className="font-bold text-foreground">Inbox</h3>
           </div>
           <div className="overflow-y-auto flex-1">
             {concerns.length === 0 ? (
-              <div className="p-6 text-center text-slate-500 text-sm">No concerns yet.</div>
+              <div className="p-6 text-center text-muted-foreground text-sm">No concerns yet.</div>
             ) : (
               concerns.map((c) => {
                 const status = getStatus(c);
@@ -247,9 +248,9 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
                     type="button"
                     onClick={() => setSelectedId(c.id)}
                     className={cn(
-                      "w-full text-left p-4 border-b border-slate-100 transition-all hover:bg-white",
+                      "w-full text-left p-4 border-b border-border transition-all hover:bg-background",
                       selected?.id === c.id
-                        ? "bg-white border-l-4 border-l-indigo-600 shadow-sm"
+                        ? "bg-background border-l-4 border-l-primary shadow-sm"
                         : "border-l-4 border-l-transparent opacity-80 hover:opacity-100"
                     )}
                   >
@@ -257,7 +258,7 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
                       <span
                         className={cn(
                           "text-sm font-semibold truncate",
-                          status === "pending" ? "text-slate-900" : "text-slate-500"
+                          status === "pending" ? "text-foreground" : "text-muted-foreground"
                         )}
                       >
                         {c.customerName || "Anonymous"}
@@ -269,10 +270,10 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
                         />
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mb-2 line-clamp-2">
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                       {c.content || "No message."}
                     </p>
-                    <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                    <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                       {formatDateShort(c.createdAt)}
                     </span>
                   </button>
@@ -285,23 +286,23 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
         {/* Right: detail */}
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
           {!selected ? (
-            <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center flex-1">
-              <AlertCircle className="w-12 h-12 text-slate-300 mb-3" />
+            <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center flex-1">
+              <AlertCircle className="w-12 h-12 text-muted-foreground mb-3" />
               <p>Select a concern to view details.</p>
             </div>
           ) : (
             <>
               {/* Header + status toggle */}
-              <div className="px-6 sm:px-8 py-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start gap-4 shrink-0">
+              <div className="px-6 sm:px-8 py-6 border-b border-border flex flex-col sm:flex-row justify-between items-start gap-4 shrink-0">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-lg shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg shrink-0">
                     {(selected.customerName || "A").charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900">
+                    <h1 className="text-xl font-bold text-foreground">
                       {selected.customerName || "Anonymous"}
                     </h1>
-                    <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <Calendar size={14} />
                       {formatDate(selected.createdAt)}
                     </div>
@@ -315,7 +316,7 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
                     "flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold transition-all shrink-0",
                     getStatus(selected) === "contacted"
                       ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                      : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                      : "bg-background text-muted-foreground border-border hover:border-muted-foreground"
                   )}
                 >
                   {getStatus(selected) === "contacted" ? (
@@ -328,7 +329,7 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
                     </>
                   ) : (
                     <>
-                      <span className="w-4 h-4 rounded-full border-2 border-slate-300" />
+                      <span className="w-4 h-4 rounded-full border-2 border-border" />
                       Mark as Contacted
                     </>
                   )}
@@ -338,21 +339,21 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
               {/* Contact info */}
               <div className="px-6 sm:px-8 py-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {selected.customerPhone && (
-                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 hover:border-indigo-200 transition-colors group relative">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+                  <div className="p-4 rounded-xl border border-border bg-muted hover:border-primary/30 transition-colors group relative">
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">
                       <Phone size={12} />
                       Phone
                     </div>
                     <a
                       href={`tel:${selected.customerPhone}`}
-                      className="text-lg font-semibold text-slate-900 hover:text-indigo-600 hover:underline"
+                      className="text-lg font-semibold text-foreground hover:text-primary hover:underline"
                     >
                       {selected.customerPhone}
                     </a>
                     <button
                       type="button"
                       onClick={() => copyToClipboard(selected.customerPhone!, "Phone number")}
-                      className="absolute top-4 right-4 text-slate-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-4 right-4 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
                       aria-label="Copy phone"
                     >
                       <Copy size={16} />
@@ -360,21 +361,21 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
                   </div>
                 )}
                 {selected.customerEmail && (
-                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 hover:border-indigo-200 transition-colors group relative">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+                  <div className="p-4 rounded-xl border border-border bg-muted hover:border-primary/30 transition-colors group relative">
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">
                       <Mail size={12} />
                       Email
                     </div>
                     <a
                       href={`mailto:${selected.customerEmail}`}
-                      className="text-lg font-semibold text-slate-900 hover:text-indigo-600 hover:underline break-all"
+                      className="text-lg font-semibold text-foreground hover:text-primary hover:underline break-all"
                     >
                       {selected.customerEmail}
                     </a>
                     <button
                       type="button"
                       onClick={() => copyToClipboard(selected.customerEmail!, "Email")}
-                      className="absolute top-4 right-4 text-slate-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-4 right-4 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
                       aria-label="Copy email"
                     >
                       <Copy size={16} />
@@ -385,14 +386,15 @@ export function ConcernsPage({ business }: ConcernsPageProps) {
 
               {/* Message */}
               <div className="px-6 sm:px-8 pb-8 flex-1">
-                <h3 className="text-sm font-bold text-slate-900 mb-3">Customer concern</h3>
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-slate-700 leading-relaxed">
+                <h3 className="text-sm font-bold text-foreground mb-3">Customer concern</h3>
+                <div className="bg-background p-6 rounded-xl border border-border shadow-sm text-foreground leading-relaxed">
                   &ldquo;{selected.content || "No message."}&rdquo;
                 </div>
               </div>
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -36,14 +36,14 @@ export default function Dashboard() {
   if (userLoading || businessesLoading) {
     return (
       <AppShell>
-        <div className="min-h-[60vh] bg-[#F8FAFC] p-6 md:p-8">
+        <div className="min-h-[60vh] bg-background p-6 md:p-8">
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <Skeleton className="h-9 w-48" />
                 <Skeleton className="h-4 w-64 mt-2" />
               </div>
-              <div className="flex gap-6 bg-white px-6 py-3 rounded-xl border border-slate-200 w-fit">
+              <div className="flex gap-6 bg-card px-6 py-3 rounded-2xl border border-border shadow-[0_8px_30px_rgba(0,0,0,0.04)] w-fit">
                 <Skeleton className="h-12 w-20" />
                 <Skeleton className="h-12 w-20" />
                 <Skeleton className="h-12 w-20" />
@@ -68,18 +68,18 @@ export default function Dashboard() {
 
   return (
     <AppShell>
-      <div className="min-h-[60vh] bg-[#F8FAFC] p-6 md:p-8 font-sans text-slate-900">
+      <div className="min-h-[60vh] bg-background p-6 md:p-8 font-display text-foreground">
         <div className="max-w-7xl mx-auto">
           {/* 1. Welcome header + Empire stats */}
           <div className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h1>
-              <p className="text-slate-500 mt-1 md:mt-2 text-sm">Overview of your businesses.</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground mt-1 md:mt-2 text-sm">Overview of your businesses.</p>
             </div>
-            <div className="flex gap-4 sm:gap-6 bg-white px-4 sm:px-6 py-3 rounded-xl border border-slate-200 shadow-sm flex-shrink-0">
+            <div className="flex gap-4 sm:gap-6 bg-card px-4 sm:px-6 py-3 rounded-2xl border border-border shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex-shrink-0">
               <div className="text-center min-w-0">
-                <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide">Locations</p>
-                <p className="text-lg sm:text-xl font-bold text-slate-900">{stats.totalLocations}</p>
+                <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wide">Locations</p>
+                <p className="text-lg sm:text-xl font-bold text-foreground">{stats.totalLocations}</p>
               </div>
             </div>
           </div>
@@ -141,12 +141,12 @@ function DashboardBusinessCard({ business }: { business: Business }) {
             setLocation(`/business/${business.slug}`);
           }
         }}
-        className="group relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+        className="group relative bg-card rounded-[2rem] border border-border shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_hsl(var(--primary)/0.15)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
       >
         {/* Card header background */}
-        <div className="h-24 bg-slate-50 border-b border-slate-100 flex items-start justify-between p-4 relative">
+        <div className="h-24 bg-muted/50 border-b border-border flex items-start justify-between p-4 relative">
           {isActionNeeded ? (
-            <div className="flex items-center gap-1.5 bg-white pl-1.5 pr-2.5 py-1 rounded-full border border-rose-100 shadow-sm z-10">
+            <div className="flex items-center gap-1.5 bg-card pl-1.5 pr-2.5 py-1 rounded-full border border-rose-100 shadow-sm z-10">
               <div className="relative">
                 <AlertCircle size={16} className="text-rose-500" />
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-rose-500 rounded-full border border-white animate-pulse" />
@@ -154,7 +154,7 @@ function DashboardBusinessCard({ business }: { business: Business }) {
               <span className="text-xs font-bold text-rose-600">{notifications} Alert{notifications !== 1 ? "s" : ""}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-white pl-1.5 pr-2.5 py-1 rounded-full border border-emerald-100 shadow-sm z-10">
+            <div className="flex items-center gap-1.5 bg-card pl-1.5 pr-2.5 py-1 rounded-full border border-emerald-100 shadow-sm z-10">
               <CheckCircle2 size={16} className="text-emerald-500" />
               <span className="text-xs font-bold text-emerald-600">Healthy</span>
             </div>
@@ -163,7 +163,7 @@ function DashboardBusinessCard({ business }: { business: Business }) {
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg transition-colors z-10"
+                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-card rounded-lg transition-colors z-10"
                 aria-label="Business options"
               >
                 <MoreVertical size={18} />
@@ -199,8 +199,8 @@ function DashboardBusinessCard({ business }: { business: Business }) {
         {/* Card body */}
         <div className="px-6 pb-6 relative">
           <div
-            className={`-mt-10 w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shadow-md border-4 border-white mb-3 ${
-              business.logo ? "bg-slate-50" : "bg-slate-200 text-slate-600"
+            className={`-mt-10 w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold shadow-md border-4 border-card mb-3 ${
+              business.logo ? "bg-muted/50" : "bg-muted text-muted-foreground"
             }`}
           >
             {business.logo ? (
@@ -210,10 +210,10 @@ function DashboardBusinessCard({ business }: { business: Business }) {
             )}
           </div>
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+            <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
               {business.name}
             </h3>
-            <div className="flex items-center gap-2 text-sm text-slate-500 mt-1 flex-wrap">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
               {locationDisplay && (
                 <span className="flex items-center gap-1 truncate">
                   <MapPin size={12} className="shrink-0" />
@@ -224,9 +224,9 @@ function DashboardBusinessCard({ business }: { business: Business }) {
               <span>{business.category}</span>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-            <span className="text-xs font-semibold text-slate-400">Manage</span>
-            <span className="flex items-center gap-1 text-sm font-bold text-indigo-600 group-hover:gap-2 transition-all">
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <span className="text-xs font-semibold text-muted-foreground">Manage</span>
+            <span className="flex items-center gap-1 text-sm font-bold text-primary group-hover:gap-2 transition-all">
               Open <ArrowRight size={16} />
             </span>
           </div>
@@ -244,13 +244,13 @@ function DashboardBusinessCard({ business }: { business: Business }) {
 
 function AddBusinessCard() {
   return (
-    <Link href="/business/new" className="block outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded-2xl">
-      <div className="group relative flex flex-col items-center justify-center min-h-[280px] rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 hover:bg-white hover:border-indigo-400 hover:shadow-md transition-all duration-300 h-full">
-        <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-slate-200 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-          <Plus size={32} className="text-slate-400 group-hover:text-indigo-600" />
+    <Link href="/business/new" className="block outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded-[2rem]">
+      <div className="group relative flex flex-col items-center justify-center min-h-[280px] rounded-[2rem] border-2 border-dashed border-border bg-muted/30 hover:bg-card hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 h-full">
+        <div className="w-16 h-16 bg-card rounded-full shadow-sm border border-border flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <Plus size={32} className="text-muted-foreground group-hover:text-primary" />
         </div>
-        <h3 className="text-lg font-bold text-slate-700 group-hover:text-indigo-600">Add New Business</h3>
-        <p className="text-sm text-slate-400 mt-1">Connect Google or add manually</p>
+        <h3 className="text-lg font-bold text-foreground group-hover:text-primary">Add New Business</h3>
+        <p className="text-sm text-muted-foreground mt-1">Connect Google or add manually</p>
       </div>
     </Link>
   );

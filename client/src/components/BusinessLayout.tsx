@@ -56,16 +56,16 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
 
   return (
     <AppShell>
-      <div className="h-full flex flex-col min-h-0 space-y-1.5">
-        <div className="flex items-center gap-2 shrink-0">
+      <div className="h-full flex flex-col min-h-0 space-y-1">
+        <div className="flex items-center gap-2 shrink-0 py-0.5">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Store className="h-4 w-4 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-semibold text-slate-900 truncate leading-tight">
+            <h1 className="text-lg font-semibold text-foreground truncate leading-tight">
               {business.name}
             </h1>
-            <p className="text-[11px] text-slate-600 leading-tight">
+            <p className="text-[11px] text-muted-foreground leading-tight">
               {business.category}
             </p>
           </div>
@@ -73,7 +73,7 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
 
         <div className="flex justify-center w-full shrink-0">
           <nav
-            className="bg-white border border-slate-200 p-0.5 rounded-lg h-8 shadow-sm inline-flex flex-wrap gap-0.5 justify-center"
+            className="bg-card border border-border p-1 rounded-xl h-11 shadow-[0_8px_30px_rgba(0,0,0,0.04)] inline-flex flex-wrap gap-0.5 justify-center"
             aria-label="Business sections"
           >
           {TAB_ITEMS.map((tab) => {
@@ -85,17 +85,17 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
                 key={tab.id}
                 href={tabHref(tab.id)}
                 className={cn(
-                  "relative inline-flex items-center justify-center rounded-md px-2 gap-0.5 h-6 text-[11px] font-medium transition-colors",
+                  "relative inline-flex items-center justify-center rounded-lg px-3 gap-1.5 h-9 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-[hsl(var(--app-surface))] text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
-                <Icon className="h-3 w-3 shrink-0" />
+                <Icon className="h-4 w-4 shrink-0" />
                 {tab.label}
                 {showConcernsBadge && (
                   <span
-                    className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold border-2 border-white"
+                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold border-2 border-white"
                     aria-label={`${newConcernsCount} new concerns`}
                   >
                     {newConcernsCount > 99 ? "99+" : newConcernsCount}
@@ -107,8 +107,8 @@ export function BusinessLayout({ business, slug, children }: BusinessLayoutProps
           </nav>
         </div>
 
-        {/* Tab content: fills remaining height, no page scroll (except QR Marketing) */}
-        <div className="business-page-content flex-1 min-h-0 overflow-hidden flex flex-col">
+        {/* Tab content: full-bleed, no grey box or max-width */}
+        <div className="business-page-content flex-1 min-h-0 overflow-hidden flex flex-col w-full">
           {children}
         </div>
       </div>

@@ -74,7 +74,7 @@ async function generateReplyDraft(
 }
 
 const AVATAR_COLORS = [
-  "bg-slate-100 text-slate-600",
+  "bg-muted text-muted-foreground",
   "bg-emerald-100 text-emerald-700",
   "bg-blue-100 text-blue-700",
   "bg-purple-100 text-purple-700",
@@ -113,19 +113,19 @@ function MetricCard({
   return (
     <div
       className={cn(
-        "bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between h-32",
-        isAlert ? "border-red-200 bg-red-50/30" : "border-slate-200"
+        "bg-card p-5 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex flex-col justify-between h-32 border",
+        isAlert ? "border-red-200 bg-red-50/30" : "border-border"
       )}
     >
       <div className="flex justify-between items-start">
         <div className="flex flex-col min-w-0">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             {label}
           </span>
           <h3
             className={cn(
               "text-2xl font-bold mt-1 truncate",
-              isAlert ? "text-red-600" : "text-slate-900"
+              isAlert ? "text-red-600" : "text-foreground"
             )}
           >
             {value}
@@ -134,7 +134,7 @@ function MetricCard({
         <div
           className={cn(
             "p-2 rounded-lg shrink-0",
-            isAlert ? "bg-red-100" : "bg-slate-50"
+            isAlert ? "bg-red-100" : "bg-muted/50"
           )}
         >
           {icon}
@@ -161,7 +161,7 @@ function MetricCard({
           </span>
         ) : null}
         {!isAlert && trendSubtext != null && (
-          <span className="text-[10px] text-slate-400">{trendSubtext}</span>
+          <span className="text-[10px] text-muted-foreground">{trendSubtext}</span>
         )}
       </div>
     </div>
@@ -189,12 +189,12 @@ function TabButtonInner({
       type="button"
       onClick={onClick}
       className={cn(
-        "px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2",
+        "px-4 py-2 rounded-[1.5rem] text-sm font-bold transition-all flex items-center gap-2",
         active
           ? isAlert
-            ? "bg-white text-rose-600 shadow-sm ring-1 ring-black/5"
-            : "bg-white text-slate-900 shadow-sm ring-1 ring-black/5"
-          : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+            ? "bg-card text-rose-600 shadow-sm ring-1 ring-black/5"
+            : "bg-primary text-primary-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >
       {isAlert && showAlertDot && (
@@ -204,7 +204,7 @@ function TabButtonInner({
       <span
         className={cn(
           "text-[10px] px-1.5 py-0.5 rounded-full tabular-nums",
-          active ? "bg-slate-100 text-slate-600" : "bg-slate-200 text-slate-500"
+          active ? "bg-muted text-foreground" : "bg-muted/80 text-muted-foreground"
         )}
       >
         {count}
@@ -244,26 +244,26 @@ function ReviewRow({
   const tags = isCritical ? ["Critical"] : review.starRating >= 4 ? ["Positive"] : ["Feedback"];
 
   return (
-    <div className="border-b border-slate-50 last:border-b-0">
+    <div className="border-b border-border last:border-b-0">
       {/* Summary row (always visible) */}
       <button
         type="button"
         onClick={onToggle}
         className={cn(
-          "w-full p-5 flex items-start gap-4 text-left transition-colors hover:bg-slate-50/50",
-          isExpanded ? "bg-slate-50/80" : "bg-white"
+          "w-full p-5 flex items-start gap-4 text-left transition-colors hover:bg-muted/50",
+          isExpanded ? "bg-muted/80" : "bg-background"
         )}
       >
         <div className="mt-1 relative shrink-0">
           <div
             className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border border-slate-200",
+              "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border border-border",
               avatarColorClass
             )}
           >
             {initial}
           </div>
-          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-slate-100">
+          <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 shadow-sm border border-border">
             <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[8px] font-bold text-white">
               G
             </span>
@@ -273,8 +273,8 @@ function ReviewRow({
         <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start gap-2">
               <div className="flex items-center gap-2 flex-wrap min-w-0">
-                <h3 className="font-semibold text-slate-900 text-sm truncate">{displayName}</h3>
-                <span className="text-slate-400 text-xs shrink-0">
+                <h3 className="font-semibold text-foreground text-sm truncate">{displayName}</h3>
+                <span className="text-muted-foreground text-xs shrink-0">
                   • {formatFullDate(review.createTime)}
                 </span>
                 {isCritical && !isReplied && (
@@ -283,16 +283,16 @@ function ReviewRow({
                   </span>
                 )}
               </div>
-              <span className="flex items-center gap-1.5 text-xs text-slate-500 shrink-0">
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                 {isExpanded ? (
                   <>
                     <span>AI draft</span>
-                    <ChevronUp size={16} className="text-slate-400" />
+                    <ChevronUp size={16} className="text-muted-foreground" />
                   </>
                 ) : (
                   <>
                     <span>{isReplied ? "View reply" : "View AI draft"}</span>
-                    <ChevronDown size={16} className="text-slate-400" />
+                    <ChevronDown size={16} className="text-muted-foreground" />
                   </>
                 )}
               </span>
@@ -308,13 +308,13 @@ function ReviewRow({
                       ? isCritical
                         ? "fill-rose-400 text-rose-400"
                         : "fill-amber-400 text-amber-400"
-                      : "fill-slate-200 text-slate-200"
+                      : "fill-muted text-muted"
                   )}
                 />
               ))}
             </div>
           </div>
-          <p className="text-sm text-slate-600 line-clamp-1">
+          <p className="text-sm text-foreground line-clamp-1">
             {review.comment || "No comment."}
           </p>
         </div>
@@ -342,16 +342,16 @@ function ReviewRow({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 pl-[72px] bg-slate-50/80 border-t border-slate-100/50 md:pl-[72px]">
+            <div className="px-5 pb-5 pl-[72px] bg-muted/80 border-t border-border md:pl-[72px]">
               <div className="py-4">
-                <p className="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap">
+                <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
                   {review.comment || "No comment."}
                 </p>
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-xs bg-white text-slate-500 px-2 py-1 rounded border border-slate-200"
+                      className="text-xs bg-background text-muted-foreground px-2 py-1 rounded border border-border"
                     >
                       {tag}
                     </span>
@@ -359,15 +359,15 @@ function ReviewRow({
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+              <div className="bg-background rounded-xl border border-border shadow-sm p-4">
                 {isReplied && review.reviewReply ? (
                   <div className="flex gap-3">
-                    <CornerDownRight className="text-slate-300 mt-1 shrink-0" size={20} />
+                    <CornerDownRight className="text-muted-foreground mt-1 shrink-0" size={20} />
                     <div className="min-w-0">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Your Reply
                       </span>
-                      <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">
+                      <p className="text-sm text-foreground mt-1 whitespace-pre-wrap">
                         {review.reviewReply}
                       </p>
                     </div>
@@ -376,24 +376,24 @@ function ReviewRow({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="bg-indigo-50 text-indigo-600 p-1 rounded">
-                          <Zap size={14} className="fill-indigo-600" />
+                        <div className="bg-primary/10 text-primary p-1 rounded">
+                          <Zap size={14} className="fill-primary" />
                         </div>
-                        <span className="text-xs font-semibold text-indigo-900">
+                        <span className="text-xs font-semibold text-primary">
                           AI-generated reply
                         </span>
                       </div>
-                      <span className="text-xs text-slate-400">Simple, on-brand, Google-friendly. Editable.</span>
+                      <span className="text-xs text-muted-foreground">Simple, on-brand, Google-friendly. Editable.</span>
                     </div>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-muted-foreground">
                       Based on what they wrote; kept short and aligned with Google&apos;s guidelines.
                     </p>
                     <textarea
                       className={cn(
-                        "w-full text-sm text-slate-700 border border-slate-200 rounded-lg p-3 outline-none transition-all resize-none",
+                        "w-full text-sm text-foreground border border-border rounded-lg p-3 outline-none transition-all resize-none",
                         isDraftEditable
-                          ? "bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                          : "bg-slate-50 cursor-default",
+                          ? "bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          : "bg-muted cursor-default",
                         isGenerating && "opacity-70 pointer-events-none"
                       )}
                       rows={4}
@@ -406,7 +406,7 @@ function ReviewRow({
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1"
+                          className="text-xs text-muted-foreground hover:text-foreground font-medium px-2 py-1"
                           onClick={() => onDraftChange(getDefaultDraft(review.starRating))}
                         >
                           Discard
@@ -417,7 +417,7 @@ function ReviewRow({
                           type="button"
                           disabled={isGenerating}
                           onClick={onGenerateDraft}
-                          className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 disabled:opacity-50 flex items-center gap-2"
+                          className="px-4 py-2 bg-background border border-border text-foreground text-xs font-semibold rounded-lg hover:bg-muted disabled:opacity-50 flex items-center gap-2"
                         >
                           {isGenerating ? (
                             <>
@@ -437,15 +437,15 @@ function ReviewRow({
                           className={cn(
                             "px-4 py-2 border text-xs font-semibold rounded-lg",
                             isDraftEditable
-                              ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
-                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                              ? "bg-muted border-border text-foreground hover:bg-muted/80"
+                              : "bg-background border-border text-foreground hover:bg-muted"
                           )}
                         >
                           {isDraftEditable ? "Done editing" : "Edit Draft"}
                         </button>
                         <button
                           type="button"
-                          className="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 shadow-sm flex items-center gap-2"
+                          className="px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 shadow-sm flex items-center gap-2"
                         >
                           <Mail size={12} /> Post Reply
                         </button>
@@ -691,10 +691,10 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
 
   if (!hasGbp) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-12 text-center">
-        <MessageSquare className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-        <p className="text-slate-700 font-medium">Connect Google Business Profile to manage reviews</p>
-        <p className="text-sm text-slate-500 mt-1">
+      <div className="rounded-2xl border border-dashed border-border bg-muted/50 p-12 text-center">
+        <MessageSquare className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <p className="text-foreground font-medium">Connect Google Business Profile to manage reviews</p>
+        <p className="text-sm text-muted-foreground mt-1">
           Link this business to a GBP location to view and reply to reviews.
         </p>
       </div>
@@ -704,7 +704,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-10 h-10 animate-spin text-slate-400" />
+        <Loader2 className="w-10 h-10 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -719,40 +719,53 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden min-w-0 bg-[#F8FAFC] font-sans text-slate-800 p-3 md:p-4">
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden min-w-0 w-full bg-background font-sans text-foreground">
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4 flex-1 flex flex-col min-h-0">
       {/* Header (match Insights) */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pb-4 mb-4 border-b border-slate-200 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pb-4 mb-4 border-b border-border shrink-0">
         <div>
-          <h1 className="text-lg font-display font-bold text-slate-900">Reviews</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-lg font-display font-bold text-foreground">Reviews</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Real-time feedback monitoring for{" "}
-            <span className="font-semibold text-slate-900">{business.name ?? "this location"}</span>.
+            <span className="font-semibold text-foreground">{business.name ?? "this location"}</span>.
           </p>
         </div>
       </div>
 
-      {/* Metrics row (Insights-style: same card look, green pills) */}
+      {/* Metrics row (Insights-style: hero primary card + secondary cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 shrink-0">
-        <MetricCard
-          label="Total Reviews"
-          value={totalCountInRange.toLocaleString()}
-          trend={totalReviewsAllTime > 0 ? `${totalReviewsPercentInPeriod}%` : undefined}
-          trendSubtext={totalReviewsPeriodSubtext}
-          icon={<MessageSquare size={18} className="text-slate-400" />}
-        />
+        {/* Hero card — primary (match Insights AVG RATING) */}
+        <div className="relative bg-primary rounded-[2rem] p-6 text-primary-foreground overflow-hidden shadow-[0_8px_30px_hsl(var(--primary)/0.25)] flex flex-col justify-between min-h-[8rem]">
+          <div className="absolute top-4 left-4 w-32 h-32 bg-primary-foreground rounded-full blur-3xl opacity-10" aria-hidden />
+          <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-primary-foreground rounded-full blur-3xl opacity-10" aria-hidden />
+          <div className="relative z-10 flex justify-between items-start">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-primary-foreground/70">Total Reviews</p>
+            <div className="bg-primary-foreground/20 rounded-full p-2">
+              <MessageSquare className="w-4 h-4 text-primary-foreground" />
+            </div>
+          </div>
+          <div className="relative z-10 mt-2">
+            <div className="text-3xl font-black text-primary-foreground">{totalCountInRange.toLocaleString()}</div>
+            {totalReviewsAllTime > 0 && totalReviewsPercentInPeriod != null && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-primary-foreground/20 rounded-full px-2.5 py-1 mt-1">
+                +{totalReviewsPercentInPeriod}% {totalReviewsPeriodSubtext}
+              </span>
+            )}
+          </div>
+        </div>
         <MetricCard
           label="Avg Rating"
           value={totalCountInRange > 0 ? averageRatingInRange.toFixed(1) : "-"}
           trend={metricTrends?.avgTrend ?? undefined}
           trendSubtext={metricTrends?.trendSubtext}
-          icon={<Star size={18} className="text-slate-400" />}
+          icon={<Star size={18} className="text-muted-foreground" />}
         />
         <MetricCard
           label="Response Rate"
           value={`${responseRateInRange}%`}
           trend={metricTrends?.responseTrend ?? undefined}
           trendSubtext={metricTrends?.trendSubtext}
-          icon={<Zap size={18} className="text-slate-400" />}
+          icon={<Zap size={18} className="text-muted-foreground" />}
         />
         <MetricCard
           label="Critical Pending"
@@ -764,10 +777,10 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
       </div>
 
       {/* Reviews Console (one big white card) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+      <div className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
         {/* Console header: tabs + search inside card */}
-        <div className="p-3 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-3 bg-white shrink-0">
-          <div className="flex bg-slate-100/80 p-1 rounded-lg">
+        <div className="p-3 border-b border-border flex flex-col md:flex-row justify-between items-center gap-3 bg-background shrink-0">
+          <div className="flex bg-card rounded-[2rem] p-1 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
             <TabButtonInner
               text="All Reviews"
               count={totalCountInRange}
@@ -792,7 +805,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
           <div className="flex gap-3 w-full md:w-auto">
             <div className="relative group flex-1 md:flex-initial">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 size={16}
               />
               <input
@@ -800,7 +813,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                 placeholder="Search reviews…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-full md:w-64"
+                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full md:w-64"
               />
             </div>
             <Popover open={filterOpen} onOpenChange={setFilterOpen}>
@@ -808,10 +821,10 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                 <button
                   type="button"
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium bg-white",
+                    "flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium bg-background",
                     (dateRangePreset !== "since-revsboost" && dateRangePreset !== "all-time") || dateFrom || dateTo
-                      ? "border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50"
-                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      ? "border-primary/30 text-primary bg-primary/10 hover:bg-primary/20"
+                      : "border-border text-muted-foreground hover:bg-muted"
                   )}
                 >
                   <Filter size={16} />
@@ -824,19 +837,19 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                 </button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-72 p-0 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden"
+                className="w-72 p-0 bg-background border border-border shadow-xl rounded-xl overflow-hidden"
                 align="end"
               >
-                <div className="p-2 border-b border-slate-100 bg-white">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date range</span>
+                <div className="p-2 border-b border-border bg-background">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date range</span>
                 </div>
-                <div className="p-2 space-y-0.5 bg-white">
+                <div className="p-2 space-y-0.5 bg-background">
                   <button
                     type="button"
                     onClick={() => { setDateRangePreset("7d"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
                     className={cn(
                       "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      dateRangePreset === "7d" ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                      dateRangePreset === "7d" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
                     )}
                   >
                     Last 7 days
@@ -846,7 +859,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                     onClick={() => { setDateRangePreset("30d"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
                     className={cn(
                       "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      dateRangePreset === "30d" ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                      dateRangePreset === "30d" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
                     )}
                   >
                     Last 30 days
@@ -856,7 +869,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                     onClick={() => { setDateRangePreset("since-revsboost"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
                     className={cn(
                       "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      dateRangePreset === "since-revsboost" && !dateFrom && !dateTo ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                      dateRangePreset === "since-revsboost" && !dateFrom && !dateTo ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
                     )}
                   >
                     Since RevsBoost
@@ -866,18 +879,18 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                     onClick={() => { setDateRangePreset("all-time"); setDateFrom(""); setDateTo(""); setFilterOpen(false); }}
                     className={cn(
                       "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      dateRangePreset === "all-time" && !dateFrom && !dateTo ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                      dateRangePreset === "all-time" && !dateFrom && !dateTo ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
                     )}
                   >
                     All time
                   </button>
-                  <div className="pt-1 mt-1 border-t border-slate-100">
+                  <div className="pt-1 mt-1 border-t border-border">
                     <button
                       type="button"
                       onClick={() => setDateRangePreset("custom")}
                       className={cn(
                         "w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                        dateRangePreset === "custom" ? "bg-indigo-100 text-indigo-900" : "text-slate-700 hover:bg-slate-100"
+                        dateRangePreset === "custom" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
                       )}
                     >
                       Custom range
@@ -888,14 +901,14 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
                           type="date"
                           value={dateFrom}
                           onChange={(e) => setDateFrom(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                          className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                         />
-                        <span className="text-slate-400 text-sm">to</span>
+                        <span className="text-muted-foreground text-sm">to</span>
                         <input
                           type="date"
                           value={dateTo}
                           onChange={(e) => setDateTo(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                          className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                         />
                       </div>
                     )}
@@ -909,7 +922,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
         {/* Review list (table/accordion hybrid) */}
         <div className="flex-1 overflow-auto min-h-0">
           {filteredReviews.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-sm">
+            <div className="p-12 text-center text-muted-foreground text-sm">
               No reviews match this filter.
             </div>
           ) : (
@@ -932,6 +945,7 @@ export function ReviewsPage({ business }: ReviewsPageProps) {
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

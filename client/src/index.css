@@ -21,6 +21,9 @@
   --google-c-green: #34A853;
   --google-star: #FBBC04;
 
+  /* Chart accent (hex for Recharts/SVG); matches primary */
+  --chart-accent: #162C4E;
+
   /* RevsBoost logo colors */
   --revsboost-dark-blue: 216 56% 20%; /* #162C4E - Primary dark blue */
   --revsboost-light-blue: 183 83% 72%; /* #7DEEF3 - Light cyan */

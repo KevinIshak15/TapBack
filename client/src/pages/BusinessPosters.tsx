@@ -127,17 +127,17 @@ function PosterCard({
   }, [previewSrc]);
 
   return (
-    <Card className="border border-slate-200 bg-white overflow-hidden flex flex-col">
-      <div className="aspect-[8.5/11] bg-slate-100 relative overflow-hidden rounded-t-lg flex items-center justify-center min-h-[200px]">
+    <Card className="border border-border bg-card overflow-hidden flex flex-col rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+      <div className="aspect-[8.5/11] bg-muted/30 relative overflow-hidden rounded-t-[2rem] flex items-center justify-center min-h-[200px]">
         {!imageError && (!blobUrl || !imageLoaded) && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         )}
         {imageError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 text-sm p-4 text-center gap-1">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground text-sm p-4 text-center gap-1">
             <span>Preview unavailable. Use Preview button</span>
-            <span className="text-xs text-slate-400">If it never loads, run: npx playwright install chromium</span>
+            <span className="text-xs text-muted-foreground/80">If it never loads, run: npx playwright install chromium</span>
           </div>
         )}
         {blobUrl && (
@@ -335,19 +335,20 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
 
   return (
     <>
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 mb-4 border-b border-slate-200">
+    <div className="w-full min-h-full overflow-hidden bg-background font-display text-foreground">
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4 flex-1 min-h-0 overflow-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 mb-4 border-b border-border">
         <div>
-          <h1 className="text-lg font-display font-bold text-slate-900">
+          <h1 className="text-lg font-display font-bold text-foreground">
             QR Marketing
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Professionally designed posters: ready to print.
           </p>
         </div>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <Label htmlFor="poster-size" className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              <Label htmlFor="poster-size" className="text-sm font-medium text-foreground whitespace-nowrap">
                 Paper size
               </Label>
               <Select
@@ -364,7 +365,7 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Label htmlFor="poster-variant" className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              <Label htmlFor="poster-variant" className="text-sm font-medium text-foreground whitespace-nowrap">
                 Dark variant
               </Label>
               <Switch
@@ -379,18 +380,18 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
         {templatesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="border border-slate-200 bg-white overflow-hidden">
-                <div className="aspect-[8.5/11] bg-slate-100 animate-pulse" />
+              <Card key={i} className="border border-border bg-card overflow-hidden rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                <div className="aspect-[8.5/11] bg-muted/30 animate-pulse rounded-t-[2rem]" />
                 <CardHeader>
-                  <div className="h-5 bg-slate-200 rounded w-3/4 animate-pulse" />
-                  <div className="h-4 bg-slate-100 rounded w-full mt-2 animate-pulse" />
+                  <div className="h-5 bg-muted rounded w-3/4 animate-pulse" />
+                  <div className="h-4 bg-muted/50 rounded w-full mt-2 animate-pulse" />
                 </CardHeader>
               </Card>
             ))}
           </div>
         ) : templates.length === 0 ? (
-          <Card className="border border-slate-200 bg-white">
-            <CardContent className="py-12 text-center text-slate-600">
+          <Card className="border border-border bg-card rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+            <CardContent className="py-12 text-center text-muted-foreground">
               No templates available. Try again later.
             </CardContent>
           </Card>
@@ -411,6 +412,7 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
           </div>
         )}
       </div>
+    </div>
 
       <Dialog open={!!previewTemplate} onOpenChange={(open) => !open && closePreview()}>
         <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
@@ -419,10 +421,10 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
           </DialogHeader>
           {previewTemplate && (
             <>
-              <div className="flex-1 min-h-0 overflow-auto bg-slate-100 rounded-lg flex items-center justify-center p-4 relative">
+              <div className="flex-1 min-h-0 overflow-auto bg-muted/30 rounded-lg flex items-center justify-center p-4 relative">
                 {previewImageLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-lg">
-                    <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-card/80 z-10 rounded-lg">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                   </div>
                 )}
                 {previewImageUrl && (
@@ -433,7 +435,7 @@ export function PostersView({ business }: { business: PostersViewBusiness }) {
                   />
                 )}
               </div>
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-200">
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
                 <Button
                   onClick={() => handleDownload("pdf", previewTemplate.id)}
                   disabled={downloadPending !== null}

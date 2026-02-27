@@ -86,24 +86,27 @@ export default function BusinessQR() {
 
   return (
     <BusinessLayout business={business} slug={slug}>
-      <div className="max-w-4xl space-y-4">
-        <div className="pb-4 mb-4 border-b border-slate-200">
-          <h2 className="text-lg font-display font-bold text-slate-900">QR Code</h2>
-          <p className="text-sm text-slate-500 mt-1">Generate and download your QR code for customer reviews.</p>
-        </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Card className="bg-white border border-slate-200 shadow-sm rounded-xl">
-            <CardHeader className="text-center pb-2 pt-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <QrCode className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base font-semibold text-slate-900">Review QR code</CardTitle>
-              <CardDescription className="text-xs">Customers scan this to leave a review</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center pt-0 pb-4">
-              <div className="p-4 bg-white rounded-lg border border-slate-200 mb-4">
-                <QRCodeSVG id="qr-code-svg" value={reviewUrl} size={200} level="H" includeMargin />
-              </div>
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden min-w-0 w-full bg-background font-display text-foreground">
+        <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4 flex-1 flex flex-col min-h-0">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pb-4 mb-4 border-b border-border shrink-0">
+            <div>
+              <h2 className="text-lg font-display font-bold text-foreground">QR Code</h2>
+              <p className="text-sm text-muted-foreground mt-1">Generate and download your QR code for customer reviews.</p>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="bg-card border border-border shadow-sm rounded-xl">
+              <CardHeader className="text-center pb-2 pt-4">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <QrCode className="h-5 w-5 text-primary" />
+                </div>
+                <CardTitle className="text-base font-semibold text-foreground">Review QR code</CardTitle>
+                <CardDescription className="text-xs text-muted-foreground">Customers scan this to leave a review</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center pt-0 pb-4">
+                <div className="p-4 bg-card rounded-lg border border-border mb-4">
+                  <QRCodeSVG id="qr-code-svg" value={reviewUrl} size={200} level="H" includeMargin />
+                </div>
               <div className="flex gap-2 w-full">
                 <Button onClick={downloadQR} variant="outline" className="flex-1">
                   <Download className="h-4 w-4 mr-2" />
@@ -117,10 +120,10 @@ export default function BusinessQR() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-slate-200 shadow-sm rounded-xl h-full">
+          <Card className="bg-card border border-border shadow-sm rounded-xl h-full">
             <CardHeader className="pb-2 pt-4">
-              <CardTitle className="text-base font-semibold text-slate-900">How it works</CardTitle>
-              <CardDescription className="text-xs">Getting the most out of your QR code</CardDescription>
+              <CardTitle className="text-base font-semibold text-foreground">How it works</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Getting the most out of your QR code</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-0">
               {steps.map((item, i) => (
@@ -129,25 +132,25 @@ export default function BusinessQR() {
                     {i + 1}
                   </div>
                   <div>
-                    <h3 className="font-medium text-slate-900">{item.title}</h3>
-                    <p className="text-sm text-slate-600 mt-0.5">{item.desc}</p>
+                    <h3 className="font-medium text-foreground">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
-              <div className="pt-4 border-t border-slate-200">
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="pt-4 border-t border-border">
+                <div className="p-3 rounded-lg bg-muted/50 border border-border">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <p className="text-sm font-medium text-slate-900">Live URL</p>
+                    <p className="text-sm font-medium text-foreground">Live URL</p>
                   </div>
                   <a
                     href={reviewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-sm text-slate-700 break-all"
+                    className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border hover:border-primary/40 text-sm text-foreground break-all"
                   >
                     <span className="flex-1">{reviewUrl}</span>
-                    <ExternalLink className="h-4 w-4 shrink-0 text-slate-400" />
+                    <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </a>
                 </div>
               </div>
@@ -155,6 +158,7 @@ export default function BusinessQR() {
           </Card>
         </div>
       </div>
+    </div>
     </BusinessLayout>
   );
 }

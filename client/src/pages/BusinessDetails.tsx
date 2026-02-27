@@ -109,7 +109,7 @@ export default function BusinessDetails() {
           <TabsContent value="settings" className="mt-2 h-full min-h-0 flex flex-col overflow-hidden data-[state=inactive]:hidden">
             <BusinessSettingsView business={business} />
           </TabsContent>
-          <TabsContent value="review-options" className="mt-2 h-full min-h-0 flex flex-col overflow-hidden data-[state=inactive]:hidden">
+          <TabsContent value="review-options" className="mt-2 h-full min-h-0 flex flex-col overflow-y-auto data-[state=inactive]:hidden">
             <ReviewOptionsView business={business} />
           </TabsContent>
           <TabsContent value="qr" className="mt-2 h-full min-h-0 flex flex-col overflow-hidden data-[state=inactive]:hidden">
@@ -219,19 +219,20 @@ function BusinessSettingsView({ business }: { business: any }) {
 
   return (
     <>
-    <div className="flex-1 min-h-0 overflow-auto">
-    <div className="pb-4 mb-4 border-b border-slate-200">
-      <h2 className="text-lg font-display font-bold text-slate-900">Settings</h2>
-      <p className="text-sm text-slate-500 mt-1">Manage your business details and profile.</p>
+    <div className="w-full min-h-full overflow-hidden bg-background font-display text-foreground">
+    <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4 flex-1 min-h-0 overflow-auto">
+    <div className="pb-4 mb-4 border-b border-border">
+      <h2 className="text-lg font-display font-bold text-foreground">Settings</h2>
+      <p className="text-sm text-muted-foreground mt-1">Manage your business details and profile.</p>
     </div>
     <div className="mt-6">
-    <Card className="bg-white border border-slate-200 shadow-sm">
+    <Card className="bg-card border border-border rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
       <CardContent className="pt-4 px-4 pb-4">
         <div className="max-w-2xl">
-          <h3 className="text-xs font-semibold text-slate-800 mb-2">Business Information</h3>
+          <h3 className="text-xs font-semibold text-foreground mb-2">Business Information</h3>
             <form onSubmit={form.handleSubmit(handleSaveBusinessInfo)} className="space-y-2">
               <div>
-                <Label htmlFor="name" className="text-sm font-medium text-slate-700">Business Name *</Label>
+                <Label htmlFor="name" className="text-sm font-medium text-foreground">Business Name *</Label>
                 <Input
                   id="name"
                   {...form.register("name")}
@@ -244,8 +245,8 @@ function BusinessSettingsView({ business }: { business: any }) {
               </div>
               <Separator />
               <div>
-                <Label className="text-sm font-medium text-slate-700">Category *</Label>
-                <p className="text-xs text-slate-500 mt-0.5 mb-1">Search to find your business type. Used for review tags and SEO.</p>
+                <Label className="text-sm font-medium text-foreground">Category *</Label>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-1">Search to find your business type. Used for review tags and SEO.</p>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -254,7 +255,7 @@ function BusinessSettingsView({ business }: { business: any }) {
                       role="combobox"
                       className={cn(
                         "w-full mt-1 justify-between h-10 font-normal",
-                        !form.watch("category") && "text-slate-500"
+                        !form.watch("category") && "text-muted-foreground"
                       )}
                     >
                       {form.watch("category") || "Select category..."}
@@ -262,15 +263,15 @@ function BusinessSettingsView({ business }: { business: any }) {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
-                    className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] bg-white border-slate-200 shadow-lg overflow-hidden"
+                    className="w-[var(--radix-popover-trigger-width)] p-0 z-[100] bg-card border border-border shadow-lg overflow-hidden"
                     align="start"
                     sideOffset={4}
                   >
-                    <Command className="bg-white rounded-md border-0">
-                      <CommandInput placeholder="Search category..." className="bg-white" />
-                      <CommandList className="max-h-[280px] overflow-y-auto bg-white">
+                    <Command className="bg-card rounded-md border-0">
+                      <CommandInput placeholder="Search category..." className="bg-card" />
+                      <CommandList className="max-h-[280px] overflow-y-auto bg-card">
                         <CommandEmpty>No category found.</CommandEmpty>
-                        <CommandGroup className="bg-white p-1">
+                        <CommandGroup className="bg-card p-1">
                           {CATEGORIES.map((cat) => (
                             <CommandItem
                               key={cat}
@@ -295,7 +296,7 @@ function BusinessSettingsView({ business }: { business: any }) {
               <Separator />
               <div>
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-slate-700">Google Review URL *</Label>
+                  <Label htmlFor="googleReviewUrl" className="text-sm font-medium text-foreground">Google Review URL *</Label>
                   {business?.locationResourceName && (
                     <Button
                       type="button"
@@ -344,7 +345,7 @@ function BusinessSettingsView({ business }: { business: any }) {
                   placeholder="https://www.google.com/..."
                 />
                 {business?.locationResourceName && (
-                  <p className="text-xs text-slate-500 mt-1">Linked to Google Business Profile. Use the button above to fill this from Google.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Linked to Google Business Profile. Use the button above to fill this from Google.</p>
                 )}
                 {form.formState.errors.googleReviewUrl && (
                   <p className="text-sm text-red-500 mt-1">{form.formState.errors.googleReviewUrl.message}</p>
@@ -352,18 +353,18 @@ function BusinessSettingsView({ business }: { business: any }) {
               </div>
               <Separator />
               <div>
-                <Label htmlFor="logo" className="text-sm font-medium text-slate-700">Logo (optional)</Label>
-                <p className="text-xs text-slate-500 mt-0.5 mb-1">Any image format. We make the background transparent so it looks clean on your QR code and review flow.</p>
+                <Label htmlFor="logo" className="text-sm font-medium text-foreground">Logo (optional)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-1">Any image format. We make the background transparent so it looks clean on your QR code and review flow.</p>
                 {form.watch("logo") ? (
                   <div className="mt-2 flex items-center gap-3 flex-wrap">
                     <img
                       src={form.watch("logo")}
                       alt="Logo preview"
-                      className="h-14 w-auto max-w-[140px] object-contain rounded border border-slate-200 bg-white"
+                      className="h-14 w-auto max-w-[140px] object-contain rounded border border-border bg-card"
                     />
                     <div className="flex gap-2">
                       <Label htmlFor="logo-file" className="cursor-pointer">
-                        <span className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700">
+                        <span className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-muted hover:bg-muted/80 text-foreground">
                           Upload picture
                         </span>
                         <input
@@ -408,7 +409,7 @@ function BusinessSettingsView({ business }: { business: any }) {
                       placeholder="Logo URL or upload below"
                     />
                     <Label htmlFor="logo-upload" className="cursor-pointer shrink-0">
-                      <span className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 border border-input bg-background hover:bg-slate-50">
+                      <span className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 border border-input bg-background hover:bg-muted/50">
                         Upload
                       </span>
                       <input
@@ -448,9 +449,9 @@ function BusinessSettingsView({ business }: { business: any }) {
               </div>
             </form>
         </div>
-        <div className="mt-8 pt-6 border-t border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-800 mb-1">Danger zone</h3>
-          <p className="text-xs text-slate-500 mb-3">Permanently remove this business and all its data.</p>
+        <div className="mt-8 pt-6 border-t border-border">
+          <h3 className="text-sm font-semibold text-foreground mb-1">Danger zone</h3>
+          <p className="text-xs text-muted-foreground mb-3">Permanently remove this business and all its data.</p>
           <Button
             type="button"
             variant="outline"
@@ -464,6 +465,7 @@ function BusinessSettingsView({ business }: { business: any }) {
         </div>
       </CardContent>
     </Card>
+    </div>
     </div>
     </div>
     <ConfirmDeleteBusinessDialog
@@ -570,26 +572,26 @@ function ReviewOptionsView({ business }: { business: any }) {
   const selectedTheme = getReviewTheme(selectedThemeId);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
-    <Card className="bg-white border-0 shadow-none flex-1 min-h-0 flex flex-col overflow-hidden">
-      <CardHeader className="pb-4 pt-3 px-0 border-b border-slate-200">
-        <CardTitle className="text-lg font-display font-bold text-slate-900">Review Options</CardTitle>
-        <CardDescription className="text-sm text-slate-500 mt-1">
-          Focus areas, review page theme, and how the customer review flow will look.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 min-h-0 overflow-auto px-0 pt-6 pb-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        <div className="space-y-6 lg:min-w-0 border border-slate-200 rounded-xl p-6 bg-white">
+    <div className="w-full min-h-full bg-background font-display text-foreground">
+    <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4">
+    <div className="pb-4 mb-4 border-b border-border">
+      <h2 className="text-lg font-display font-bold text-foreground">Review Options</h2>
+      <p className="text-sm text-muted-foreground mt-1">Focus areas, review page theme, and how the customer review flow will look.</p>
+    </div>
+    <div className="mt-6">
+    <Card className="bg-card border border-border rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex-1 min-h-0 flex flex-col overflow-hidden">
+      <CardContent className="flex-1 min-h-0 overflow-auto px-4 pt-4 pb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.25fr_1fr] gap-6 lg:gap-6">
+        <div className="space-y-6 lg:min-w-0 border border-border rounded-2xl p-6 bg-card">
           {/* Focus Areas */}
           <section>
-            <h3 className="text-sm font-bold text-slate-900">Focus Areas (Tags)</h3>
-            <p className="text-sm text-slate-500 mt-1 mb-4">5 tags are set by category (best for Google). Add up to 2 more from the options below or one of your own.</p>
+            <h3 className="text-sm font-bold text-foreground">Focus Areas (Tags)</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">5 tags are set by category (best for Google). Add up to 2 more from the options below or one of your own.</p>
             <div className="space-y-2 mb-4">
               {defaultTags.map((tag) => (
-                <div key={`default-${tag}`} className="flex items-center gap-3 py-2.5 px-3 bg-slate-100/80 rounded-lg border border-slate-200/80">
-                  <span className="flex-1 font-medium text-slate-900 text-sm">{tag}</span>
-                  <span className="text-[11px] text-slate-400 font-normal">Best for Google</span>
+                <div key={`default-${tag}`} className="flex items-center gap-3 py-2.5 px-3 bg-muted/80 rounded-lg border border-border/80">
+                  <span className="flex-1 font-medium text-foreground text-sm">{tag}</span>
+                  <span className="text-[11px] text-muted-foreground font-normal">Best for Google</span>
                 </div>
               ))}
               {customTags.map((tag, index) => {
@@ -599,8 +601,8 @@ function ReviewOptionsView({ business }: { business: any }) {
                     key={`extra-${index}`}
                     className="flex items-center gap-2 py-2.5 px-3 bg-primary/5 rounded-lg border border-primary/20 text-sm"
                   >
-                    <span className="flex-1 font-medium text-slate-900">{tag}</span>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveTag(displayIndex)} className="h-6 w-6 p-0 text-slate-400 hover:text-red-600">
+                    <span className="flex-1 font-medium text-foreground">{tag}</span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveTag(displayIndex)} className="h-6 w-6 p-0 text-muted-foreground hover:text-red-600">
                       <X className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -609,7 +611,7 @@ function ReviewOptionsView({ business }: { business: any }) {
             </div>
             {customTags.length < 2 && (
               <div>
-                <p className="text-sm text-slate-500 mb-2">Add from options (max 2 total) or your own (max 1 custom).</p>
+                <p className="text-sm text-muted-foreground mb-2">Add from options (max 2 total) or your own (max 1 custom).</p>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {OPTIONAL_TAG_BANK.map((tag) => {
                     const isSelected = customTags.includes(tag);
@@ -623,7 +625,7 @@ function ReviewOptionsView({ business }: { business: any }) {
                           "h-9 text-sm rounded-lg transition-colors",
                           isSelected
                             ? "bg-primary text-white border-primary hover:bg-primary/90"
-                            : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                            : "bg-card border-border text-foreground hover:bg-muted/50"
                         )}
                         disabled={!canAddFromBank || isSelected}
                         onClick={() => handleAddFromBank(tag)}
@@ -640,7 +642,7 @@ function ReviewOptionsView({ business }: { business: any }) {
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCustomTag(); } }}
                     placeholder="Your own tag (max 1)"
-                    className="flex-1 h-9 text-sm rounded-lg border-slate-200"
+                    className="flex-1 h-9 text-sm rounded-lg border-border"
                     disabled={!canAddCustom}
                   />
                   <Button type="button" size="sm" onClick={handleAddCustomTag} disabled={!canAddCustom || !newTag.trim() || allTags.includes(newTag.trim())} className="h-9 px-4 shrink-0">
@@ -654,14 +656,17 @@ function ReviewOptionsView({ business }: { business: any }) {
               Save Tags
             </Button>
           </section>
+        </div>
 
-          {/* Review page theme */}
+        {/* Review page theme - own column for more width, theme options on the right */}
+        <div className="lg:min-w-0 border border-border rounded-2xl p-6 bg-card">
           <section>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Review page theme</h3>
-              <p className="text-sm text-slate-500 mt-1">Used on the customer review flow (experience, tags, AI step).</p>
+              <h3 className="text-sm font-bold text-foreground">Review page theme</h3>
+              <p className="text-sm text-muted-foreground mt-1">Used on the customer review flow (experience, tags, AI step).</p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4 w-full">
+            <div className="flex justify-end mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full max-w-2xl">
               {Object.values(REVIEW_THEMES).map((theme) => (
                 <button
                   key={theme.id}
@@ -671,7 +676,7 @@ function ReviewOptionsView({ business }: { business: any }) {
                     "rounded-xl border-2 p-4 text-left transition-all w-full min-w-0 flex flex-col gap-3",
                     selectedThemeId === theme.id
                       ? "border-primary shadow-md bg-primary/5"
-                      : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                      : "border-border hover:border-border hover:shadow-sm"
                   )}
                 >
                   <div
@@ -690,11 +695,12 @@ function ReviewOptionsView({ business }: { business: any }) {
                     </div>
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900 text-sm">{theme.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{theme.description}</p>
+                    <p className="font-semibold text-foreground text-sm">{theme.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{theme.description}</p>
                   </div>
                 </button>
               ))}
+              </div>
             </div>
             <Button type="button" size="sm" onClick={handleSaveTheme} disabled={updateMutation.isPending} className="mt-4 h-9 px-4 bg-primary text-white hover:bg-primary/90 rounded-lg shrink-0">
               {updateMutation.isPending ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <Clock className="w-3.5 h-3.5 mr-2" />}
@@ -704,13 +710,13 @@ function ReviewOptionsView({ business }: { business: any }) {
         </div>
 
         {/* Live Preview */}
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 shadow-sm">
-          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">
+        <div className="rounded-2xl border border-border bg-muted/50 p-6 shadow-sm">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
             LIVE PREVIEW
           </p>
           <div className="flex justify-center">
-            <div className="w-full max-w-[375px] rounded-[2rem] border-[10px] border-slate-800 bg-slate-800 shadow-xl overflow-hidden">
-              <div className="rounded-[1.25rem] overflow-hidden bg-white min-h-[720px] flex flex-col">
+            <div className="w-full max-w-[375px] rounded-[2rem] border-[10px] border-border bg-card shadow-xl overflow-hidden">
+              <div className="rounded-[1.25rem] overflow-hidden bg-card min-h-[720px] flex flex-col">
                 <div
                   className="p-4 flex flex-col gap-6"
                   style={{
@@ -818,6 +824,8 @@ function ReviewOptionsView({ business }: { business: any }) {
         </div>
       </CardContent>
     </Card>
+    </div>
+    </div>
     </div>
   );
 }
@@ -1299,7 +1307,7 @@ function ThemeCustomizationView({ business }: { business: any }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-white border border-slate-200 shadow-sm">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-display font-bold">QR Marketing Templates</CardTitle>
         </CardHeader>
@@ -1308,14 +1316,14 @@ function ThemeCustomizationView({ business }: { business: any }) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="template" className="text-sm font-medium text-slate-700">
+                <Label htmlFor="template" className="text-sm font-medium text-foreground">
                   Template
                 </Label>
                 <Select value={template} onValueChange={setTemplate}>
                   <SelectTrigger id="template" className="h-10">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200 shadow-lg">
+                  <SelectContent className="bg-card border-border shadow-lg">
                     <SelectItem value="counter-card">Counter Card (4x6)</SelectItem>
                     <SelectItem value="poster">Poster (8.5x11)</SelectItem>
                     <SelectItem value="table-tent">Table Tent (Tri-fold)</SelectItem>
@@ -1326,14 +1334,14 @@ function ThemeCustomizationView({ business }: { business: any }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="theme" className="text-sm font-medium text-slate-700">
+                <Label htmlFor="theme" className="text-sm font-medium text-foreground">
                   Theme
                 </Label>
                 <Select value={themeId} onValueChange={setThemeId}>
                   <SelectTrigger id="theme" className="h-10">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200 shadow-lg">
+                  <SelectContent className="bg-card border-border shadow-lg">
                     <SelectItem value="classic">Classic</SelectItem>
                     <SelectItem value="modern-bold">Modern Bold</SelectItem>
                     <SelectItem value="clean-clinic">Clean Clinic</SelectItem>
@@ -1347,7 +1355,7 @@ function ThemeCustomizationView({ business }: { business: any }) {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="headline" className="text-sm font-medium text-slate-700">
+                <Label htmlFor="headline" className="text-sm font-medium text-foreground">
                   Headline (max 50 chars)
                 </Label>
                 <Input
@@ -1357,11 +1365,11 @@ function ThemeCustomizationView({ business }: { business: any }) {
                   className="h-10"
                   maxLength={50}
                 />
-                <p className="text-xs text-slate-500">{headline.length}/50</p>
+                <p className="text-xs text-muted-foreground">{headline.length}/50</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="subheadline" className="text-sm font-medium text-slate-700">
+                <Label htmlFor="subheadline" className="text-sm font-medium text-foreground">
                   Subheadline (max 80 chars)
                 </Label>
                 <Input
@@ -1371,11 +1379,11 @@ function ThemeCustomizationView({ business }: { business: any }) {
                   className="h-10"
                   maxLength={80}
                 />
-                <p className="text-xs text-slate-500">{subheadline.length}/80</p>
+                <p className="text-xs text-muted-foreground">{subheadline.length}/80</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="note" className="text-sm font-medium text-slate-700">
+                <Label htmlFor="note" className="text-sm font-medium text-foreground">
                   Note (optional)
                 </Label>
                 <Input
@@ -1398,7 +1406,7 @@ function ThemeCustomizationView({ business }: { business: any }) {
                 >
                   <ZoomOut className="w-4 h-4" />
                 </Button>
-                <span className="text-sm font-medium text-slate-700 min-w-[50px] text-center">
+                <span className="text-sm font-medium text-foreground min-w-[50px] text-center">
                   {zoom}%
                 </span>
                 <Button
@@ -1446,12 +1454,12 @@ function ThemeCustomizationView({ business }: { business: any }) {
       </Card>
 
       {/* Preview Section */}
-      <Card className="bg-white border border-slate-200 shadow-sm">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl font-display font-bold">Preview</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-center items-center p-8 bg-slate-100 rounded-xl min-h-[500px] overflow-auto">
+          <div className="flex justify-center items-center p-8 bg-muted rounded-xl min-h-[500px] overflow-auto">
             <div
               ref={previewRef}
               className="relative"
@@ -1501,16 +1509,16 @@ function InsightsView({ business }: { business: any }) {
   // No GBP linked
   if (!hasGbp) {
     return (
-      <Card className="bg-white border border-slate-200 shadow-sm">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
-          <CardDescription className="text-slate-600">Review analytics and all Google reviews in one place.</CardDescription>
+          <CardDescription className="text-muted-foreground">Review analytics and all Google reviews in one place.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
-            <BarChart className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-700 font-medium">Connect Google Business Profile to see insights</p>
-            <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
+          <div className="text-center py-12 rounded-2xl bg-muted/50 border border-dashed border-border">
+            <BarChart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-foreground font-medium">Connect Google Business Profile to see insights</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
               Link this business to a Google Business Profile location to view all reviews, star ratings, who wrote them, and your replies here.
             </p>
             <Link href="/business/new">
@@ -1525,13 +1533,13 @@ function InsightsView({ business }: { business: any }) {
   // Loading
   if (googleLoading) {
     return (
-      <Card className="bg-white border border-slate-200 shadow-sm">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
-          <CardDescription className="text-slate-600">Review analytics and all Google reviews.</CardDescription>
+          <CardDescription className="text-muted-foreground">Review analytics and all Google reviews.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+          <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
             <Loader2 className="w-8 h-8 animate-spin" />
             <span>Loading Google reviews…</span>
           </div>
@@ -1546,10 +1554,10 @@ function InsightsView({ business }: { business: any }) {
     const is404 = msg.includes("404");
     const is403 = msg.includes("403") || msg.includes("has not been used") || msg.includes("is disabled");
     return (
-      <Card className="bg-white border border-slate-200 shadow-sm">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-display font-bold">Insights</CardTitle>
-          <CardDescription className="text-slate-600">Review analytics and all Google reviews.</CardDescription>
+          <CardDescription className="text-muted-foreground">Review analytics and all Google reviews.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-amber-800">
@@ -1578,10 +1586,10 @@ function InsightsView({ business }: { business: any }) {
   const serverMessage = googleData?.message;
 
   return (
-    <Card className="bg-white border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/30">
-        <CardTitle className="text-2xl font-display font-bold text-slate-900">Insights</CardTitle>
-        <CardDescription className="text-slate-600">
+    <Card className="bg-card border border-border shadow-sm overflow-hidden">
+      <CardHeader className="border-b border-border bg-muted/30">
+        <CardTitle className="text-2xl font-display font-bold text-foreground">Insights</CardTitle>
+        <CardDescription className="text-muted-foreground">
           All Google reviews for this location: who wrote them, star ratings, and your replies.
         </CardDescription>
       </CardHeader>
@@ -1589,26 +1597,26 @@ function InsightsView({ business }: { business: any }) {
         {serverError ? (
           <div className="px-6 py-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">{serverError}</div>
         ) : serverMessage && totalCount === 0 ? (
-          <div className="px-6 py-6 text-slate-500 text-sm">{serverMessage}</div>
+          <div className="px-6 py-6 text-muted-foreground text-sm">{serverMessage}</div>
         ) : (
           <>
             {/* Summary + sort */}
-            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/30 flex flex-wrap items-center justify-between gap-4">
+            <div className="px-6 py-4 border-b border-border bg-muted/30 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                  <span className="text-2xl font-bold text-slate-900">{averageRating > 0 ? averageRating.toFixed(1) : "-"}</span>
-                  <span className="text-slate-500 text-sm">average</span>
+                  <span className="text-2xl font-bold text-foreground">{averageRating > 0 ? averageRating.toFixed(1) : "-"}</span>
+                  <span className="text-muted-foreground text-sm">average</span>
                 </div>
-                <div className="text-slate-600 text-sm">
-                  <span className="font-semibold text-slate-900">{totalCount}</span> review{totalCount !== 1 ? "s" : ""} on Google
+                <div className="text-muted-foreground text-sm">
+                  <span className="font-semibold text-foreground">{totalCount}</span> review{totalCount !== 1 ? "s" : ""} on Google
                 </div>
               </div>
               <Select value={sortBy} onValueChange={(v: "newest" | "oldest" | "highest" | "lowest") => setSortBy(v)}>
-                <SelectTrigger className="w-[160px] h-9 rounded-lg border border-slate-200 bg-white text-slate-900">
+                <SelectTrigger className="w-[160px] h-9 rounded-lg border border-border bg-card text-foreground">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
-                <SelectContent className="z-[100] min-w-[160px] rounded-xl border-slate-200 bg-white shadow-lg">
+                <SelectContent className="z-[100] min-w-[160px] rounded-xl border-border bg-card shadow-lg">
                   <SelectItem value="newest">Newest first</SelectItem>
                   <SelectItem value="oldest">Oldest first</SelectItem>
                   <SelectItem value="highest">Highest rated</SelectItem>
@@ -1620,44 +1628,44 @@ function InsightsView({ business }: { business: any }) {
             {/* Review list */}
             <div className="px-6 py-5">
               {sortedReviews.length === 0 ? (
-                <div className="text-center py-14 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
-                  <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-600 font-medium">No Google reviews yet</p>
-                  <p className="text-sm text-slate-500 mt-1">Reviews from your Google Business Profile will appear here.</p>
+                <div className="text-center py-14 rounded-2xl bg-muted/50 border border-dashed border-border">
+                  <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground font-medium">No Google reviews yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Reviews from your Google Business Profile will appear here.</p>
                 </div>
               ) : (
                 <ul className="space-y-4">
                   {sortedReviews.map((r) => (
-                    <li key={r.reviewId} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <li key={r.reviewId} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-9 w-9 shrink-0 rounded-full border border-slate-200">
+                          <Avatar className="h-9 w-9 shrink-0 rounded-full border border-border">
                             {r.reviewerProfilePhotoUrl ? (
                               <AvatarImage src={r.reviewerProfilePhotoUrl} alt={r.reviewerDisplayName} className="object-cover" />
                             ) : null}
-                            <AvatarFallback className="bg-slate-100 text-slate-600 text-sm font-medium">
+                            <AvatarFallback className="bg-muted text-muted-foreground text-sm font-medium">
                               {r.reviewerDisplayName === "Anonymous" ? "?" : (r.reviewerDisplayName || "?").charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-slate-900">{r.reviewerDisplayName}</span>
+                          <span className="font-medium text-foreground">{r.reviewerDisplayName}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className={cn("w-4 h-4", star <= r.starRating ? "text-amber-500 fill-amber-500" : "text-slate-200")}
+                              className={cn("w-4 h-4", star <= r.starRating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40")}
                             />
                           ))}
                         </div>
                       </div>
-                      <time className="text-xs text-slate-500 block mb-2" dateTime={r.createTime}>
+                      <time className="text-xs text-muted-foreground block mb-2" dateTime={r.createTime}>
                         {formatDate(r.updateTime || r.createTime)}
                       </time>
-                      {r.comment && <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{r.comment}</p>}
+                      {r.comment && <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">{r.comment}</p>}
                       {r.reviewReply ? (
-                        <div className="mt-3 pt-3 border-t border-slate-100">
-                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Your reply</p>
-                          <p className="text-sm text-slate-700 italic">{r.reviewReply}</p>
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Your reply</p>
+                          <p className="text-sm text-foreground italic">{r.reviewReply}</p>
                         </div>
                       ) : null}
                     </li>
@@ -1750,29 +1758,29 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
   };
 
   return (
-    <Card className="bg-white border border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/30">
-        <CardTitle className="text-2xl font-display font-bold text-slate-900">Reviews &amp; Concerns</CardTitle>
-        <CardDescription className="text-slate-600">
+    <Card className="bg-card border border-border shadow-sm overflow-hidden">
+      <CardHeader className="border-b border-border bg-muted/30">
+        <CardTitle className="text-2xl font-display font-bold text-foreground">Reviews &amp; Concerns</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Customer reviews and private concerns in one place.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <>
             {/* Google Business Profile reviews (when business is linked to GBP) */}
             {hasGbpLocation && (
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/30">
-                <h3 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <div className="px-6 py-4 border-b border-border bg-muted/30">
+                <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                   Google reviews
                 </h3>
                 {googleReviewsLoading ? (
-                  <div className="flex items-center gap-2 text-slate-500 py-4">
+                  <div className="flex items-center gap-2 text-muted-foreground py-4">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Loading Google reviews…</span>
                   </div>
@@ -1781,47 +1789,47 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                 ) : googleReviewsData?.error ? (
                   <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">{googleReviewsData.error}</p>
                 ) : googleReviewsData?.message ? (
-                  <p className="text-sm text-slate-500">{googleReviewsData.message}</p>
+                  <p className="text-sm text-muted-foreground">{googleReviewsData.message}</p>
                 ) : googleReviewsData?.reviews?.length ? (
                   <div className="space-y-3">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {googleReviewsData.totalReviewCount} review{googleReviewsData.totalReviewCount !== 1 ? "s" : ""} on Google
                       {googleReviewsData.averageRating > 0 && ` · ${googleReviewsData.averageRating.toFixed(1)}★ average`}
                     </p>
                     <ul className="space-y-3 max-h-80 overflow-y-auto">
                       {googleReviewsData.reviews.map((r) => (
-                        <li key={r.reviewId} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <li key={r.reviewId} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 shrink-0 rounded-full border border-slate-200">
+                              <Avatar className="h-9 w-9 shrink-0 rounded-full border border-border">
                                 {r.reviewerProfilePhotoUrl ? (
                                   <AvatarImage src={r.reviewerProfilePhotoUrl} alt={r.reviewerDisplayName} className="object-cover" />
                                 ) : null}
-                                <AvatarFallback className="bg-slate-100 text-slate-600 text-sm font-medium">
+                                <AvatarFallback className="bg-muted text-muted-foreground text-sm font-medium">
                                   {r.reviewerDisplayName === "Anonymous" ? "?" : (r.reviewerDisplayName || "?").charAt(0).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="font-medium text-slate-900">{r.reviewerDisplayName}</span>
+                              <span className="font-medium text-foreground">{r.reviewerDisplayName}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={star}
-                                  className={cn("w-4 h-4", star <= r.starRating ? "text-amber-500 fill-amber-500" : "text-slate-200")}
+                                  className={cn("w-4 h-4", star <= r.starRating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40")}
                                 />
                               ))}
                             </div>
                           </div>
                           {r.createTime && (
-                            <time className="text-xs text-slate-500 block mb-2" dateTime={r.createTime}>
+                            <time className="text-xs text-muted-foreground block mb-2" dateTime={r.createTime}>
                               {new Date(r.createTime).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                             </time>
                           )}
-                          {r.comment && <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{r.comment}</p>}
+                          {r.comment && <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">{r.comment}</p>}
                           {r.reviewReply ? (
-                            <div className="mt-3 pt-3 border-t border-slate-100">
-                              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Your reply</p>
-                              <p className="text-sm text-slate-700 italic">{r.reviewReply}</p>
+                            <div className="mt-3 pt-3 border-t border-border">
+                              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Your reply</p>
+                              <p className="text-sm text-foreground italic">{r.reviewReply}</p>
                             </div>
                           ) : null}
                         </li>
@@ -1829,15 +1837,15 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                     </ul>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-500">No Google reviews yet for this location.</p>
+                  <p className="text-sm text-muted-foreground">No Google reviews yet for this location.</p>
                 )}
               </div>
             )}
 
             {/* Receive concerns at this email */}
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-              <Label className="text-sm font-medium text-slate-700">Receive concerns at</Label>
-              <p className="text-xs text-slate-500 mt-0.5 mb-2">
+            <div className="px-6 py-4 border-b border-border bg-muted/50">
+              <Label className="text-sm font-medium text-foreground">Receive concerns at</Label>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-2">
                 New concerns are emailed here. Leave blank to use your account email.
               </p>
               <div className="flex flex-wrap items-center gap-2">
@@ -1846,7 +1854,7 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                   placeholder="e.g. support@yourbusiness.com"
                   value={concernsEmail}
                   onChange={(e) => setConcernsEmail(e.target.value)}
-                  className="h-9 max-w-xs bg-white border-slate-200 rounded-lg text-sm"
+                  className="h-9 max-w-xs bg-card border-border rounded-lg text-sm"
                 />
                 <Button
                   size="sm"
@@ -1860,52 +1868,52 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
             </div>
 
             {/* Toolbar: filters, date range, sort */}
-            <div className="border-b border-slate-100 bg-slate-100/80 px-6 py-4">
+            <div className="border-b border-border bg-muted/80 px-6 py-4">
               <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm">
                     <Filter className="h-4 w-4" strokeWidth={2} />
                   </div>
                   <Select value={filterType} onValueChange={(v: "all" | "concern" | "great") => setFilterType(v)}>
-                    <SelectTrigger className="w-[150px] h-9 rounded-lg border border-slate-200 !bg-white text-slate-900 shadow-sm">
+                    <SelectTrigger className="w-[150px] h-9 rounded-lg border border-border !bg-card text-foreground shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="z-50 rounded-xl border-slate-200 !bg-white shadow-lg">
+                    <SelectContent className="z-50 rounded-xl border-border !bg-card shadow-lg">
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="concern">Concerns only</SelectItem>
                       <SelectItem value="great">Great (reviews) only</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Separator orientation="vertical" className="h-8 hidden sm:block bg-slate-200" />
+                <Separator orientation="vertical" className="h-8 hidden sm:block bg-border" />
                 <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm">
                     <Calendar className="h-[18px] w-[18px] shrink-0" strokeWidth={2} stroke="currentColor" />
                   </div>
                   <Input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="h-9 min-w-[140px] bg-white border-slate-200 rounded-lg text-sm shadow-sm [color-scheme:light]"
+                    className="h-9 min-w-[140px] bg-card border-border rounded-lg text-sm shadow-sm [color-scheme:light]"
                   />
-                  <span className="text-slate-500 text-sm font-medium">to</span>
+                  <span className="text-muted-foreground text-sm font-medium">to</span>
                   <Input
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="h-9 min-w-[140px] bg-white border-slate-200 rounded-lg text-sm shadow-sm [color-scheme:light]"
+                    className="h-9 min-w-[140px] bg-card border-border rounded-lg text-sm shadow-sm [color-scheme:light]"
                   />
                 </div>
-                <Separator orientation="vertical" className="h-8 hidden sm:block bg-slate-200" />
+                <Separator orientation="vertical" className="h-8 hidden sm:block bg-border" />
                 <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm">
                     <ArrowUpDown className="h-4 w-4" strokeWidth={2} />
                   </div>
                   <Select value={sortBy} onValueChange={(v: "newest" | "oldest" | "name-az" | "name-za") => setSortBy(v)}>
-                    <SelectTrigger className="w-[150px] h-9 rounded-lg border border-slate-200 !bg-white text-slate-900 shadow-sm">
+                    <SelectTrigger className="w-[150px] h-9 rounded-lg border border-border !bg-card text-foreground shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="z-50 rounded-xl border-slate-200 !bg-white shadow-lg">
+                    <SelectContent className="z-50 rounded-xl border-border !bg-card shadow-lg">
                       <SelectItem value="newest">Newest first</SelectItem>
                       <SelectItem value="oldest">Oldest first</SelectItem>
                       <SelectItem value="name-az">Name A–Z</SelectItem>
@@ -1918,19 +1926,19 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
 
             <div className="px-6 py-5">
               {isEmpty ? (
-                <div className="text-center py-14 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
+                <div className="text-center py-14 rounded-2xl bg-muted/50 border border-dashed border-border">
                   <div className="flex justify-center gap-3 mb-4">
-                    <MessageSquare className="w-12 h-12 text-slate-300" />
-                    <AlertTriangle className="w-12 h-12 text-slate-300" />
+                    <MessageSquare className="w-12 h-12 text-muted-foreground" />
+                    <AlertTriangle className="w-12 h-12 text-muted-foreground" />
                   </div>
-                  <p className="text-slate-600 font-medium">No reviews or concerns yet</p>
-                  <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                  <p className="text-muted-foreground font-medium">No reviews or concerns yet</p>
+                  <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
                     When customers use your review link, their feedback will appear here.
                   </p>
                 </div>
               ) : noResults ? (
-                <div className="text-center py-14 rounded-2xl bg-slate-50/50 border border-dashed border-slate-200">
-                  <p className="text-slate-600 font-medium">No items match the current filters or date range.</p>
+                <div className="text-center py-14 rounded-2xl bg-muted/50 border border-dashed border-border">
+                  <p className="text-muted-foreground font-medium">No items match the current filters or date range.</p>
                   <Button variant="outline" size="sm" className="mt-4 rounded-lg" onClick={() => { setFilterType("all"); setDateFrom(""); setDateTo(""); }}>
                     Clear filters
                   </Button>
@@ -1938,8 +1946,8 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-slate-500">
-                      Showing <span className="font-semibold text-slate-700">{filtered.length}</span> of {reviews.length} item{reviews.length !== 1 ? "s" : ""}
+                    <p className="text-sm text-muted-foreground">
+                      Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {reviews.length} item{reviews.length !== 1 ? "s" : ""}
                     </p>
                   </div>
                   <ul className="space-y-4">
@@ -1949,8 +1957,8 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                         className={cn(
                           "rounded-2xl border text-left shadow-sm transition-shadow hover:shadow-md",
                           r.experienceType === "concern"
-                            ? "border-rose-200/80 bg-gradient-to-br from-rose-50/80 to-white"
-                            : "border-slate-200/80 bg-gradient-to-br from-slate-50/50 to-white"
+                            ? "border-rose-200/80 bg-gradient-to-br from-rose-50/80 to-card"
+                            : "border-border/80 bg-gradient-to-br from-muted/50 to-card"
                         )}
                       >
                         <div className="p-5">
@@ -1965,22 +1973,22 @@ function ReviewsAndConcernsView({ business }: { business: any }) {
                             >
                               {r.experienceType === "concern" ? "Concern" : "Review"}
                             </span>
-                            <time className="text-xs text-slate-500 tabular-nums" dateTime={r.createdAt}>
+                            <time className="text-xs text-muted-foreground tabular-nums" dateTime={r.createdAt}>
                               {formatDate(r.createdAt)}
                             </time>
                           </div>
                           {r.content && (
-                            <p className="text-slate-800 whitespace-pre-wrap text-[15px] leading-relaxed mb-4">{r.content}</p>
+                            <p className="text-foreground whitespace-pre-wrap text-[15px] leading-relaxed mb-4">{r.content}</p>
                           )}
                           {(r.customerName || r.customerEmail || r.customerPhone) && (
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 pt-3 border-t border-slate-100">
-                              {r.customerName && <span className="font-medium text-slate-700">{r.customerName}</span>}
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground pt-3 border-t border-border">
+                              {r.customerName && <span className="font-medium text-foreground">{r.customerName}</span>}
                               {r.customerEmail && (
                                 <a href={`mailto:${r.customerEmail}`} className="text-[hsl(var(--primary))] hover:underline font-medium">
                                   {r.customerEmail}
                                 </a>
                               )}
-                              {r.customerPhone && <span className="text-slate-600">{r.customerPhone}</span>}
+                              {r.customerPhone && <span className="text-muted-foreground">{r.customerPhone}</span>}
                             </div>
                           )}
                         </div>
@@ -2103,17 +2111,18 @@ function QRView({ business }: { business: any }) {
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-white">
-    <Card className="bg-white border-0 shadow-none flex-1 min-h-0 flex flex-col overflow-hidden">
-      <CardHeader className="pb-4 pt-3 px-0 border-b border-slate-200">
-        <CardTitle className="text-lg font-display font-bold text-slate-900">QR Code</CardTitle>
-        <CardDescription className="text-sm text-slate-500 mt-1">
-          Generate and download your QR code for customer reviews.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="w-full min-h-full overflow-hidden bg-background font-display text-foreground">
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 md:py-4 flex-1 min-h-0 overflow-auto">
+        <div className="pb-4 mb-4 border-b border-border">
+          <h2 className="text-lg font-display font-bold text-foreground">QR Code</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Generate and download your QR code for customer reviews.
+          </p>
+        </div>
+        <Card className="bg-card border border-border rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+      <CardContent className="space-y-6 pt-6">
         <div className="flex flex-col items-center">
-          <div className="p-8 bg-white rounded-3xl shadow-inner border-2 border-slate-200 mb-6">
+          <div className="p-8 bg-muted/30 rounded-3xl shadow-inner border-2 border-border mb-6">
             <QRCodeSVG
               id="qr-code-svg"
               value={reviewUrl}
@@ -2145,26 +2154,27 @@ function QRView({ business }: { business: any }) {
 
         <Separator />
 
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+        <div className="p-4 rounded-xl bg-muted/50 border border-border">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle2 className="w-4 h-4 text-green-600" />
-            <p className="text-sm font-semibold text-slate-900">Live URL</p>
+            <p className="text-sm font-semibold text-foreground">Live URL</p>
           </div>
           <a
             href={reviewUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all"
+            className="group flex items-center gap-2 p-3 rounded-lg bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all"
             title={reviewUrl}
           >
-            <span className="text-sm font-medium text-slate-700 truncate flex-1 group-hover:font-bold transition-colors">
+            <span className="text-sm font-medium text-foreground truncate flex-1 group-hover:font-bold transition-colors">
               {reviewUrl}
             </span>
-            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-700 flex-shrink-0 transition-colors" />
+            <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-foreground flex-shrink-0 transition-colors" />
           </a>
         </div>
       </CardContent>
     </Card>
+      </div>
     </div>
   );
 }
